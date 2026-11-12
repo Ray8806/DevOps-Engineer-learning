@@ -5,6 +5,7 @@ import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
 import { lessonComponents } from "@/components/lesson-components";
 import { MarkReadButton } from "@/components/MarkReadButton";
+import { QuizCard } from "@/components/QuizCard";
 import { ProviderBadge } from "@/components/ProviderBadge";
 import { getContent } from "@/lib/content/loader";
 import { PROVIDERS } from "@/lib/content/schema";
@@ -80,10 +81,8 @@ export default async function UnitPage({ params }: PageProps<"/units/[id]">) {
           接下來
         </h2>
         <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-          <li className="rounded-xl border border-border bg-surface p-4">
-            <h3 className="font-bold">單元測驗</h3>
-            <p className="mt-1 text-sm text-muted">共 {unit.quiz.length} 題，每個選項都有解析。</p>
-            <p className="mt-3 text-xs font-semibold text-muted">即將開放</p>
+          <li>
+            <QuizCard unitId={meta.id} questionCount={unit.quiz.length} />
           </li>
           {unit.labs.map((lab) => (
             <li key={lab.id} className="rounded-xl border border-border bg-surface p-4">

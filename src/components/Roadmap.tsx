@@ -3,9 +3,12 @@
 import Link from "next/link";
 import type { Provider } from "@/lib/content/schema";
 import {
+  QUIZ_PASS_SCORE,
   countDone,
+  isUnitRead,
   matchesProvider,
   missingPrerequisites,
+  quizScore,
   setPreferredProvider,
   unitStatus,
   type PreferredProvider,
@@ -37,6 +40,7 @@ const FILTERS: { value: PreferredProvider; label: string }[] = [
 
 const STATUS_LABEL: Record<UnitStatus, string> = {
   done: "已完成",
+  "in-progress": "進行中",
   available: "可以開始",
   locked: "尚未解鎖",
 };
@@ -58,6 +62,13 @@ function StatusIcon({ status }: { status: UnitStatus }) {
         <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="currentColor" aria-hidden>
           <path d="M5 7V5a3 3 0 016 0v2h.5A1.5 1.5 0 0113 8.5v4a1.5 1.5 0 01-1.5 1.5h-7A1.5 1.5 0 013 12.5v-4A1.5 1.5 0 014.5 7H5zm1.5 0h3V5a1.5 1.5 0 00-3 0v2z" />
         </svg>
+      </span>
+    );
+  }
+  if (status === "in-progress") {
+    return (
+      <span className={`${base} border-accent bg-surface`}>
+        <span className="h-2.5 w-2.5 rounded-full bg-accent" />
       </span>
     );
   }
@@ -84,6 +95,18 @@ export function Roadmap({ stages }: { stages: RoadmapStage[] }) {
   const [progress, update] = useProgress();
   const preferred = progress.preferredProvider;
   const titleOf = new Map(stages.flatMap((s) => s.units).map((u) => [u.id, u.title]));
+
+  /** What is still open in a started unit, e.g. "課文已讀 · 測驗 60%（需 80%）". */
+  function stepSummary(unitId: string): string {
+    const best = quizScore(progress, unitId);
+    const quiz =
+      best === undefined
+        ? "測驗未作答"
+        : best >= QUIZ_PASS_SCORE
+          ? "測驗已通過"
+          : `測驗 ${Math.round(best * 100)}%（需 ${Math.round(QUIZ_PASS_SCORE * 100)}%）`;
+    return `${isUnitRead(progress, unitId) ? "課文已讀" : "課文未讀"} · ${quiz}`;
+  }
 
   const visibleStages = stages.map((stage) => ({
     ...stage,
@@ -196,7 +219,9 @@ export function Roadmap({ stages }: { stages: RoadmapStage[] }) {
                             <p className="mt-2 text-xs font-semibold text-muted">
                               {status === "locked"
                                 ? `建議先完成：${missing.map((id) => titleOf.get(id) ?? id).join("、")}`
-                                : STATUS_LABEL[status]}
+                                : status === "in-progress"
+                                  ? `${STATUS_LABEL[status]}：${stepSummary(unit.id)}`
+                                  : STATUS_LABEL[status]}
                             </p>
                           </div>
                         </Link>

@@ -5,10 +5,14 @@ import {
   defaultProvider,
   matchesProvider,
   missingPrerequisites,
+  isUnitDone,
   parseProgress,
+  quizScore,
+  recordQuizAttempt,
   setPreferredProvider,
   setUnitRead,
   unitStatus,
+  type Progress,
   type UnitRef,
 } from "./progress";
 import { STORAGE_KEY, createLocalProgressStore } from "./store";
@@ -16,6 +20,13 @@ import { STORAGE_KEY, createLocalProgressStore } from "./store";
 const iam: UnitRef = { id: "iam", prerequisites: [], providers: ["aws", "gcp"] };
 const s3: UnitRef = { id: "s3-deep-dive", prerequisites: ["iam"], providers: ["aws"] };
 const linux: UnitRef = { id: "linux", prerequisites: [], providers: [] };
+
+const attempt = (...correct: boolean[]) => correct.map((c, i) => ({ questionId: `q${i + 1}`, correct: c }));
+
+/** Lesson read and quiz passed. */
+function complete(progress: Progress, unitId: string): Progress {
+  return recordQuizAttempt(setUnitRead(progress, unitId, true), unitId, attempt(true));
+}
 
 function fakeStorage(initial: Record<string, string> = {}) {
   const data = new Map(Object.entries(initial));
@@ -45,19 +56,71 @@ describe("unit status", () => {
     expect(unitStatus(EMPTY_PROGRESS, s3)).toBe("locked");
     expect(missingPrerequisites(EMPTY_PROGRESS, s3)).toEqual(["iam"]);
 
-    const afterIam = setUnitRead(EMPTY_PROGRESS, "iam", true);
+    const afterIam = complete(EMPTY_PROGRESS, "iam");
     expect(unitStatus(afterIam, iam)).toBe("done");
     expect(unitStatus(afterIam, s3)).toBe("available");
   });
 
+  it("needs both the lesson and a passed quiz to be done", () => {
+    const readOnly = setUnitRead(EMPTY_PROGRESS, "iam", true);
+    expect(unitStatus(readOnly, iam)).toBe("in-progress");
+    expect(unitStatus(readOnly, s3)).toBe("locked");
+
+    const quizOnly = recordQuizAttempt(EMPTY_PROGRESS, "iam", attempt(true));
+    expect(unitStatus(quizOnly, iam)).toBe("in-progress");
+
+    const failedQuiz = recordQuizAttempt(readOnly, "iam", attempt(true, false));
+    expect(unitStatus(failedQuiz, iam)).toBe("in-progress");
+
+    expect(isUnitDone(recordQuizAttempt(readOnly, "iam", attempt(true)), "iam")).toBe(true);
+  });
+
+  it("passes at exactly 80% and fails just below", () => {
+    const read = setUnitRead(EMPTY_PROGRESS, "iam", true);
+    expect(isUnitDone(recordQuizAttempt(read, "iam", attempt(true, true, true, true, false)), "iam")).toBe(true);
+    expect(isUnitDone(recordQuizAttempt(read, "iam", attempt(true, true, true, false, false)), "iam")).toBe(false);
+  });
+
   it("locks a unit again when its prerequisite is un-marked", () => {
-    const p = setUnitRead(setUnitRead(EMPTY_PROGRESS, "iam", true), "iam", false);
+    const p = setUnitRead(complete(EMPTY_PROGRESS, "iam"), "iam", false);
     expect(unitStatus(p, s3)).toBe("locked");
   });
 
   it("counts done units", () => {
-    const p = setUnitRead(EMPTY_PROGRESS, "iam", true);
+    const p = complete(EMPTY_PROGRESS, "iam");
     expect(countDone(p, [iam, s3, linux])).toEqual({ done: 1, total: 3 });
+  });
+});
+
+describe("quiz attempts", () => {
+  it("stores the score and per-question history", () => {
+    const p = recordQuizAttempt(EMPTY_PROGRESS, "iam", attempt(true, false));
+    expect(quizScore(p, "iam")).toBe(0.5);
+    expect(p.questions).toEqual({
+      q1: { attempts: 1, lastCorrect: true },
+      q2: { attempts: 1, lastCorrect: false },
+    });
+  });
+
+  it("keeps the best score but updates history on a worse retake", () => {
+    const first = recordQuizAttempt(EMPTY_PROGRESS, "iam", attempt(true, true));
+    const second = recordQuizAttempt(first, "iam", attempt(false, true));
+    expect(quizScore(second, "iam")).toBe(1);
+    expect(second.questions.q1).toEqual({ attempts: 2, lastCorrect: false });
+  });
+
+  it("raises the score on a better retake and keeps the read flag", () => {
+    const first = recordQuizAttempt(setUnitRead(EMPTY_PROGRESS, "iam", true), "iam", attempt(false, false));
+    const second = recordQuizAttempt(first, "iam", attempt(true, true));
+    expect(quizScore(second, "iam")).toBe(1);
+    expect(second.units.iam.read).toBe(true);
+  });
+
+  it("ignores an attempt with no questions and does not mutate its input", () => {
+    expect(recordQuizAttempt(EMPTY_PROGRESS, "iam", [])).toBe(EMPTY_PROGRESS);
+    recordQuizAttempt(EMPTY_PROGRESS, "iam", attempt(true));
+    expect(EMPTY_PROGRESS.units).toEqual({});
+    expect(EMPTY_PROGRESS.questions).toEqual({});
   });
 });
 
