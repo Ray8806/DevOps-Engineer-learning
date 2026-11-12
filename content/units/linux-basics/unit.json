@@ -1,0 +1,10 @@
+{
+  "id": "linux-basics",
+  "title": "Linux 指令基礎",
+  "summary": "雲端上的機器幾乎都跑 Linux。學會在終端機裡移動位置、建立與整理檔案，是後面所有實作的基礎。",
+  "stage": 0,
+  "prerequisites": [],
+  "providers": {},
+  "certDomains": [],
+  "estimatedMinutes": 30
+}

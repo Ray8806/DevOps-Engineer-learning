@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Provider } from "@/lib/content/schema";
+import type { ContentProvider, Provider } from "@/lib/content/schema";
 
 /**
  * Learner progress. Pure data + pure functions only, so the same logic works
@@ -73,6 +73,16 @@ export function recordQuizAttempt(
   return { ...progress, questions, units: { ...progress.units, [unitId]: { ...current, quizScore } } };
 }
 
+/** Marks a lab as completed. Completing it again changes nothing. */
+export function recordLabDone(progress: Progress, unitId: string, labId: string): Progress {
+  const current = progress.units[unitId] ?? { read: false, labsDone: [] };
+  if (current.labsDone.includes(labId)) return progress;
+  return {
+    ...progress,
+    units: { ...progress.units, [unitId]: { ...current, labsDone: [...current.labsDone, labId] } },
+  };
+}
+
 export function setUnitRead(progress: Progress, unitId: string, read: boolean): Progress {
   const current = progress.units[unitId] ?? { read: false, labsDone: [] };
   return { ...progress, units: { ...progress.units, [unitId]: { ...current, read } } };
@@ -80,17 +90,37 @@ export function setUnitRead(progress: Progress, unitId: string, read: boolean): 
 
 // ------------------------------------------------------------------ queries
 
-/** The minimum a roadmap needs to know about a unit. */
+export interface LabRef {
+  id: string;
+  provider: ContentProvider;
+}
+
+/** The minimum progress logic needs to know about a unit. */
 export interface UnitRef {
   id: string;
   prerequisites: string[];
   providers: Provider[];
+  labs: LabRef[];
 }
+
+/** Looks a unit up by id (for prerequisites). */
+export type FindUnit = (id: string) => UnitRef | undefined;
 
 export type UnitStatus = "done" | "in-progress" | "available" | "locked";
 
 /** Fraction of quiz questions needed to pass a unit's quiz. */
 export const QUIZ_PASS_SCORE = 0.8;
+
+/** General content always matches; platform content must match the main platform. */
+export function providerMatches(provider: ContentProvider, preferred: PreferredProvider): boolean {
+  return preferred === "both" || provider === "general" || provider === preferred;
+}
+
+/** Provider-neutral units (no providers) are shown under every filter. */
+export function matchesProvider(unit: Pick<UnitRef, "providers">, preferred: PreferredProvider): boolean {
+  if (preferred === "both" || unit.providers.length === 0) return true;
+  return unit.providers.includes(preferred);
+}
 
 export function isUnitRead(progress: Progress, unitId: string): boolean {
   return progress.units[unitId]?.read === true;
@@ -105,33 +135,48 @@ export function isQuizPassed(progress: Progress, unitId: string): boolean {
   return (quizScore(progress, unitId) ?? 0) >= QUIZ_PASS_SCORE;
 }
 
+export function isLabDone(progress: Progress, unitId: string, labId: string): boolean {
+  return progress.units[unitId]?.labsDone.includes(labId) === true;
+}
+
 /**
- * A unit is done once its lesson is marked as read and its quiz is passed.
- * The lab stage extends this with the unit's labs.
+ * Labs that count towards finishing the unit: general ones plus those for
+ * the learner's main platform (all of them for "both").
  */
-export function isUnitDone(progress: Progress, unitId: string): boolean {
-  return isUnitRead(progress, unitId) && isQuizPassed(progress, unitId);
+export function requiredLabs(progress: Progress, unit: UnitRef): LabRef[] {
+  return unit.labs.filter((lab) => providerMatches(lab.provider, progress.preferredProvider));
 }
 
-/** Prerequisites the learner has not finished yet. */
-export function missingPrerequisites(progress: Progress, unit: UnitRef): string[] {
-  return unit.prerequisites.filter((id) => !isUnitDone(progress, id));
+export function remainingLabs(progress: Progress, unit: UnitRef): LabRef[] {
+  return requiredLabs(progress, unit).filter((lab) => !isLabDone(progress, unit.id, lab.id));
 }
 
-export function unitStatus(progress: Progress, unit: UnitRef): UnitStatus {
-  if (isUnitDone(progress, unit.id)) return "done";
-  if (isUnitRead(progress, unit.id) || quizScore(progress, unit.id) !== undefined) return "in-progress";
-  return missingPrerequisites(progress, unit).length > 0 ? "locked" : "available";
+/** A unit is done once its lesson is read, its quiz is passed and its required labs are finished. */
+export function isUnitDone(progress: Progress, unit: UnitRef): boolean {
+  return isUnitRead(progress, unit.id) && isQuizPassed(progress, unit.id) && remainingLabs(progress, unit).length === 0;
 }
 
-/** Provider-neutral units (no providers) are shown under every filter. */
-export function matchesProvider(unit: Pick<UnitRef, "providers">, preferred: PreferredProvider): boolean {
-  if (preferred === "both" || unit.providers.length === 0) return true;
-  return unit.providers.includes(preferred);
+function isStarted(progress: Progress, unitId: string): boolean {
+  const u = progress.units[unitId];
+  return u !== undefined && (u.read || u.quizScore !== undefined || u.labsDone.length > 0);
+}
+
+/** Prerequisites the learner has not finished yet. Unknown ids are ignored. */
+export function missingPrerequisites(progress: Progress, unit: UnitRef, find: FindUnit): string[] {
+  return unit.prerequisites.filter((id) => {
+    const pre = find(id);
+    return pre !== undefined && !isUnitDone(progress, pre);
+  });
+}
+
+export function unitStatus(progress: Progress, unit: UnitRef, find: FindUnit): UnitStatus {
+  if (isUnitDone(progress, unit)) return "done";
+  if (isStarted(progress, unit.id)) return "in-progress";
+  return missingPrerequisites(progress, unit, find).length > 0 ? "locked" : "available";
 }
 
 export function countDone(progress: Progress, units: UnitRef[]): { done: number; total: number } {
-  return { done: units.filter((u) => isUnitDone(progress, u.id)).length, total: units.length };
+  return { done: units.filter((u) => isUnitDone(progress, u)).length, total: units.length };
 }
 
 /** Which provider tab a lesson opens on. */

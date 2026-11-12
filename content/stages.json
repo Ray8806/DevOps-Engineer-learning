@@ -4,13 +4,17 @@
       "id": 0,
       "title": "基礎",
       "description": "Linux 指令、網路基礎與 Git，進入雲端之前要有的底子。",
-      "units": []
+      "units": [
+        "linux-basics"
+      ]
     },
     {
       "id": 1,
       "title": "雲端核心",
       "description": "身分與權限、運算、儲存、網路、資料庫，每個平台都有的核心服務。",
-      "units": ["object-storage"]
+      "units": [
+        "object-storage"
+      ]
     },
     {
       "id": 2,

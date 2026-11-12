@@ -131,9 +131,15 @@ export const QuizFileSchema = z.strictObject({
 
 /**
  * A step passes when the lab's virtual state satisfies the check.
- * `path` is a list of keys into { files, cloud } (a list, not a dot string,
- * because object keys such as "report.txt" contain dots); exactly one of
- * `exists` / `equals`.
+ * `path` is a list of keys (a list, not a dot string, because names such as
+ * "report.txt" contain dots) into the lab engine's check view:
+ *   ["files", "~/a.txt"]            file content
+ *   ["dirs", "~/projects"]          directory exists
+ *   ["cwd"]                         current directory, e.g. "~/projects"
+ *   ["cloud", "s3", "buckets", name, "region" | "storageClass" | "objects", key]
+ *   ["cloud", "gcs", "buckets", name, "location" | "storageClass" | "objects", name]
+ * Set exactly one of `exists` / `equals`. Steps are completed in order and
+ * stay completed.
  */
 const StateCheckSchema = z
   .strictObject({
@@ -145,7 +151,14 @@ const StateCheckSchema = z
   .refine(
     (c) => (c.exists === undefined) !== (c.equals === undefined),
     "set exactly one of `exists` or `equals`",
-  );
+  )
+  .refine((c) => ["files", "dirs", "cwd", "cloud"].includes(c.path[0]), {
+    path: ["path"],
+    message: 'path must start with "files", "dirs", "cwd" or "cloud"',
+  });
+
+/** Local paths in lab files are written from the home directory or the root. */
+const labPath = z.string().regex(/^(~\/|\/)[^/]/, 'must start with "~/" or "/"');
 
 export const LabSchema = z.strictObject({
   id: slug,
@@ -156,7 +169,7 @@ export const LabSchema = z.strictObject({
   initialState: z
     .strictObject({
       /** Virtual files: path -> content. */
-      files: z.record(z.string(), z.string()).default({}),
+      files: z.record(labPath, z.string()).default({}),
       /** Virtual cloud resources, shape owned by the lab engine. */
       cloud: z.record(z.string(), z.json()).default({}),
     })

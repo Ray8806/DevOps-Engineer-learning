@@ -1,0 +1,79 @@
+{
+  "questions": [
+    {
+      "id": "linux-basics-001",
+      "type": "single",
+      "provider": "general",
+      "unitId": "linux-basics",
+      "difficulty": 1,
+      "question": "你想知道自己目前在哪一個目錄，應該用哪個指令？",
+      "options": [
+        { "id": "a", "text": "ls", "explanation": "ls 是列出目錄裡的內容，不會告訴你目前的位置。" },
+        { "id": "b", "text": "pwd", "explanation": "正確。pwd 會印出目前所在目錄的絕對路徑。" },
+        { "id": "c", "text": "cd", "explanation": "cd 是用來移動到別的目錄，不加參數會直接回到家目錄。" },
+        { "id": "d", "text": "cat", "explanation": "cat 是用來顯示檔案內容。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "linux-basics-002",
+      "type": "single",
+      "provider": "general",
+      "unitId": "linux-basics",
+      "difficulty": 1,
+      "question": "你目前在 /home/learner/projects/web，執行 cd ../.. 之後會在哪裡？",
+      "options": [
+        { "id": "a", "text": "/home/learner/projects", "explanation": "這是只往上一層的結果。指令裡有兩個 ..，會往上兩層。" },
+        { "id": "b", "text": "/home/learner", "explanation": "正確。每個 .. 往上一層：先到 projects，再到 /home/learner。" },
+        { "id": "c", "text": "/home", "explanation": "這是往上三層的位置，指令只有往上兩層。" },
+        { "id": "d", "text": "/", "explanation": "根目錄還要再往上好幾層才會到。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "linux-basics-003",
+      "type": "single",
+      "provider": "general",
+      "unitId": "linux-basics",
+      "difficulty": 2,
+      "question": "notes.txt 裡原本有十行內容。執行 echo \"done\" > notes.txt 之後，檔案內容會是什麼？",
+      "options": [
+        { "id": "a", "text": "原本的十行，最後多一行 done", "explanation": "這是 >> 的效果。> 不會保留原本的內容。" },
+        { "id": "b", "text": "只剩一行 done", "explanation": "正確。> 會先清空檔案再寫入，原本的十行都不見了。" },
+        { "id": "c", "text": "done 被加在第一行，後面接原本的十行", "explanation": "重新導向不會把文字插在開頭。" },
+        { "id": "d", "text": "內容不變，因為檔案已經存在", "explanation": "> 對已存在的檔案會直接覆蓋，不會拒絕。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "linux-basics-004",
+      "type": "single",
+      "provider": "general",
+      "unitId": "linux-basics",
+      "difficulty": 1,
+      "question": "要把 report.txt 改名為 report-final.txt，應該用哪個指令？",
+      "options": [
+        { "id": "a", "text": "cp report.txt report-final.txt", "explanation": "cp 是複製，執行後兩個檔案都會存在，原本的檔名還在。" },
+        { "id": "b", "text": "mv report.txt report-final.txt", "explanation": "正確。Linux 沒有專門的改名指令，改名就是用 mv 把檔案搬到新的名稱。" },
+        { "id": "c", "text": "rm report.txt report-final.txt", "explanation": "rm 是刪除，這會把 report.txt 刪掉。" },
+        { "id": "d", "text": "touch report-final.txt", "explanation": "touch 只會建立一個新的空檔案，原本的檔案不會改變。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "linux-basics-005",
+      "type": "multiple",
+      "provider": "general",
+      "unitId": "linux-basics",
+      "difficulty": 2,
+      "question": "關於路徑，下列哪兩個說法正確？（選兩個）",
+      "options": [
+        { "id": "a", "text": "絕對路徑從根目錄 / 開始寫", "explanation": "正確。所以不管你在哪個目錄執行，絕對路徑都指向同一個地方。" },
+        { "id": "b", "text": "~ 代表目前所在的目錄", "explanation": "~ 是家目錄。代表目前目錄的是一個點（.）。" },
+        { "id": "c", "text": "相對路徑指向哪裡，取決於你目前所在的目錄", "explanation": "正確。同一個相對路徑在不同目錄執行，會指向不同的地方。" },
+        { "id": "d", "text": ".. 代表根目錄", "explanation": ".. 是上一層目錄，根目錄是 /。" }
+      ],
+      "answer": ["a", "c"]
+    }
+  ]
+}
