@@ -1,0 +1,146 @@
+## 什麼是物件儲存
+
+你電腦裡的檔案是放在資料夾裡，一層一層往下找。物件儲存換了一個做法：每個檔案是一個**物件**（object），全部放進一個叫 **bucket** 的容器，用一個唯一的名稱（key）直接存取，沒有真正的資料夾階層。
+
+一個物件由三個部分組成：
+
+- **資料**：檔案本身的內容，例如一張圖片或一份備份檔。
+- **Key**：物件在 bucket 裡的名稱，例如 `photos/2026/cat.jpg`。
+- **Metadata**：描述物件的資訊，例如內容類型、建立時間。
+
+<Callout title="斜線只是名稱的一部分">
+`photos/2026/cat.jpg` 看起來像資料夾路徑，但其實整串就是一個 key。主控台會依斜線幫你顯示成資料夾的樣子，方便瀏覽而已。
+</Callout>
+
+## 為什麼雲端這麼愛用它
+
+- **容量幾乎沒有上限**：不必事先規劃要多大的硬碟，放多少算多少。
+- **資料很難弄丟**：平台會自動把資料複製到多個機房。
+- **用多少付多少**：依實際存放的容量、讀寫次數和傳出的流量計費。
+- **透過 HTTP 存取**：任何能發出網路請求的程式都能讀寫。
+
+常見用途包括網站的圖片和影片、備份與封存、日誌，以及資料分析用的原始資料。
+
+## 三種儲存方式的差別
+
+| 類型 | 像什麼 | 適合 |
+|---|---|---|
+| 物件儲存 | 無限大的置物櫃，憑號碼牌取物 | 圖片、影片、備份、日誌 |
+| 區塊儲存 | 接在虛擬機上的硬碟 | 作業系統、資料庫檔案 |
+| 檔案儲存 | 多台機器共用的網路磁碟 | 需要共用資料夾的應用程式 |
+
+物件儲存有一個重要限制：**物件不能只改其中一部分**。要修改就得整個重新上傳，所以不適合拿來放資料庫這類需要頻繁小幅改寫的資料。
+
+## 幾個一定要懂的觀念
+
+**Bucket 名稱是全域唯一的。** 名稱不只在你的帳號裡不能重複，而是不能和其他任何人的 bucket 撞名。
+
+**儲存類別決定價格。** 越少讀取的資料可以放到越便宜的類別，代價是讀取費用較高、有最短存放天數，有些類別還要等一段時間才能取回。
+
+**生命週期規則可以自動搬資料。** 例如「30 天後移到較便宜的類別，一年後刪除」，設定一次就不必再手動整理。
+
+**版本控制可以救回誤刪的檔案。** 開啟後，覆寫或刪除都會保留舊版本。
+
+**預設是私有的。** 新建的 bucket 不對外公開，要給誰存取必須明確授權。把 bucket 誤設成公開是很常見的資料外洩原因。
+
+## 在兩個平台上怎麼做
+
+<ProviderTabs>
+<Provider name="aws">
+
+### Amazon S3
+
+S3（Simple Storage Service）是 AWS 的物件儲存服務。
+
+**位置**：建立 bucket 時要選一個 Region，資料會自動分散存放在該 Region 內的多個可用區（Availability Zone）。
+
+**儲存類別**
+
+| 類別 | 適合 |
+|---|---|
+| S3 Standard | 經常讀取的資料 |
+| S3 Standard-IA | 不常讀取，但要用時必須馬上拿到 |
+| S3 One Zone-IA | 同上，但只放在一個可用區，較便宜也較不耐災 |
+| S3 Glacier Instant Retrieval | 很少讀取的封存資料，仍可立即取回 |
+| S3 Glacier Flexible Retrieval | 封存，取回需要數分鐘到數小時 |
+| S3 Glacier Deep Archive | 最便宜，取回需要數小時 |
+| S3 Intelligent-Tiering | 讀取頻率不固定，交給 AWS 自動分層 |
+
+**公開存取**：新 bucket 預設開啟 Block Public Access，會擋下所有公開存取的設定。
+
+**常用指令**
+
+```bash
+# 建立 bucket
+aws s3 mb s3://my-data-bucket --region ap-northeast-1
+
+# 上傳檔案
+aws s3 cp report.txt s3://my-data-bucket/reports/report.txt
+
+# 列出 bucket 內的物件
+aws s3 ls s3://my-data-bucket/reports/
+
+# 下載檔案
+aws s3 cp s3://my-data-bucket/reports/report.txt ./report.txt
+```
+
+</Provider>
+<Provider name="gcp">
+
+### Cloud Storage
+
+Cloud Storage 是 Google Cloud 的物件儲存服務，常簡稱 GCS。
+
+**位置**：建立 bucket 時可以選三種位置類型。
+
+- **Region**：單一區域，例如 `asia-east1`（台灣）。
+- **Dual-region**：指定的兩個區域。
+- **Multi-region**：一個大範圍內的多個區域，例如 `ASIA`。
+
+**儲存類別**
+
+| 類別 | 適合 | 最短存放期 |
+|---|---|---|
+| Standard | 經常讀取的資料 | 無 |
+| Nearline | 大約每月讀取一次以內 | 30 天 |
+| Coldline | 大約每季讀取一次以內 | 90 天 |
+| Archive | 大約每年讀取一次以內 | 365 天 |
+
+四種類別都能立即讀取，不需要等待還原。差別在於越冷的類別，存放越便宜、讀取越貴。讀取頻率不固定時，可以開啟 **Autoclass** 讓平台自動調整類別。
+
+**公開存取**：可以在 bucket 上強制啟用 public access prevention，確保不會被設成公開。
+
+**常用指令**
+
+```bash
+# 建立 bucket
+gcloud storage buckets create gs://my-data-bucket --location=asia-east1
+
+# 上傳檔案
+gcloud storage cp report.txt gs://my-data-bucket/reports/report.txt
+
+# 列出 bucket 內的物件
+gcloud storage ls gs://my-data-bucket/reports/
+
+# 下載檔案
+gcloud storage cp gs://my-data-bucket/reports/report.txt ./report.txt
+```
+
+<Callout title="你可能會看到 gsutil">
+舊的教學常用 `gsutil` 指令。Google 現在建議改用 `gcloud storage`，兩者功能相近，但新指令速度較快。
+</Callout>
+
+</Provider>
+</ProviderTabs>
+
+## 兩個平台的差異
+
+<Compare />
+
+## 重點整理
+
+- 物件儲存把檔案當成物件放進 bucket，用 key 存取，沒有真正的資料夾。
+- 適合大量、不常修改的檔案；不適合需要局部改寫的資料。
+- 儲存類別越冷越便宜，但讀取成本越高；用生命週期規則自動搬移。
+- Bucket 預設私有，公開存取要非常小心。
+- AWS 的 S3 和 GCP 的 Cloud Storage 觀念幾乎相同，主要差在位置選項和封存類別的取回速度。

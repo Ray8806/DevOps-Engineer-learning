@@ -1,0 +1,163 @@
+{
+  "questions": [
+    {
+      "id": "object-storage-001",
+      "type": "single",
+      "provider": "general",
+      "unitId": "object-storage",
+      "difficulty": 1,
+      "question": "下列哪一種資料最不適合放在物件儲存？",
+      "options": [
+        {
+          "id": "a",
+          "text": "網站上的商品圖片",
+          "explanation": "圖片上傳後很少修改，是物件儲存最典型的用途。"
+        },
+        {
+          "id": "b",
+          "text": "每天產生的應用程式日誌檔",
+          "explanation": "日誌檔寫完後不再變動，量大又需要長期保存，很適合物件儲存。"
+        },
+        {
+          "id": "c",
+          "text": "正在運作中的資料庫資料檔",
+          "explanation": "正確。資料庫會頻繁改寫檔案的一小部分，而物件只能整個重新上傳，這類資料應該放在區塊儲存。"
+        },
+        {
+          "id": "d",
+          "text": "每週一次的系統備份",
+          "explanation": "備份檔寫入一次後就只會讀取，適合物件儲存，還能搭配較便宜的儲存類別。"
+        }
+      ],
+      "answer": ["c"]
+    },
+    {
+      "id": "object-storage-002",
+      "type": "single",
+      "provider": "general",
+      "unitId": "object-storage",
+      "difficulty": 1,
+      "question": "bucket 裡有一個物件的 key 是 photos/2026/cat.jpg。關於這個 key，哪一個說法正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "bucket 裡有一個叫 photos 的資料夾，必須先建立它才能上傳",
+          "explanation": "物件儲存沒有真正的資料夾，不需要先建立任何東西。"
+        },
+        {
+          "id": "b",
+          "text": "整串文字就是物件的名稱，斜線只是名稱的一部分",
+          "explanation": "正確。主控台把斜線顯示成資料夾只是為了方便瀏覽。"
+        },
+        {
+          "id": "c",
+          "text": "這個物件實際存放在三層巢狀的 bucket 裡",
+          "explanation": "bucket 不能巢狀，物件都直接放在同一個 bucket 裡。"
+        },
+        {
+          "id": "d",
+          "text": "key 不能包含斜線，這是不合法的名稱",
+          "explanation": "key 可以包含斜線，而且這是很常見的命名方式。"
+        }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "object-storage-003",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        { "id": "clf-c02", "domain": 3 },
+        { "id": "saa-c03", "domain": 3 }
+      ],
+      "unitId": "object-storage",
+      "difficulty": 2,
+      "question": "公司要把稽核紀錄保存七年，幾乎不會讀取，偶爾需要時等幾個小時再拿到也可以接受。要讓儲存成本最低，應該選哪一個 S3 儲存類別？",
+      "options": [
+        {
+          "id": "a",
+          "text": "S3 Standard",
+          "explanation": "Standard 適合經常讀取的資料，長期存放幾乎不讀的資料成本最高。"
+        },
+        {
+          "id": "b",
+          "text": "S3 Standard-IA",
+          "explanation": "Standard-IA 比 Standard 便宜，但仍是為了需要立即取回的資料設計，不是最低成本。"
+        },
+        {
+          "id": "c",
+          "text": "S3 Glacier Instant Retrieval",
+          "explanation": "可以立即取回，但題目可以接受等待，還有更便宜的選擇。"
+        },
+        {
+          "id": "d",
+          "text": "S3 Glacier Deep Archive",
+          "explanation": "正確。這是 S3 最便宜的類別，取回需要數小時，符合長期封存且可以等待的需求。"
+        }
+      ],
+      "answer": ["d"]
+    },
+    {
+      "id": "object-storage-004",
+      "type": "single",
+      "provider": "gcp",
+      "unitId": "object-storage",
+      "difficulty": 2,
+      "question": "一批報表大約每季才會被讀取一次，但讀取時必須立刻拿到。在 Cloud Storage 上，哪一個儲存類別最符合這個讀取頻率？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Standard",
+          "explanation": "Standard 適合經常讀取的資料，用在每季才讀一次的資料上存放成本偏高。"
+        },
+        {
+          "id": "b",
+          "text": "Nearline",
+          "explanation": "Nearline 是為大約每月讀取一次以內的資料設計，可以用，但不是最符合的選擇。"
+        },
+        {
+          "id": "c",
+          "text": "Coldline",
+          "explanation": "正確。Coldline 是為大約每季讀取一次以內的資料設計，而且和其他類別一樣可以立即讀取。"
+        },
+        {
+          "id": "d",
+          "text": "Archive",
+          "explanation": "Archive 是為大約每年讀取一次以內的資料設計，最短存放期 365 天，每季讀取會讓讀取費用偏高。"
+        }
+      ],
+      "answer": ["c"]
+    },
+    {
+      "id": "object-storage-005",
+      "type": "multiple",
+      "provider": "general",
+      "unitId": "object-storage",
+      "difficulty": 2,
+      "question": "團隊擔心有人不小心刪掉 bucket 裡的重要檔案，也希望舊資料能自動移到較便宜的儲存類別。應該使用哪兩項功能？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "版本控制",
+          "explanation": "正確。開啟後，刪除或覆寫都會保留舊版本，可以還原誤刪的檔案。"
+        },
+        {
+          "id": "b",
+          "text": "生命週期規則",
+          "explanation": "正確。可以設定物件在一定天數後自動轉換儲存類別或刪除。"
+        },
+        {
+          "id": "c",
+          "text": "把 bucket 設為公開",
+          "explanation": "公開存取和這兩個需求無關，而且會帶來資料外洩的風險。"
+        },
+        {
+          "id": "d",
+          "text": "把所有檔案放在同一個 key 底下",
+          "explanation": "一個 key 只對應一個物件，這麼做只會互相覆蓋。"
+        }
+      ],
+      "answer": ["a", "b"]
+    }
+  ]
+}

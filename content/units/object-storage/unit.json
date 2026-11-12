@@ -1,0 +1,50 @@
+{
+  "id": "object-storage",
+  "title": "物件儲存",
+  "summary": "認識雲端最常用的儲存方式：把檔案當成物件放進 bucket，並比較 Amazon S3 與 Google Cloud Storage。",
+  "stage": 1,
+  "prerequisites": [],
+  "providers": {
+    "aws": { "services": ["S3"] },
+    "gcp": { "services": ["Cloud Storage"] }
+  },
+  "compare": [
+    {
+      "aspect": "服務名稱",
+      "aws": "Amazon S3",
+      "gcp": "Cloud Storage"
+    },
+    {
+      "aspect": "bucket 的位置",
+      "aws": "建立時選一個 Region",
+      "gcp": "建立時選 region、dual-region 或 multi-region"
+    },
+    {
+      "aspect": "常用儲存類別",
+      "aws": "Standard、Standard-IA、Glacier 系列",
+      "gcp": "Standard、Nearline、Coldline、Archive"
+    },
+    {
+      "aspect": "最冷類別的讀取速度",
+      "aws": "Glacier Flexible Retrieval 與 Deep Archive 需要先還原，等待數分鐘到數小時",
+      "gcp": "Archive 可立即讀取，但讀取費用與最短存放期較高"
+    },
+    {
+      "aspect": "自動分層",
+      "aws": "S3 Intelligent-Tiering",
+      "gcp": "Autoclass"
+    },
+    {
+      "aspect": "命令列工具",
+      "aws": "aws s3",
+      "gcp": "gcloud storage"
+    },
+    {
+      "aspect": "路徑寫法",
+      "aws": "s3://bucket/key",
+      "gcp": "gs://bucket/object"
+    }
+  ],
+  "certDomains": ["clf-c02:3", "saa-c03:3"],
+  "estimatedMinutes": 25
+}

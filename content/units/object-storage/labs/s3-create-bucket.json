@@ -1,0 +1,45 @@
+{
+  "id": "s3-create-bucket",
+  "title": "用 AWS CLI 建立 bucket 並上傳檔案",
+  "description": "練習 aws s3 最常用的三個指令：建立 bucket、上傳檔案、列出內容。",
+  "provider": "aws",
+  "estimatedMinutes": 10,
+  "initialState": {
+    "files": {
+      "~/report.txt": "Q3 sales report\n"
+    },
+    "cloud": {}
+  },
+  "steps": [
+    {
+      "instruction": "建立一個名為 my-data-bucket 的 S3 bucket。",
+      "hint": "使用 aws s3 mb，bucket 要寫成 s3://名稱。",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "s3",
+          "buckets",
+          "my-data-bucket"
+        ],
+        "exists": true
+      }
+    },
+    {
+      "instruction": "把家目錄的 report.txt 上傳到 bucket，key 為 reports/report.txt。",
+      "hint": "使用 aws s3 cp 來源 目的地。",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "s3",
+          "buckets",
+          "my-data-bucket",
+          "objects",
+          "reports/report.txt"
+        ],
+        "exists": true
+      }
+    }
+  ]
+}

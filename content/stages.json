@@ -1,0 +1,34 @@
+{
+  "stages": [
+    {
+      "id": 0,
+      "title": "基礎",
+      "description": "Linux 指令、網路基礎與 Git，進入雲端之前要有的底子。",
+      "units": []
+    },
+    {
+      "id": 1,
+      "title": "雲端核心",
+      "description": "身分與權限、運算、儲存、網路、資料庫，每個平台都有的核心服務。",
+      "units": ["object-storage"]
+    },
+    {
+      "id": 2,
+      "title": "維運",
+      "description": "負載平衡、監控與日誌、資安與成本管理，讓系統穩定又不超支。",
+      "units": []
+    },
+    {
+      "id": 3,
+      "title": "自動化",
+      "description": "容器、Kubernetes、基礎架構即程式碼與 CI/CD。",
+      "units": []
+    },
+    {
+      "id": 4,
+      "title": "實戰",
+      "description": "架構設計案例與面試題，把前面學的組合起來。",
+      "units": []
+    }
+  ]
+}
