@@ -2,19 +2,19 @@
 
 import { useState, type ReactNode } from "react";
 import type { Provider } from "@/lib/content/schema";
+import { defaultProvider } from "@/lib/progress/progress";
+import { useProgress } from "@/lib/progress/use-progress";
 import { PROVIDER_LABEL } from "@/lib/providers";
-import { setPreferredProvider, usePreferredProvider } from "@/lib/use-preferred-provider";
 
 /**
  * Tab group around <Provider> sections. The sections are rendered on the
  * server; this only sets `data-active`, and CSS hides the other sections.
+ * Opens on the learner's main platform; a click only affects this page.
  */
 export function ProviderTabs({ providers, children }: { providers: Provider[]; children: ReactNode }) {
-  const preferred = usePreferredProvider();
-  // Storage can be unavailable; keep the click working for this page anyway.
-  const [local, setLocal] = useState<Provider | null>(null);
-  const wanted = local ?? preferred;
-  const active = providers.includes(wanted) ? wanted : providers[0];
+  const [progress] = useProgress();
+  const [picked, setPicked] = useState<Provider | null>(null);
+  const active = picked ?? defaultProvider(progress.preferredProvider, providers);
 
   return (
     <div className="provider-tabs rounded-xl border border-border bg-surface" data-active={active}>
@@ -27,10 +27,7 @@ export function ProviderTabs({ providers, children }: { providers: Provider[]; c
               role="tab"
               type="button"
               aria-selected={selected}
-              onClick={() => {
-                setLocal(p);
-                setPreferredProvider(p);
-              }}
+              onClick={() => setPicked(p)}
               className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-colors ${
                 selected
                   ? p === "aws"

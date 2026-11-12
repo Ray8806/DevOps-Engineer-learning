@@ -3,7 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
-import { lessonComponents, ProviderBadge } from "@/components/lesson-components";
+import { lessonComponents } from "@/components/lesson-components";
+import { MarkReadButton } from "@/components/MarkReadButton";
+import { ProviderBadge } from "@/components/ProviderBadge";
 import { getContent } from "@/lib/content/loader";
 import { PROVIDERS } from "@/lib/content/schema";
 
@@ -69,7 +71,11 @@ export default async function UnitPage({ params }: PageProps<"/units/[id]">) {
         />
       </div>
 
-      <section aria-labelledby="next-steps" className="mt-12 border-t border-border pt-8">
+      <div className="mt-12">
+        <MarkReadButton unitId={meta.id} />
+      </div>
+
+      <section aria-labelledby="next-steps" className="mt-8">
         <h2 id="next-steps" className="text-xl font-bold">
           接下來
         </h2>

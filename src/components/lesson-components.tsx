@@ -1,7 +1,6 @@
 import type { ComponentProps, ReactNode } from "react";
 import type { Provider as ProviderId, UnitMeta } from "@/lib/content/schema";
 import { PROVIDERS } from "@/lib/content/schema";
-import { PROVIDER_LABEL } from "@/lib/providers";
 import { ProviderTabs } from "./ProviderTabs";
 
 function ProviderSection({ name, children }: { name: ProviderId; children: ReactNode }) {
@@ -62,17 +61,4 @@ export function lessonComponents(meta: UnitMeta) {
       </div>
     ),
   };
-}
-
-export function ProviderBadge({ provider, children }: { provider: ProviderId; children?: ReactNode }) {
-  return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-        provider === "aws" ? "bg-aws-soft text-aws" : "bg-gcp-soft text-gcp"
-      }`}
-    >
-      {PROVIDER_LABEL[provider]}
-      {children ? <span className="font-normal">· {children}</span> : null}
-    </span>
-  );
 }
