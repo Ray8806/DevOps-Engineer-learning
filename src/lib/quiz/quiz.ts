@@ -32,3 +32,16 @@ export function questionsFor<Q extends Pick<Question, "provider">>(questions: Q[
   const filtered = questions.filter((q) => providerMatches(q.provider, preferred));
   return filtered.length ? filtered : questions;
 }
+
+/**
+ * Picks up to `size` questions in random order (Fisher-Yates).
+ * `random` is injectable so tests are deterministic.
+ */
+export function sample<T>(items: readonly T[], size: number, random: () => number = Math.random): T[] {
+  const pool = [...items];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, Math.max(0, size));
+}

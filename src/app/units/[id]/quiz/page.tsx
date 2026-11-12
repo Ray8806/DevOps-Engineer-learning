@@ -40,7 +40,7 @@ export default async function QuizPage({ params }: PageProps<"/units/[id]/quiz">
       </nav>
       <h1 className="mt-3 text-3xl font-extrabold tracking-tight">單元測驗：{unit.meta.title}</h1>
       <div className="mt-6">
-        <Quiz unitId={unit.meta.id} unitTitle={unit.meta.title} questions={questions} />
+        <Quiz mode={{ kind: "unit", unitId: unit.meta.id, unitTitle: unit.meta.title }} questions={questions} />
       </div>
     </div>
   );

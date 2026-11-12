@@ -1,0 +1,314 @@
+{
+  "questions": [
+    {
+      "id": "clf-c02-d1-001",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 1,
+      "question": "一家公司不想再一次花大錢採購伺服器，希望改成每個月依實際用量付費。這對應到雲端的哪一項效益？",
+      "options": [
+        {
+          "id": "a",
+          "text": "享有大規模的經濟效益",
+          "explanation": "規模經濟指的是 AWS 匯集大量客戶的用量，所以單價較低。題目描述的是付費方式的改變。"
+        },
+        {
+          "id": "b",
+          "text": "以變動支出取代固定的資本支出",
+          "explanation": "正確。不必預先投資資料中心和伺服器，改成用多少付多少。"
+        },
+        {
+          "id": "c",
+          "text": "提升速度與敏捷性",
+          "explanation": "敏捷性指的是幾分鐘內就能取得資源、加快實驗的速度，和付費方式無關。"
+        },
+        {
+          "id": "d",
+          "text": "幾分鐘內將服務部署到全球",
+          "explanation": "這是指能輕鬆在多個 Region 部署，和付費方式無關。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-002",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "AWS Well-Architected Framework 的哪一個支柱，關注的是工作負載能從故障中自動復原，並依需求取得運算資源？",
+      "options": [
+        {
+          "id": "a",
+          "text": "卓越營運（Operational Excellence）",
+          "explanation": "卓越營運關注的是如何執行與監控系統，並持續改善流程。"
+        },
+        {
+          "id": "b",
+          "text": "可靠性（Reliability）",
+          "explanation": "正確。可靠性支柱涵蓋從故障中復原、依需求擴充，以及減少中斷。"
+        },
+        {
+          "id": "c",
+          "text": "效能效率（Performance Efficiency）",
+          "explanation": "效能效率關注的是有效率地使用運算資源來滿足需求。"
+        },
+        {
+          "id": "d",
+          "text": "成本最佳化（Cost Optimization）",
+          "explanation": "成本最佳化關注的是避免不必要的支出。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-001",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 1,
+      "question": "依照 AWS 共同責任模型，在 Amazon EC2 執行個體上安裝作業系統的安全性更新是誰的責任？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS",
+          "explanation": "AWS 負責的是「雲端本身」的安全，包括實體設施、硬體和虛擬化層，不包含你執行個體裡的作業系統。"
+        },
+        {
+          "id": "b",
+          "text": "客戶",
+          "explanation": "正確。EC2 的客體作業系統、上面安裝的軟體和防火牆設定，都由客戶負責。"
+        },
+        {
+          "id": "c",
+          "text": "AWS 和客戶各負責一半",
+          "explanation": "有些控制項確實是雙方各自負責自己的部分，但 EC2 客體作業系統的修補完全是客戶的責任。"
+        },
+        {
+          "id": "d",
+          "text": "第三方稽核機構",
+          "explanation": "稽核機構負責驗證合規，不負責修補系統。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-002",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "下列哪兩項是保護 AWS 帳戶 root 使用者的建議做法？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "為 root 使用者啟用多重要素驗證（MFA）",
+          "explanation": "正確。root 擁有帳戶的完整權限，一定要用 MFA 保護。"
+        },
+        {
+          "id": "b",
+          "text": "日常管理工作都用 root 使用者登入",
+          "explanation": "root 權限無法限制，日常工作不應該使用。"
+        },
+        {
+          "id": "c",
+          "text": "日常工作改用 IAM 使用者或角色，只在必要時才使用 root",
+          "explanation": "正確。root 只用在少數必須由它執行的工作。"
+        },
+        {
+          "id": "d",
+          "text": "把 root 的存取金鑰分享給管理團隊",
+          "explanation": "root 不應該建立存取金鑰，更不能分享。"
+        },
+        {
+          "id": "e",
+          "text": "關閉 AWS CloudTrail 以減少紀錄",
+          "explanation": "CloudTrail 記錄帳戶內的活動，關掉反而失去稽核依據。"
+        }
+      ],
+      "answer": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-001",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個應用程式必須在單一資料中心故障時仍然持續運作。最符合需求的做法是什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把所有資源放在同一個 Availability Zone，並使用更大的執行個體",
+          "explanation": "加大執行個體無法避免整個 Availability Zone 故障。"
+        },
+        {
+          "id": "b",
+          "text": "把資源部署在同一個 Region 的多個 Availability Zone",
+          "explanation": "正確。每個 Availability Zone 由一個或多個獨立的資料中心組成，跨多個可用區就能承受單一資料中心故障。"
+        },
+        {
+          "id": "c",
+          "text": "只把資料備份到 edge location",
+          "explanation": "edge location 用來快取內容以降低延遲，不是用來執行應用程式或做容錯。"
+        },
+        {
+          "id": "d",
+          "text": "把應用程式上架到 AWS Marketplace",
+          "explanation": "AWS Marketplace 是軟體市集，和可用性無關。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-002",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 1,
+      "question": "開發團隊想上傳程式碼就能執行，不必管理任何伺服器，並依執行次數和執行時間計費。應該選擇哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon EC2",
+          "explanation": "EC2 是虛擬機，需要自己管理作業系統，而且只要執行個體在執行就會計費。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Lambda",
+          "explanation": "正確。Lambda 是無伺服器運算，依請求次數和執行時間計費。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Lightsail",
+          "explanation": "Lightsail 提供簡化的虛擬私人伺服器，仍是以固定月費計算的伺服器。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Elastic Beanstalk",
+          "explanation": "Elastic Beanstalk 會幫你部署和管理環境，但底下仍是需要付費的 EC2 執行個體。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d4-001",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個批次運算工作可以隨時被中斷後重新執行。要用最低的成本執行，應該選擇哪一種 EC2 購買方式？",
+      "options": [
+        {
+          "id": "a",
+          "text": "On-Demand Instances",
+          "explanation": "隨需執行個體不需要承諾，但單價最高。"
+        },
+        {
+          "id": "b",
+          "text": "Reserved Instances",
+          "explanation": "預留執行個體適合長期穩定的用量，需要承諾一年或三年。"
+        },
+        {
+          "id": "c",
+          "text": "Spot Instances",
+          "explanation": "正確。Spot 使用 AWS 的閒置容量，折扣最大，代價是可能被中斷，正好適合可中斷的工作。"
+        },
+        {
+          "id": "d",
+          "text": "Dedicated Hosts",
+          "explanation": "專用主機是整台實體伺服器供你使用，成本最高，用於授權或合規需求。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d4-002",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 4
+        }
+      ],
+      "difficulty": 1,
+      "question": "財務團隊希望在每月費用即將超過設定的金額時收到通知。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Cost Explorer",
+          "explanation": "Cost Explorer 用來視覺化分析過去和預測的費用，不是設定預算通知的主要工具。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Budgets",
+          "explanation": "正確。可以設定預算金額，並在實際或預測費用超過門檻時發出通知。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Pricing Calculator",
+          "explanation": "Pricing Calculator 用來在使用前估算費用。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Artifact",
+          "explanation": "AWS Artifact 提供合規報告和協議文件，和費用無關。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    }
+  ]
+}

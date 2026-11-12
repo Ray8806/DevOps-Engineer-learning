@@ -1,0 +1,308 @@
+{
+  "questions": [
+    {
+      "id": "gcp-ace-d1-001",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 1
+        }
+      ],
+      "difficulty": 1,
+      "question": "Google Cloud 的資源階層，由上到下的順序是什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "專案 → 資料夾 → 機構 → 資源",
+          "explanation": "順序顛倒了，機構在最上層。"
+        },
+        {
+          "id": "b",
+          "text": "機構 → 資料夾 → 專案 → 資源",
+          "explanation": "正確。政策會由上往下繼承。"
+        },
+        {
+          "id": "c",
+          "text": "機構 → 專案 → 資料夾 → 資源",
+          "explanation": "資料夾在專案之上，用來把專案分組。"
+        },
+        {
+          "id": "d",
+          "text": "資料夾 → 機構 → 專案 → 資源",
+          "explanation": "機構是階層的根節點。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d1-002",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "你希望專案的花費達到預算的 50% 和 90% 時，帳單管理員會收到電子郵件。應該怎麼做？",
+      "options": [
+        {
+          "id": "a",
+          "text": "為專案設定資源配額（quota）",
+          "explanation": "配額限制的是資源用量，不會依費用發出通知。"
+        },
+        {
+          "id": "b",
+          "text": "建立 Cloud Billing 預算，並設定快訊門檻",
+          "explanation": "正確。預算可以設定多個百分比門檻，達到時通知。"
+        },
+        {
+          "id": "c",
+          "text": "把帳單資料匯出到 BigQuery",
+          "explanation": "匯出是為了分析費用，本身不會發通知。"
+        },
+        {
+          "id": "d",
+          "text": "停用專案的帳單帳戶",
+          "explanation": "這會讓專案的付費服務停止運作。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-001",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個應用程式需要關聯式資料庫，資料要跨多個區域保持強一致，而且能水平擴充。應該選擇哪一項產品？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud SQL",
+          "explanation": "Cloud SQL 是代管的關聯式資料庫，但不是為全球規模的水平擴充設計。"
+        },
+        {
+          "id": "b",
+          "text": "Spanner",
+          "explanation": "正確。Spanner 是可水平擴充、具強一致性的關聯式資料庫，支援多區域設定。"
+        },
+        {
+          "id": "c",
+          "text": "Bigtable",
+          "explanation": "Bigtable 是寬欄位 NoSQL 資料庫，不是關聯式。"
+        },
+        {
+          "id": "d",
+          "text": "Firestore",
+          "explanation": "Firestore 是 NoSQL 文件資料庫。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-002",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個工作負載需要完全掌控作業系統，並安裝自訂的核心模組。應該選擇哪一種運算產品？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud Run",
+          "explanation": "Cloud Run 執行容器，無法控制底層作業系統核心。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud Run functions",
+          "explanation": "函式服務只執行你的程式碼，無法控制作業系統。"
+        },
+        {
+          "id": "c",
+          "text": "Compute Engine",
+          "explanation": "正確。虛擬機讓你完全掌控作業系統。"
+        },
+        {
+          "id": "d",
+          "text": "GKE Autopilot",
+          "explanation": "Autopilot 的節點由 Google 管理，無法自訂核心。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-001",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "一組 Compute Engine 虛擬機要依 CPU 使用率自動增減數量。應該使用什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "非代管執行個體群組（unmanaged instance group）",
+          "explanation": "非代管群組不支援自動調度資源。"
+        },
+        {
+          "id": "b",
+          "text": "啟用自動調度資源的代管執行個體群組（managed instance group）",
+          "explanation": "正確。MIG 依執行個體範本建立相同的虛擬機，可以依負載自動擴縮。"
+        },
+        {
+          "id": "c",
+          "text": "一台規格更大的虛擬機",
+          "explanation": "加大規格無法依負載自動增減。"
+        },
+        {
+          "id": "d",
+          "text": "磁碟快照排程",
+          "explanation": "快照排程用來備份磁碟，和擴縮無關。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-002",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "一批沒有外部 IP 位址的虛擬機需要連到網際網路下載更新，但不能讓外部主動連進來。應該使用什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud NAT",
+          "explanation": "正確。Cloud NAT 讓沒有外部 IP 的虛擬機可以對外連線，同時不接受外部主動發起的連線。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud DNS",
+          "explanation": "Cloud DNS 負責名稱解析，不提供對外連線。"
+        },
+        {
+          "id": "c",
+          "text": "為每台虛擬機指派外部 IP 位址",
+          "explanation": "這能對外連線，但虛擬機會直接暴露在網際網路上，不符合需求。"
+        },
+        {
+          "id": "d",
+          "text": "VPC Network Peering",
+          "explanation": "VPC 對等互連用來連接兩個 VPC 網路，不提供網際網路連線。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d4-001",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "一位同事只需要讀取某個 Cloud Storage bucket 裡的物件。依照最小權限原則，應該授予哪一個角色？",
+      "options": [
+        {
+          "id": "a",
+          "text": "在專案層級授予基本角色「檢視者」（Viewer）",
+          "explanation": "基本角色的範圍太大，會讓他看到專案裡的所有資源。"
+        },
+        {
+          "id": "b",
+          "text": "在專案層級授予基本角色「編輯者」（Editor）",
+          "explanation": "編輯者可以修改專案裡大部分的資源，遠超過需求。"
+        },
+        {
+          "id": "c",
+          "text": "在該 bucket 上授予 Storage 物件檢視者（roles/storage.objectViewer）",
+          "explanation": "正確。預先定義的角色加上只授予在該 bucket，權限範圍最小。"
+        },
+        {
+          "id": "d",
+          "text": "在專案層級授予基本角色「擁有者」（Owner）",
+          "explanation": "擁有者有完整的控制權。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-ace-d4-002",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "在 Compute Engine 虛擬機上執行的應用程式需要呼叫 Google Cloud API。建議的驗證方式是什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "下載服務帳戶金鑰檔，存放在虛擬機的磁碟上",
+          "explanation": "長期有效的金鑰檔有外洩風險，應該盡量避免。"
+        },
+        {
+          "id": "b",
+          "text": "把只具備所需權限的服務帳戶附加到虛擬機",
+          "explanation": "正確。應用程式會自動取得該服務帳戶的短期憑證，不需要保管金鑰。"
+        },
+        {
+          "id": "c",
+          "text": "在虛擬機上用個人使用者帳戶登入",
+          "explanation": "應用程式不應該使用個人帳戶的身分。"
+        },
+        {
+          "id": "d",
+          "text": "把 API 設定成不需要驗證",
+          "explanation": "Google Cloud API 需要驗證，也不應該開放匿名存取。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    }
+  ]
+}

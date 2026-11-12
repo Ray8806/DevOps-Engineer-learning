@@ -29,7 +29,9 @@
           "explanation": "備份檔寫入一次後就只會讀取，適合物件儲存，還能搭配較便宜的儲存類別。"
         }
       ],
-      "answer": ["c"]
+      "answer": [
+        "c"
+      ]
     },
     {
       "id": "object-storage-002",
@@ -60,15 +62,23 @@
           "explanation": "key 可以包含斜線，而且這是很常見的命名方式。"
         }
       ],
-      "answer": ["b"]
+      "answer": [
+        "b"
+      ]
     },
     {
       "id": "object-storage-003",
       "type": "single",
       "provider": "aws",
       "certs": [
-        { "id": "clf-c02", "domain": 3 },
-        { "id": "saa-c03", "domain": 3 }
+        {
+          "id": "clf-c02",
+          "domain": 3
+        },
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
       ],
       "unitId": "object-storage",
       "difficulty": 2,
@@ -95,7 +105,9 @@
           "explanation": "正確。這是 S3 最便宜的類別，取回需要數小時，符合長期封存且可以等待的需求。"
         }
       ],
-      "answer": ["d"]
+      "answer": [
+        "d"
+      ]
     },
     {
       "id": "object-storage-004",
@@ -126,7 +138,19 @@
           "explanation": "Archive 是為大約每年讀取一次以內的資料設計，最短存放期 365 天，每季讀取會讓讀取費用偏高。"
         }
       ],
-      "answer": ["c"]
+      "answer": [
+        "c"
+      ],
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        },
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ]
     },
     {
       "id": "object-storage-005",
@@ -157,7 +181,10 @@
           "explanation": "一個 key 只對應一個物件，這麼做只會互相覆蓋。"
         }
       ],
-      "answer": ["a", "b"]
+      "answer": [
+        "a",
+        "b"
+      ]
     }
   ]
 }

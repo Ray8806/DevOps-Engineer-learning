@@ -9,6 +9,7 @@ import {
   isUnitDone,
   parseProgress,
   quizScore,
+  recordAnswers,
   recordLabDone,
   recordQuizAttempt,
   remainingLabs,
@@ -111,6 +112,19 @@ describe("unit status", () => {
   it("counts done units", () => {
     const p = complete(EMPTY_PROGRESS, "iam");
     expect(countDone(p, [iam, s3, linux])).toEqual({ done: 1, total: 3 });
+  });
+});
+
+describe("practice answers", () => {
+  it("records question history without touching any unit", () => {
+    const p = recordAnswers(recordAnswers(EMPTY_PROGRESS, attempt(true, false)), attempt(false, false));
+    expect(p.questions).toEqual({
+      q1: { attempts: 2, lastCorrect: false },
+      q2: { attempts: 2, lastCorrect: false },
+    });
+    expect(p.units).toEqual({});
+    expect(recordAnswers(EMPTY_PROGRESS, [])).toBe(EMPTY_PROGRESS);
+    expect(EMPTY_PROGRESS.questions).toEqual({});
   });
 });
 

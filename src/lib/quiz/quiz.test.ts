@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { loadContent } from "@/lib/content/loader";
-import { isCorrect, questionsFor, scoreQuiz } from "./quiz";
+import { isCorrect, questionsFor, sample, scoreQuiz } from "./quiz";
 
 const single = { answer: ["b"] };
 const multiple = { answer: ["a", "c"] };
@@ -64,5 +64,30 @@ describe("questionsFor", () => {
 
   it("falls back to all questions instead of an empty quiz", () => {
     expect(questionsFor([qs[1]], "gcp")).toEqual([qs[1]]);
+  });
+});
+
+describe("sample", () => {
+  const items = [1, 2, 3, 4, 5, 6, 7, 8];
+
+  it("returns the requested number of distinct items without changing the input", () => {
+    const picked = sample(items, 5);
+    expect(picked).toHaveLength(5);
+    expect(new Set(picked).size).toBe(5);
+    expect(picked.every((x) => items.includes(x))).toBe(true);
+    expect(items).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+  });
+
+  it("returns everything, shuffled, when asked for more than there is", () => {
+    expect([...sample(items, 99)].sort()).toEqual(items);
+    expect(sample(items, 0)).toEqual([]);
+    expect(sample([], 3)).toEqual([]);
+  });
+
+  it("is driven by the random source", () => {
+    // A source that always returns 0 swaps each position with the first.
+    expect(sample([1, 2, 3], 3, () => 0)).toEqual([2, 3, 1]);
+    // A source just under 1 leaves every item in place.
+    expect(sample([1, 2, 3], 3, () => 0.999)).toEqual([1, 2, 3]);
   });
 });

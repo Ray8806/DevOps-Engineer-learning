@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useRef, useState } from "react";
 import type { Question } from "@/lib/content/schema";
-import { QUIZ_PASS_SCORE, recordQuizAttempt } from "@/lib/progress/progress";
+import { QUIZ_PASS_SCORE, recordAnswers, recordQuizAttempt } from "@/lib/progress/progress";
 import { useProgress } from "@/lib/progress/use-progress";
 import { PROVIDER_LABEL } from "@/lib/providers";
-import { isCorrect, questionsFor, scoreQuiz, type QuestionResult } from "@/lib/quiz/quiz";
+import { isCorrect, questionsFor, sample, scoreQuiz, type QuestionResult } from "@/lib/quiz/quiz";
 import { ProviderBadge } from "./ProviderBadge";
 
 export type QuizQuestion = Pick<Question, "id" | "type" | "provider" | "question" | "options" | "answer">;
@@ -23,7 +23,18 @@ const primaryButton =
   "rounded-lg bg-accent px-5 py-2.5 font-semibold text-surface hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40";
 const secondaryButton = "rounded-lg border border-border bg-surface px-5 py-2.5 font-semibold hover:border-accent";
 
-export function Quiz({ unitId, unitTitle, questions }: { unitId: string; unitTitle: string; questions: QuizQuestion[] }) {
+/**
+ * `unit`: a unit quiz. Questions follow the learner's main platform, and the
+ * best score is recorded against the pass mark.
+ * `practice`: untimed practice. A random round of `roundSize` questions, with
+ * only per-question history recorded.
+ */
+export type QuizMode =
+  | { kind: "unit"; unitId: string; unitTitle: string }
+  | { kind: "practice"; roundSize: number; backHref: string; backLabel: string };
+
+export function Quiz({ mode, questions }: { mode: QuizMode; questions: QuizQuestion[] }) {
+  const practice = mode.kind === "practice";
   const [progress, update] = useProgress();
   const [phase, setPhase] = useState<Phase>({ name: "intro" });
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -31,10 +42,16 @@ export function Quiz({ unitId, unitTitle, questions }: { unitId: string; unitTit
   const focusHeading = () => requestAnimationFrame(() => headingRef.current?.focus());
 
   const preferred = progress.preferredProvider;
-  const available = questionsFor(questions, preferred);
+  const available = practice ? questions : questionsFor(questions, preferred);
+  const roundLength = practice ? Math.min(mode.roundSize, available.length) : available.length;
+  const back = practice
+    ? { href: mode.backHref, label: mode.backLabel }
+    : { href: `/units/${mode.unitId}`, label: `回到「${mode.unitTitle}」` };
 
   function start() {
-    setPhase({ name: "question", questions: available, index: 0, selected: [], submitted: false, results: [] });
+    // Random order is chosen here, in the click handler, never during render.
+    const round = practice ? sample(available, mode.roundSize) : available;
+    setPhase({ name: "question", questions: round, index: 0, selected: [], submitted: false, results: [] });
     focusHeading();
   }
 
@@ -45,16 +62,23 @@ export function Quiz({ unitId, unitTitle, questions }: { unitId: string; unitTit
           準備好了嗎？
         </h2>
         <ul className="mt-3 list-disc space-y-1 pl-5 text-muted">
-          <li>共 {available.length} 題，一次作答一題，送出後立即顯示每個選項的解析。</li>
-          <li>答對 {percent(QUIZ_PASS_SCORE)} 以上算通過，可以重複作答，系統保留最高分。</li>
-          {available.length < questions.length && preferred !== "both" ? (
+          <li>
+            {practice && roundLength < available.length ? `從 ${available.length} 題中隨機抽 ${roundLength} 題` : `共 ${roundLength} 題`}
+            ，一次作答一題，送出後立即顯示每個選項的解析。
+          </li>
+          <li>
+            {practice
+              ? "不計時，可以重複練習，每一輪的題目和順序都會重新抽。"
+              : `答對 ${percent(QUIZ_PASS_SCORE)} 以上算通過，可以重複作答，系統保留最高分。`}
+          </li>
+          {!practice && available.length < questions.length && preferred !== "both" ? (
             <li>
               你的主要平台是 {PROVIDER_LABEL[preferred]}，已略過其他平台的 {questions.length - available.length} 題。
             </li>
           ) : null}
         </ul>
-        <button type="button" onClick={start} className={`${primaryButton} mt-5`}>
-          開始測驗
+        <button type="button" onClick={start} disabled={roundLength === 0} className={`${primaryButton} mt-5`}>
+          {practice ? "開始練習" : "開始測驗"}
         </button>
       </div>
     );
@@ -62,20 +86,22 @@ export function Quiz({ unitId, unitTitle, questions }: { unitId: string; unitTit
 
   if (phase.name === "results") {
     const score = scoreQuiz(phase.results);
-    const passed = score.score >= QUIZ_PASS_SCORE;
+    const passed = !practice && score.score >= QUIZ_PASS_SCORE;
     return (
       <div>
         <div className={`rounded-xl border p-6 ${passed ? "border-accent bg-accent-soft" : "border-border bg-surface"}`}>
           <h2 ref={headingRef} tabIndex={-1} className="text-xl font-bold outline-none">
-            {passed ? "通過了！" : "還差一點"}
+            {practice ? "這一輪結束了" : passed ? "通過了！" : "還差一點"}
           </h2>
           <p className="mt-2 text-lg" data-testid="quiz-score">
             答對 {score.correct} / {score.total} 題（{percent(score.score)}）
           </p>
           <p className="mt-1 text-sm text-muted">
-            {passed
-              ? "這次的成績已記錄。"
-              : `需要 ${percent(QUIZ_PASS_SCORE)} 才算通過。看看下面答錯的題目，再試一次。`}
+            {practice
+              ? "每一題的作答結果都已記錄。"
+              : passed
+                ? "這次的成績已記錄。"
+                : `需要 ${percent(QUIZ_PASS_SCORE)} 才算通過。看看下面答錯的題目，再試一次。`}
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             {passed ? (
@@ -84,10 +110,10 @@ export function Quiz({ unitId, unitTitle, questions }: { unitId: string; unitTit
               </Link>
             ) : null}
             <button type="button" onClick={start} className={passed ? secondaryButton : primaryButton}>
-              再測一次
+              {practice ? "再練一輪" : "再測一次"}
             </button>
-            <Link href={`/units/${unitId}`} className={secondaryButton}>
-              回到「{unitTitle}」
+            <Link href={back.href} className={secondaryButton}>
+              {back.label}
             </Link>
           </div>
         </div>
@@ -157,7 +183,7 @@ export function Quiz({ unitId, unitTitle, questions }: { unitId: string; unitTit
   function next() {
     if (phase.name !== "question") return;
     if (isLast) {
-      update((p) => recordQuizAttempt(p, unitId, results));
+      update((p) => (mode.kind === "unit" ? recordQuizAttempt(p, mode.unitId, results) : recordAnswers(p, results)));
       setPhase({ name: "results", questions: phase.questions, results });
     } else {
       setPhase({ ...phase, index: index + 1, selected: [], submitted: false });
@@ -178,7 +204,7 @@ export function Quiz({ unitId, unitTitle, questions }: { unitId: string; unitTit
         <span>
           第 {index + 1} 題，共 {phase.questions.length} 題
         </span>
-        {question.provider !== "general" ? <ProviderBadge provider={question.provider} /> : null}
+        {!practice && question.provider !== "general" ? <ProviderBadge provider={question.provider} /> : null}
       </div>
       <div
         role="progressbar"

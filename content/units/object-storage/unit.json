@@ -57,7 +57,10 @@
   ],
   "certDomains": [
     "clf-c02:3",
-    "saa-c03:3"
+    "saa-c03:3",
+    "saa-c03:4",
+    "gcp-cdl:2",
+    "gcp-ace:2"
   ],
   "estimatedMinutes": 25
 }
