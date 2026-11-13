@@ -1,0 +1,40 @@
+{
+  "id": "git-first-commit",
+  "title": "第一次提交與分支",
+  "description": "從建立儲存庫開始，完成提交、開分支、合併的完整流程。",
+  "provider": "general",
+  "estimatedMinutes": 15,
+  "initialState": { "files": {}, "cloud": {} },
+  "steps": [
+    {
+      "instruction": "建立 project 目錄，進入後把它初始化成 Git 儲存庫。",
+      "hint": "依序執行 mkdir project、cd project、git init。",
+      "check": { "type": "state", "path": ["git", "~/project", "branch"], "exists": true }
+    },
+    {
+      "instruction": "建立 README.md（內容隨意），並把它放進暫存區。可以用 git status 看看前後的差別。",
+      "hint": "echo \"My project\" > README.md，再執行 git add README.md。",
+      "check": { "type": "state", "path": ["git", "~/project", "staged", "README.md"], "exists": true }
+    },
+    {
+      "instruction": "提交暫存區的內容，並寫上提交訊息。",
+      "hint": "git commit -m \"Add README\"",
+      "check": { "type": "state", "path": ["git", "~/project", "branchFiles", "main", "README.md"], "exists": true }
+    },
+    {
+      "instruction": "建立一個名為 feature 的分支，並切換過去。",
+      "hint": "git switch -c feature",
+      "check": { "type": "state", "path": ["git", "~/project", "branch"], "equals": "feature" }
+    },
+    {
+      "instruction": "在 feature 分支上建立 notes.txt，並提交。",
+      "hint": "建立檔案後，依序執行 git add notes.txt 和 git commit -m \"Add notes\"。",
+      "check": { "type": "state", "path": ["git", "~/project", "branchFiles", "feature", "notes.txt"], "exists": true }
+    },
+    {
+      "instruction": "切換回 main。用 ls 確認 notes.txt 不見了，然後把 feature 合併進來。",
+      "hint": "git switch main，再執行 git merge feature。合併後再 ls 一次。",
+      "check": { "type": "state", "path": ["git", "~/project", "branchFiles", "main", "notes.txt"], "exists": true }
+    }
+  ]
+}

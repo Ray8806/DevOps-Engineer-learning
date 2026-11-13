@@ -1,0 +1,10 @@
+{
+  "id": "networking-basics",
+  "title": "網路基礎",
+  "summary": "IP 位址、子網路、連接埠、DNS 和 HTTP。雲端上每一項服務都靠網路互相連接，這些觀念之後會一再出現。",
+  "stage": 0,
+  "prerequisites": [],
+  "providers": {},
+  "certDomains": ["gcp-cdl:1"],
+  "estimatedMinutes": 35
+}

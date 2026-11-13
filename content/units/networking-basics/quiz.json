@@ -1,0 +1,96 @@
+{
+  "questions": [
+    {
+      "id": "networking-basics-001",
+      "type": "single",
+      "provider": "general",
+      "unitId": "networking-basics",
+      "difficulty": 1,
+      "question": "下列哪一個是私有 IP 位址？",
+      "options": [
+        { "id": "a", "text": "8.8.8.8", "explanation": "這不在任何一個私有 IP 範圍內，是公有 IP。" },
+        { "id": "b", "text": "172.32.0.5", "explanation": "172 開頭的私有範圍只到 172.31.255.255，172.32 已經超出範圍，是公有 IP。" },
+        { "id": "c", "text": "192.168.10.20", "explanation": "正確。192.168.0.0 到 192.168.255.255 是保留給內部網路的私有範圍。" },
+        { "id": "d", "text": "203.0.113.25", "explanation": "這不在任何一個私有 IP 範圍內。" }
+      ],
+      "answer": ["c"]
+    },
+    {
+      "id": "networking-basics-002",
+      "type": "single",
+      "provider": "general",
+      "unitId": "networking-basics",
+      "difficulty": 2,
+      "question": "子網路 10.0.1.0/24 總共包含多少個 IP 位址？",
+      "options": [
+        { "id": "a", "text": "24", "explanation": "24 是固定的位元數，不是位址數量。" },
+        { "id": "b", "text": "256", "explanation": "正確。32 減 24 剩 8 個位元可以變化，2 的 8 次方是 256。" },
+        { "id": "c", "text": "1,024", "explanation": "1,024 是 2 的 10 次方，對應的是 /22。" },
+        { "id": "d", "text": "65,536", "explanation": "65,536 是 2 的 16 次方，對應的是 /16。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "networking-basics-003",
+      "type": "single",
+      "provider": "general",
+      "unitId": "networking-basics",
+      "difficulty": 2,
+      "question": "一條防火牆規則允許來源 0.0.0.0/0 連到連接埠 22。這條規則的效果是什麼？",
+      "options": [
+        { "id": "a", "text": "任何人都可以從網際網路嘗試用 SSH 連到這台機器", "explanation": "正確。0.0.0.0/0 代表所有 IP 位址，22 是 SSH 的連接埠，這是常見的資安風險。" },
+        { "id": "b", "text": "沒有任何人可以連到這台機器", "explanation": "0.0.0.0/0 代表所有位址，不是沒有位址。" },
+        { "id": "c", "text": "只有同一個子網路內的機器可以連線", "explanation": "要限制在同一個子網路，來源應該寫成該子網路的 CIDR。" },
+        { "id": "d", "text": "任何人都可以瀏覽這台機器上的網站", "explanation": "網站使用的是連接埠 80 或 443，不是 22。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "networking-basics-004",
+      "type": "single",
+      "provider": "general",
+      "unitId": "networking-basics",
+      "difficulty": 1,
+      "question": "你想讓 www.example.com 指向另一個網域名稱 example.com，而不是直接寫 IP 位址。應該使用哪一種 DNS 紀錄？",
+      "options": [
+        { "id": "a", "text": "A 紀錄", "explanation": "A 紀錄是把名稱對應到 IPv4 位址。" },
+        { "id": "b", "text": "AAAA 紀錄", "explanation": "AAAA 紀錄是把名稱對應到 IPv6 位址。" },
+        { "id": "c", "text": "CNAME 紀錄", "explanation": "正確。CNAME 把一個網域名稱對應到另一個網域名稱。" },
+        { "id": "d", "text": "TTL", "explanation": "TTL 是紀錄可以被暫存多久，不是一種紀錄類型。" }
+      ],
+      "answer": ["c"]
+    },
+    {
+      "id": "networking-basics-005",
+      "type": "multiple",
+      "provider": "general",
+      "unitId": "networking-basics",
+      "difficulty": 2,
+      "question": "使用者回報網站出現錯誤。下列哪兩個 HTTP 狀態碼表示問題出在伺服器端？（選兩個）",
+      "options": [
+        { "id": "a", "text": "301", "explanation": "3xx 是重新導向，不是錯誤。" },
+        { "id": "b", "text": "403", "explanation": "4xx 是請求端的問題，403 表示沒有權限。" },
+        { "id": "c", "text": "404", "explanation": "4xx 是請求端的問題，404 表示找不到請求的資源。" },
+        { "id": "d", "text": "500", "explanation": "正確。5xx 是伺服器端的問題，500 是伺服器內部錯誤。" },
+        { "id": "e", "text": "503", "explanation": "正確。503 表示服務暫時無法使用，同樣是伺服器端的問題。" }
+      ],
+      "answer": ["d", "e"]
+    },
+    {
+      "id": "networking-basics-006",
+      "type": "single",
+      "provider": "general",
+      "certs": [{ "id": "gcp-cdl", "domain": 1 }],
+      "unitId": "networking-basics",
+      "difficulty": 1,
+      "question": "一家公司的使用者大多在亞洲，但服務部署在歐洲，使用者覺得每次操作都要等一下才有反應。把服務改部署到亞洲，主要改善的是什麼？",
+      "options": [
+        { "id": "a", "text": "頻寬", "explanation": "頻寬是單位時間內能傳輸的資料量，不會因為距離變近而改變。" },
+        { "id": "b", "text": "延遲", "explanation": "正確。延遲是資料往返所花的時間，距離越近延遲越低。" },
+        { "id": "c", "text": "IP 位址的數量", "explanation": "部署地點不影響可用的 IP 位址數量。" },
+        { "id": "d", "text": "DNS 紀錄的 TTL", "explanation": "TTL 是 DNS 紀錄的暫存時間，和部署地點無關。" }
+      ],
+      "answer": ["b"]
+    }
+  ]
+}

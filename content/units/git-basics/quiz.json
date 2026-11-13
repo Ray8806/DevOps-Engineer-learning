@@ -1,0 +1,80 @@
+{
+  "questions": [
+    {
+      "id": "git-basics-001",
+      "type": "single",
+      "provider": "general",
+      "unitId": "git-basics",
+      "difficulty": 1,
+      "question": "你修改了 app.txt，想讓下一次提交包含這個修改。應該先執行哪個指令？",
+      "options": [
+        { "id": "a", "text": "git init", "explanation": "git init 是把資料夾變成儲存庫，只需要做一次。" },
+        { "id": "b", "text": "git add app.txt", "explanation": "正確。git add 把修改放進暫存區，之後的 git commit 才會包含它。" },
+        { "id": "c", "text": "git log", "explanation": "git log 是查看提交歷史，不會改變任何東西。" },
+        { "id": "d", "text": "git merge app.txt", "explanation": "git merge 用來合併分支，不是用來加入檔案。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "git-basics-002",
+      "type": "single",
+      "provider": "general",
+      "unitId": "git-basics",
+      "difficulty": 2,
+      "question": "git status 在「Untracked files」底下列出了 notes.txt。這代表什麼？",
+      "options": [
+        { "id": "a", "text": "notes.txt 已經提交，之後沒有再修改", "explanation": "已提交且沒有修改的檔案不會出現在 git status 裡。" },
+        { "id": "b", "text": "notes.txt 是 Git 還沒開始追蹤的新檔案", "explanation": "正確。要用 git add 把它加入，Git 才會開始追蹤。" },
+        { "id": "c", "text": "notes.txt 已經在暫存區，等待提交", "explanation": "在暫存區的檔案會列在「Changes to be committed」底下。" },
+        { "id": "d", "text": "notes.txt 已經被 Git 刪除", "explanation": "未追蹤表示 Git 還不認識這個檔案，檔案本身還在。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "git-basics-003",
+      "type": "single",
+      "provider": "general",
+      "unitId": "git-basics",
+      "difficulty": 2,
+      "question": "你在 feature 分支上新增並提交了 report.txt，然後切換回 main。此時工作目錄裡的 report.txt 會怎麼樣？",
+      "options": [
+        { "id": "a", "text": "還在，因為檔案已經提交了", "explanation": "檔案是提交在 feature 分支上，main 還沒有這個提交。" },
+        { "id": "b", "text": "不見了，要等 feature 合併進 main 才會出現", "explanation": "正確。工作目錄會變成 main 的內容。檔案沒有遺失，切回 feature 或合併後就會回來。" },
+        { "id": "c", "text": "被永久刪除，無法復原", "explanation": "提交過的內容仍然保存在 feature 分支的歷史裡。" },
+        { "id": "d", "text": "還在，但內容被清空", "explanation": "切換分支不會留下空檔案。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "git-basics-004",
+      "type": "single",
+      "provider": "general",
+      "unitId": "git-basics",
+      "difficulty": 2,
+      "question": "你要把 feature 分支的修改合併進 main。正確的做法是什麼？",
+      "options": [
+        { "id": "a", "text": "在 feature 分支上執行 git merge main", "explanation": "這會把 main 的修改帶進 feature，方向相反。" },
+        { "id": "b", "text": "先切換到 main，再執行 git merge feature", "explanation": "正確。合併是把指定的分支帶進「目前所在」的分支。" },
+        { "id": "c", "text": "在任何分支上執行 git merge main feature 都可以", "explanation": "合併的目標是目前所在的分支，所以所在的分支很重要。" },
+        { "id": "d", "text": "執行 git branch -d feature", "explanation": "這是刪除分支，不會合併修改。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "git-basics-005",
+      "type": "multiple",
+      "provider": "general",
+      "unitId": "git-basics",
+      "difficulty": 1,
+      "question": "下列哪兩個指令會和遠端儲存庫交換資料？（選兩個）",
+      "options": [
+        { "id": "a", "text": "git commit", "explanation": "提交只記錄在本機的儲存庫。" },
+        { "id": "b", "text": "git push", "explanation": "正確。push 把本機的提交上傳到遠端。" },
+        { "id": "c", "text": "git add", "explanation": "add 只是把修改放進本機的暫存區。" },
+        { "id": "d", "text": "git pull", "explanation": "正確。pull 把遠端的新提交下載並合併到本機。" },
+        { "id": "e", "text": "git status", "explanation": "status 只顯示本機目前的狀態。" }
+      ],
+      "answer": ["b", "d"]
+    }
+  ]
+}

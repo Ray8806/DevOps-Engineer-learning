@@ -11,6 +11,24 @@ export interface Bucket {
   objects: Map<string, string>;
 }
 
+export interface GitCommit {
+  id: string;
+  message: string;
+  parents: string[];
+  /** Snapshot: path relative to the repository root -> content. */
+  files: Map<string, string>;
+}
+
+export interface GitRepo {
+  /** Current branch name. */
+  head: string;
+  /** Branch -> commit id, or null for a branch with no commits yet. */
+  branches: Map<string, string | null>;
+  commits: Map<string, GitCommit>;
+  /** Staging area: relative path -> content. */
+  index: Map<string, string>;
+}
+
 export interface LabState {
   cwd: string;
   /** Absolute path -> content. */
@@ -19,6 +37,8 @@ export interface LabState {
   dirs: Set<string>;
   s3: Map<string, Bucket>;
   gcs: Map<string, Bucket>;
+  /** Git repositories by the absolute path of their working directory. */
+  git: Map<string, GitRepo>;
 }
 
 export interface InitialState {
@@ -129,7 +149,13 @@ export function createLabState(initial: InitialState = {}): LabState {
     dirs,
     s3: bucketsFrom(cloud, "s3", DEFAULT_S3_REGION),
     gcs: bucketsFrom(cloud, "gcs", DEFAULT_GCS_LOCATION),
+    git: new Map(),
   };
+}
+
+export function cloneRepo(repo: GitRepo): GitRepo {
+  // Commits are never modified after creation, so they can be shared.
+  return { head: repo.head, branches: new Map(repo.branches), commits: new Map(repo.commits), index: new Map(repo.index) };
 }
 
 function cloneBuckets(buckets: Map<string, Bucket>): Map<string, Bucket> {
@@ -143,7 +169,43 @@ export function cloneState(state: LabState): LabState {
     dirs: new Set(state.dirs),
     s3: cloneBuckets(state.s3),
     gcs: cloneBuckets(state.gcs),
+    git: new Map([...state.git].map(([root, repo]) => [root, cloneRepo(repo)])),
   };
+}
+
+/** Commit ids reachable from `start`, newest first (first-parent order, then merged-in history). */
+export function history(repo: GitRepo, start: string | null): GitCommit[] {
+  const seen = new Set<string>();
+  const result: GitCommit[] = [];
+  const queue = start ? [start] : [];
+  while (queue.length) {
+    const id = queue.shift()!;
+    const commit = repo.commits.get(id);
+    if (!commit || seen.has(id)) continue;
+    seen.add(id);
+    result.push(commit);
+    queue.push(...commit.parents);
+  }
+  return result;
+}
+
+/** Files tracked at the tip of a branch (empty for a branch with no commits). */
+export function branchFiles(repo: GitRepo, branch: string): Map<string, string> {
+  const tip = repo.branches.get(branch);
+  return (tip && repo.commits.get(tip)?.files) || new Map();
+}
+
+/** Working-tree files of a repository: relative path -> content (the .git directory is not a file). */
+export function workingFiles(state: LabState, root: string): Map<string, string> {
+  const prefix = root === "/" ? "/" : `${root}/`;
+  const result = new Map<string, string>();
+  for (const [path, content] of state.files) {
+    if (!path.startsWith(prefix)) continue;
+    // Files inside a nested repository belong to that repository.
+    const nested = [...state.git.keys()].some((r) => r !== root && isWithin(r, root) && isWithin(path, r));
+    if (!nested) result.set(path.slice(prefix.length), content);
+  }
+  return result;
 }
 
 // ---------------------------------------------------------------- check view
@@ -159,11 +221,32 @@ function bucketsView(buckets: Map<string, Bucket>, locationKey: "region" | "loca
   };
 }
 
+const keysTrue = (keys: Iterable<string>) => Object.fromEntries([...keys].map((k) => [k, true]));
+
+function repoView(state: LabState, root: string, repo: GitRepo) {
+  const head = branchFiles(repo, repo.head);
+  const staged = [...new Set([...repo.index.keys(), ...head.keys()])].filter((p) => repo.index.get(p) !== head.get(p));
+  const working = workingFiles(state, root);
+  const dirty = [...new Set([...repo.index.keys(), ...working.keys()])].some((p) => repo.index.get(p) !== working.get(p));
+  const commits = history(repo, repo.branches.get(repo.head) ?? null);
+  return {
+    branch: repo.head,
+    branches: keysTrue(repo.branches.keys()),
+    commitCount: commits.length,
+    lastMessage: commits[0]?.message ?? null,
+    staged: keysTrue(staged),
+    clean: staged.length === 0 && !dirty,
+    branchFiles: Object.fromEntries([...repo.branches.keys()].map((b) => [b, keysTrue(branchFiles(repo, b).keys())])),
+  };
+}
+
 /**
  * Plain-object view that lab checks walk with their `path`:
  *   files["~/a.txt"], dirs["~/projects"], cwd,
  *   cloud.s3.buckets[name].{region,storageClass,objects[key]},
- *   cloud.gcs.buckets[name].{location,storageClass,objects[name]}.
+ *   cloud.gcs.buckets[name].{location,storageClass,objects[name]},
+ *   git["~/project"].{branch, branches[name], commitCount, lastMessage,
+ *     staged[path], clean, branchFiles[branch][path]}.
  */
 export function checkView(state: LabState): Record<string, unknown> {
   return {
@@ -171,5 +254,6 @@ export function checkView(state: LabState): Record<string, unknown> {
     files: Object.fromEntries([...state.files].map(([p, c]) => [displayPath(p), c])),
     dirs: Object.fromEntries([...state.dirs].map((d) => [displayPath(d), true])),
     cloud: { s3: bucketsView(state.s3, "region"), gcs: bucketsView(state.gcs, "location") },
+    git: Object.fromEntries([...state.git].map(([root, repo]) => [displayPath(root), repoView(state, root, repo)])),
   };
 }

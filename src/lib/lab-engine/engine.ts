@@ -1,6 +1,7 @@
 import { aws } from "./aws";
 import type { Command, Ctx } from "./context";
 import { gcloud, gsutil } from "./gcloud";
+import { git } from "./git";
 import { linuxCommands } from "./linux";
 import { parseLine } from "./parse";
 import { cloneState, dirname, displayPath, listDir, resolvePath, type LabState } from "./state";
@@ -20,6 +21,7 @@ export interface ExecResult {
 
 const HELP = `可用的指令：
   檔案與目錄  pwd  ls  cd  mkdir  touch  cat  echo  cp  mv  rm  rmdir
+  Git         git init | status | add | commit | log | branch | switch | checkout | merge
   AWS         aws s3 mb | rb | ls | cp | mv | rm
   GCP         gcloud storage buckets create | delete | list | describe
               gcloud storage ls | cp | mv | rm | cat      （也支援 gsutil）
@@ -32,7 +34,7 @@ const help: Command = (ctx) => {
   return 0;
 };
 
-const commands: Record<string, Command> = { ...linuxCommands, aws, gcloud, gsutil, help };
+const commands: Record<string, Command> = { ...linuxCommands, aws, gcloud, gsutil, git, help };
 
 export const COMMAND_NAMES = [...Object.keys(commands), "clear"].sort();
 

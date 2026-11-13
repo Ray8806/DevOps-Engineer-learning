@@ -237,6 +237,9 @@ Lab 引擎維護一份虛擬狀態（檔案系統加雲端資源），指令會�
 | `["cwd"]` | 目前目錄，例如 `"~/projects"` |
 | `["cloud", "s3", "buckets", 名稱, "region" \| "storageClass" \| "objects", key]` | S3 |
 | `["cloud", "gcs", "buckets", 名稱, "location" \| "storageClass" \| "objects", 名稱]` | Cloud Storage |
+| `["git", "~/project", "branch" \| "commitCount" \| "lastMessage" \| "clean"]` | Git 儲存庫目前的分支、提交數等 |
+| `["git", "~/project", "branches" \| "staged", 名稱]` | 分支是否存在、檔案是否在暫存區 |
+| `["git", "~/project", "branchFiles", 分支, 路徑]` | 某分支最新的提交是否包含某檔案 |
 
 步驟依序完成，完成後不會退回：後面的步驟把前面的條件改掉（例如把剛複製的檔案改名）不影響已完成的步驟。
 
@@ -246,7 +249,7 @@ Lab 引擎維護一份虛擬狀態（檔案系統加雲端資源），指令會�
 
 程式在 `src/lib/lab-engine/`，是不依賴瀏覽器的純函式：`execute(state, line)` 回傳新的狀態與輸出，不修改傳入的狀態。
 
-- **支援的指令**：`pwd ls cd mkdir touch cat echo cp mv rm rmdir clear help whoami`；`aws s3 mb|rb|ls|cp|mv|rm`；`gcloud storage buckets create|delete|list|describe` 與 `gcloud storage ls|cp|mv|rm|cat`；`gsutil mb|rb|ls|cp|mv|rm|cat`。
+- **支援的指令**：`pwd ls cd mkdir touch cat echo cp mv rm rmdir clear help whoami`；`aws s3 mb|rb|ls|cp|mv|rm`；`gcloud storage buckets create|delete|list|describe` 與 `gcloud storage ls|cp|mv|rm|cat`；`gsutil mb|rb|ls|cp|mv|rm|cat`；`git init|status|add|commit|log|branch|switch|checkout|merge`（只有本機操作，沒有遠端；合併衝突會取消合併）。
 - **支援的語法**：引號、反斜線跳脫、註解、`>` 與 `>>`、`&&` 與 `;`。不支援管線、變數與萬用字元，會明確告知。
 - **新增指令**：在 `engine.ts` 的 `commands` 註冊一個 `Command`（收到可修改的草稿狀態與輸出函式，回傳結束碼），並補上測試。
 - **輸出訊息是近似值**：格式盡量貼近真實 CLI，但不保證逐字相同。
@@ -288,7 +291,24 @@ interface Progress {
 | 8 | 模擬考 | 計時考試、依比重抽題、成績報告、錯題本、弱點分析 | 可完成一場完整模擬考並看到各 domain 得分 |
 | 9 | 進階功能 | 架構圖練習、AI 助教 | — |
 
-階段 1 到 5 是 MVP。階段 6 的內容量最大，建議一次只產一個階段或一張證照的內容，並逐批人工抽查正確性。
+階段 1 到 5 是 MVP。
+
+### 階段 6 的進度
+
+分批進行，每批一個 PR。每個單元要有課文、至少 5 題測驗；適合動手練習的單元要有 Lab。
+
+| 階段 | 單元 | 狀態 |
+|---|---|---|
+| 0 基礎 | Linux 指令基礎、網路基礎、Git 基礎 | 完成（網路基礎沒有 Lab） |
+| 1 雲端核心 | 物件儲存 | 完成 |
+| 1 雲端核心 | 身分與權限、虛擬機、無伺服器運算、區塊與檔案儲存、虛擬網路、關聯式資料庫、NoSQL 資料庫 | 待寫 |
+| 2 維運 | 全部 5 個單元 | 待寫 |
+| 3 自動化 | 全部 5 個單元 | 待寫 |
+| 4 實戰 | 架構設計案例、面試題 | 待寫 |
+
+證照題庫目前是每個考試範圍 2 題的起始題庫，目標每張 150 題。
+
+階段 6 的內容量最大，建議一次只產一個階段或一張證照的內容，並逐批人工抽查正確性。
 
 ## 9. 開發守則
 

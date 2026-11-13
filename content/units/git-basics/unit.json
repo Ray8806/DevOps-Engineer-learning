@@ -1,0 +1,10 @@
+{
+  "id": "git-basics",
+  "title": "Git 基礎",
+  "summary": "用 Git 記錄檔案的每一次修改，並用分支同時進行多項工作。之後的基礎架構即程式碼和 CI/CD 都建立在 Git 上。",
+  "stage": 0,
+  "prerequisites": ["linux-basics"],
+  "providers": {},
+  "certDomains": [],
+  "estimatedMinutes": 35
+}
