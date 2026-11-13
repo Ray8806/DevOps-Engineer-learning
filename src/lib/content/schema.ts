@@ -188,33 +188,61 @@ export type Lab = z.infer<typeof LabSchema>;
 
 // ------------------------------------------------------ certs/<id>/cert.json
 
-/** Values must be copied from the official exam guide, never from memory. */
+/**
+ * Exam facts. Every value must be copied from the official source named in
+ * `source`, never from memory; leave an optional field out when the official
+ * source does not state it.
+ */
 export const CertSchema = z
   .strictObject({
     id: CertIdSchema,
+    /** Official certification name, in English. */
     name: z.string().min(1),
+    summary: z.string().min(1),
     provider: ProviderSchema,
     level: z.enum(["foundational", "associate"]),
-    officialGuideUrl: z.url(),
-    /** Date the values below were last checked against the official guide. */
-    verifiedOn: z.iso.date(),
+    source: z.strictObject({
+      /** Official exam guide the domains and weights were copied from. */
+      guideUrl: z.url(),
+      /** Official page for registration and logistics. */
+      officialPageUrl: z.url().optional(),
+      /** Date the values were last checked against the official source. */
+      verifiedOn: z.iso.date(),
+      note: z.string().min(1).optional(),
+    }),
     exam: z.strictObject({
-      questionCount: z.number().int().positive(),
-      durationMinutes: z.number().int().positive(),
-      passingScore: z.string().min(1).optional(),
+      questionCountMin: z.number().int().positive(),
+      questionCountMax: z.number().int().positive(),
+      /** How many of the questions count towards the score, when stated. */
+      scoredQuestions: z.number().int().positive().optional(),
+      durationMinutes: z.number().int().positive().optional(),
+      passingScore: z
+        .strictObject({ score: z.number(), scaleMin: z.number(), scaleMax: z.number() })
+        .optional(),
+      questionTypes: z.array(z.enum(["single", "multiple"])).min(1),
     }),
     domains: z
       .array(
         z.strictObject({
           id: z.number().int().positive(),
+          /** Official domain title, in English. */
           title: z.string().min(1),
-          weightPercent: z.number().positive().max(100).optional(),
+          titleZh: z.string().min(1),
+          weightPercent: z.number().positive().max(100),
         }),
       )
       .min(1),
   })
-  .refine(
-    (c) => new Set(c.domains.map((d) => d.id)).size === c.domains.length,
-    { path: ["domains"], message: "domain ids must be unique" },
-  );
+  .refine((c) => new Set(c.domains.map((d) => d.id)).size === c.domains.length, {
+    path: ["domains"],
+    message: "domain ids must be unique",
+  })
+  .refine((c) => c.domains.reduce((sum, d) => sum + d.weightPercent, 0) === 100, {
+    path: ["domains"],
+    message: "domain weights must add up to 100",
+  })
+  .refine((c) => c.exam.questionCountMin <= c.exam.questionCountMax, {
+    path: ["exam"],
+    message: "questionCountMin must not exceed questionCountMax",
+  });
 export type Cert = z.infer<typeof CertSchema>;

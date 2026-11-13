@@ -1,0 +1,308 @@
+{
+  "questions": [
+    {
+      "id": "saa-c03-d1-001",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "在 Amazon EC2 上執行的應用程式需要讀取 S3 bucket 裡的物件。要讓應用程式取得權限，最安全的做法是什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把 IAM 使用者的存取金鑰寫在應用程式的程式碼裡",
+          "explanation": "金鑰寫死在程式碼裡容易外洩，也難以輪替。"
+        },
+        {
+          "id": "b",
+          "text": "為 EC2 執行個體附加一個具有所需權限的 IAM 角色",
+          "explanation": "正確。角色會提供自動輪替的臨時憑證，不需要保存長期金鑰。"
+        },
+        {
+          "id": "c",
+          "text": "把存取金鑰放在執行個體的 user data",
+          "explanation": "user data 可以從執行個體內部讀取，不適合放機密。"
+        },
+        {
+          "id": "d",
+          "text": "把 bucket 設為公開讀取",
+          "explanation": "這會讓所有人都能讀取資料。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "saa-c03-d1-002",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 3,
+      "question": "公司要求 S3 中的資料必須靜態加密，而且要能自行控制金鑰輪替，並稽核每一次金鑰的使用紀錄。應該選擇哪一種做法？",
+      "options": [
+        {
+          "id": "a",
+          "text": "使用 S3 受管金鑰的伺服器端加密（SSE-S3）",
+          "explanation": "SSE-S3 會加密資料，但金鑰完全由 S3 管理，無法自行控管，也看不到金鑰的使用紀錄。"
+        },
+        {
+          "id": "b",
+          "text": "使用 AWS KMS 客戶受管金鑰的伺服器端加密（SSE-KMS）",
+          "explanation": "正確。客戶受管金鑰可以設定輪替與金鑰政策，每次使用都會記錄在 CloudTrail。"
+        },
+        {
+          "id": "c",
+          "text": "要求所有請求都使用 HTTPS",
+          "explanation": "HTTPS 保護的是傳輸中的資料，不是靜態加密。"
+        },
+        {
+          "id": "d",
+          "text": "用 bucket policy 拒絕所有公開存取",
+          "explanation": "這是存取控制，不是加密。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "saa-c03-d2-001",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "訂單網站在流量尖峰時，後端處理服務來不及處理，導致部分訂單遺失。要讓兩個服務鬆散耦合並避免遺失訂單，應該怎麼做？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把後端的 EC2 執行個體換成更大的規格",
+          "explanation": "加大規格只是提高上限，尖峰超過時仍然會遺失，兩個服務也仍然緊密耦合。"
+        },
+        {
+          "id": "b",
+          "text": "在前端和後端之間加入 Amazon SQS 佇列",
+          "explanation": "正確。佇列會先把訂單存起來，後端依自己的速度處理，尖峰時也不會遺失。"
+        },
+        {
+          "id": "c",
+          "text": "在網站前面加上 Amazon CloudFront",
+          "explanation": "CloudFront 加速的是內容傳遞，無法緩衝後端的處理工作。"
+        },
+        {
+          "id": "d",
+          "text": "設定 Amazon Route 53 健康檢查",
+          "explanation": "健康檢查用來把流量導離故障的端點，無法緩衝訊息。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "saa-c03-d2-002",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個 Amazon RDS 資料庫必須在單一 Availability Zone 故障時自動容錯移轉，而且應用程式不需要修改連線設定。應該使用哪一項功能？",
+      "options": [
+        {
+          "id": "a",
+          "text": "在同一個 Availability Zone 建立僅供讀取複本",
+          "explanation": "僅供讀取複本用來分擔讀取流量；放在同一個可用區也無法承受可用區故障。"
+        },
+        {
+          "id": "b",
+          "text": "啟用 Multi-AZ 部署",
+          "explanation": "正確。RDS 會在另一個可用區維持待命副本，故障時自動切換，資料庫端點不變。"
+        },
+        {
+          "id": "c",
+          "text": "每天手動建立快照",
+          "explanation": "快照可以用來還原，但需要人工操作，也會遺失上次快照之後的資料。"
+        },
+        {
+          "id": "d",
+          "text": "改用更大的執行個體類別",
+          "explanation": "加大規格無法避免可用區故障。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "saa-c03-d3-001",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個網站把圖片和影片放在單一 Region 的 S3 bucket，其他洲的使用者反映下載很慢。要改善全球使用者的下載速度，應該怎麼做？",
+      "options": [
+        {
+          "id": "a",
+          "text": "在 S3 前面使用 Amazon CloudFront",
+          "explanation": "正確。CloudFront 會把內容快取到靠近使用者的 edge location，降低延遲。"
+        },
+        {
+          "id": "b",
+          "text": "把物件改存到 S3 Glacier 儲存類別",
+          "explanation": "Glacier 是封存用的儲存類別，取回反而更慢。"
+        },
+        {
+          "id": "c",
+          "text": "開啟 S3 版本控制",
+          "explanation": "版本控制用來保留物件的舊版本，和下載速度無關。"
+        },
+        {
+          "id": "d",
+          "text": "提高 EBS 磁碟區的 IOPS",
+          "explanation": "內容放在 S3，EBS 的效能不影響下載速度。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "saa-c03-d3-002",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個 RDS 關聯式資料庫的讀取遠多於寫入，報表查詢常常拖慢主要資料庫。要提升讀取效能，應該怎麼做？",
+      "options": [
+        {
+          "id": "a",
+          "text": "建立僅供讀取複本，並把報表查詢導向複本",
+          "explanation": "正確。讀取流量分散到複本後，主要資料庫可以專心處理寫入。"
+        },
+        {
+          "id": "b",
+          "text": "啟用 Multi-AZ 執行個體部署",
+          "explanation": "Multi-AZ 執行個體部署的待命副本是為了容錯，不提供讀取。"
+        },
+        {
+          "id": "c",
+          "text": "增加資料庫的儲存空間",
+          "explanation": "儲存空間大小不會解決查詢互相競爭資源的問題。"
+        },
+        {
+          "id": "d",
+          "text": "把資料庫的資料檔搬到 S3",
+          "explanation": "S3 是物件儲存，不能用來執行關聯式資料庫。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "saa-c03-d4-001",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "一批存放在 S3 的資料，存取頻率會隨時間改變而且無法預測。要在不影響讀取速度、也不必自己管理搬移規則的前提下降低儲存成本，應該選擇哪一個儲存類別？",
+      "options": [
+        {
+          "id": "a",
+          "text": "S3 Standard",
+          "explanation": "Standard 不會隨存取頻率降低而省錢。"
+        },
+        {
+          "id": "b",
+          "text": "S3 Intelligent-Tiering",
+          "explanation": "正確。它會依存取模式自動把物件移到較便宜的存取層，被存取時再移回來。"
+        },
+        {
+          "id": "c",
+          "text": "S3 One Zone-IA",
+          "explanation": "One Zone-IA 適合不常存取且可重建的資料；如果常被讀取，讀取費用反而更高，資料也只存放在單一可用區。"
+        },
+        {
+          "id": "d",
+          "text": "S3 Glacier Deep Archive",
+          "explanation": "Deep Archive 取回需要數小時，會影響讀取速度。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "saa-c03-d4-002",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個工作負載需要一組 EC2 執行個體全年無休地穩定執行，預計至少持續三年。要降低運算成本，應該怎麼做？",
+      "options": [
+        {
+          "id": "a",
+          "text": "全部使用 On-Demand Instances",
+          "explanation": "隨需執行個體沒有折扣，長期穩定的用量這樣最貴。"
+        },
+        {
+          "id": "b",
+          "text": "購買三年期的 Savings Plans 或 Reserved Instances",
+          "explanation": "正確。對穩定用量承諾一年或三年，可以換到比隨需低很多的價格。"
+        },
+        {
+          "id": "c",
+          "text": "全部改用 Spot Instances",
+          "explanation": "Spot 可能被中斷，不適合必須持續執行的工作負載。"
+        },
+        {
+          "id": "d",
+          "text": "改用 Dedicated Hosts",
+          "explanation": "專用主機成本更高，用於授權或合規需求。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    }
+  ]
+}

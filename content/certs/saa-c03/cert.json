@@ -1,0 +1,52 @@
+{
+  "id": "saa-c03",
+  "name": "AWS Certified Solutions Architect - Associate (SAA-C03)",
+  "summary": "AWS 的助理級架構師證照，確認你能依 Well-Architected Framework 設計安全、有韌性、高效能且符合成本的解決方案。",
+  "provider": "aws",
+  "level": "associate",
+  "source": {
+    "guideUrl": "https://docs.aws.amazon.com/aws-certification/latest/solutions-architect-associate-03/solutions-architect-associate-03.html",
+    "verifiedOn": "2026-11-12",
+    "note": "官方考試指南未列出考試時間，報名前請到 AWS 認證官網確認時間與費用。"
+  },
+  "exam": {
+    "questionCountMin": 65,
+    "questionCountMax": 65,
+    "scoredQuestions": 50,
+    "questionTypes": [
+      "single",
+      "multiple"
+    ],
+    "passingScore": {
+      "score": 720,
+      "scaleMin": 100,
+      "scaleMax": 1000
+    }
+  },
+  "domains": [
+    {
+      "id": 1,
+      "title": "Design Secure Architectures",
+      "titleZh": "設計安全的架構",
+      "weightPercent": 30
+    },
+    {
+      "id": 2,
+      "title": "Design Resilient Architectures",
+      "titleZh": "設計有韌性的架構",
+      "weightPercent": 26
+    },
+    {
+      "id": 3,
+      "title": "Design High-Performing Architectures",
+      "titleZh": "設計高效能的架構",
+      "weightPercent": 24
+    },
+    {
+      "id": 4,
+      "title": "Design Cost-Optimized Architectures",
+      "titleZh": "設計成本最佳化的架構",
+      "weightPercent": 20
+    }
+  ]
+}

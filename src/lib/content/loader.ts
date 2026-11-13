@@ -29,6 +29,11 @@ export interface Content {
   stages: Stage[];
   units: Map<string, Unit>;
   certs: Map<string, Cert>;
+  /**
+   * Practice questions per cert: the cert's own bank plus every unit quiz
+   * question tagged with that cert.
+   */
+  certQuestions: Map<string, Question[]>;
 }
 
 /** Thrown with every problem found, so one build shows all content errors. */
@@ -82,19 +87,54 @@ export function loadContent(contentDir: string = CONTENT_DIR): Content {
     return result.data;
   }
 
-  // --- certs (optional until the certification phase adds them)
+  const questionOwner = new Map<string, string>();
+  const claimQuestionId = (id: string, file: string) => {
+    const prev = questionOwner.get(id);
+    if (prev) problems.push(`${file}: question id "${id}" is already used in ${prev}`);
+    questionOwner.set(id, file);
+  };
+
+  // --- certs and their question banks
   const certs = new Map<string, Cert>();
+  const certQuestions = new Map<string, Question[]>();
+  /** Bank questions that name a unit; checked once units are loaded. */
+  const unitLinks: { where: string; unitId: string }[] = [];
+  /** Bank questions whose cert domains are checked once every cert is loaded. */
+  const bankChecks: { where: string; q: Question }[] = [];
+
   for (const dir of listDirs(path.join(contentDir, "certs"))) {
-    const file = path.join(contentDir, "certs", dir, "cert.json");
+    const certDir = path.join(contentDir, "certs", dir);
+    const file = path.join(certDir, "cert.json");
     const cert = readJson(file, CertSchema);
     if (!cert) continue;
     if (cert.id !== dir) problems.push(`${rel(file)}: id "${cert.id}" must match directory "${dir}"`);
     certs.set(cert.id, cert);
+
+    const bank: Question[] = [];
+    const bankDir = path.join(certDir, "questions");
+    const bankFiles = fs.existsSync(bankDir)
+      ? fs.readdirSync(bankDir).filter((f) => f.endsWith(".json")).sort()
+      : [];
+    for (const f of bankFiles) {
+      const bankFile = path.join(bankDir, f);
+      for (const q of readJson(bankFile, QuizFileSchema)?.questions ?? []) {
+        const where = `${rel(bankFile)}: question "${q.id}"`;
+        claimQuestionId(q.id, rel(bankFile));
+        const own = q.certs.filter((c) => c.id === cert.id);
+        if (own.length === 0) problems.push(`${where} must list cert "${cert.id}" in "certs"`);
+        if (q.provider !== "general" && q.provider !== cert.provider) {
+          problems.push(`${where} uses provider "${q.provider}" but the cert is for "${cert.provider}"`);
+        }
+        if (q.unitId) unitLinks.push({ where, unitId: q.unitId });
+        bankChecks.push({ where, q });
+        bank.push(q);
+      }
+    }
+    certQuestions.set(cert.id, bank);
   }
 
   // --- units
   const units = new Map<string, Unit>();
-  const questionOwner = new Map<string, string>();
   const labOwner = new Map<string, string>();
 
   for (const dir of listDirs(path.join(contentDir, "units"))) {
@@ -134,16 +174,17 @@ export function loadContent(contentDir: string = CONTENT_DIR): Content {
     const quizFile = path.join(unitDir, "quiz.json");
     const quiz = readJson(quizFile, QuizFileSchema)?.questions ?? [];
     for (const q of quiz) {
-      const prev = questionOwner.get(q.id);
-      if (prev) problems.push(`${rel(quizFile)}: question id "${q.id}" is already used in ${prev}`);
-      questionOwner.set(q.id, rel(quizFile));
+      claimQuestionId(q.id, rel(quizFile));
       if (q.unitId !== meta.id) {
         problems.push(`${rel(quizFile)}: question "${q.id}" must have unitId "${meta.id}"`);
       }
       if (!providerAllowed(q.provider)) {
         problems.push(`${rel(quizFile)}: question "${q.id}" uses provider "${q.provider}" not declared by the unit`);
       }
-      for (const c of q.certs) checkCertDomain(`${rel(quizFile)}: question "${q.id}"`, c.id, c.domain);
+      for (const c of q.certs) {
+        checkCertDomain(`${rel(quizFile)}: question "${q.id}"`, c.id, c.domain);
+        certQuestions.get(c.id)?.push(q);
+      }
     }
 
     // labs/*.json
@@ -182,6 +223,13 @@ export function loadContent(contentDir: string = CONTENT_DIR): Content {
     }
   }
 
+  for (const { where, q } of bankChecks) {
+    for (const c of q.certs) checkCertDomain(where, c.id, c.domain);
+  }
+  for (const link of unitLinks) {
+    if (!units.has(link.unitId)) problems.push(`${link.where} names unknown unit "${link.unitId}"`);
+  }
+
   // --- stages + cross references
   const stages = readJson(path.join(contentDir, "stages.json"), StagesFileSchema)?.stages ?? [];
   const stageOfUnit = new Map<string, number>();
@@ -209,7 +257,7 @@ export function loadContent(contentDir: string = CONTENT_DIR): Content {
   }
 
   if (problems.length) throw new ContentError(problems);
-  return { stages, units, certs };
+  return { stages, units, certs, certQuestions };
 }
 
 let cached: Content | undefined;

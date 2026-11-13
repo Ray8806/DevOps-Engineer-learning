@@ -51,6 +51,68 @@ describe("real content", () => {
   });
 });
 
+describe("certs", () => {
+  it("loads the four certs, each with questions in every domain", () => {
+    const content = loadContent();
+    expect([...content.certs.keys()].sort()).toEqual(["clf-c02", "gcp-ace", "gcp-cdl", "saa-c03"]);
+    for (const cert of content.certs.values()) {
+      const bank = content.certQuestions.get(cert.id)!;
+      for (const domain of cert.domains) {
+        const count = bank.filter((q) => q.certs.some((c) => c.id === cert.id && c.domain === domain.id)).length;
+        expect(count, `${cert.id} domain ${domain.id}`).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("includes unit quiz questions tagged with a cert in that cert's questions", () => {
+    const bank = loadContent().certQuestions.get("saa-c03")!;
+    expect(bank.some((q) => q.id === "object-storage-003")).toBe(true);
+    expect(new Set(bank.map((q) => q.id)).size).toBe(bank.length);
+  });
+
+  const cert = (dir: string, file: string) => path.join(dir, "certs", "clf-c02", file);
+
+  it("rejects domain weights that do not add up to 100", () => {
+    const dir = copyOfContent();
+    editJson(cert(dir, "cert.json"), (d) => (d.domains[0].weightPercent = 25));
+    expect(problemsOf(dir).join("\n")).toMatch(/weights must add up to 100/);
+  });
+
+  it("rejects a question for a domain the cert does not have", () => {
+    const dir = copyOfContent();
+    editJson(cert(dir, "questions/starter.json"), (d) => (d.questions[0].certs[0].domain = 9));
+    expect(problemsOf(dir).join("\n")).toMatch(/cert "clf-c02" has no domain 9/);
+  });
+
+  it("rejects a unit that points at a missing cert domain", () => {
+    const dir = copyOfContent();
+    editJson(path.join(dir, "units", "object-storage", "unit.json"), (d) => d.certDomains.push("gcp-ace:7"));
+    expect(problemsOf(dir).join("\n")).toMatch(/cert "gcp-ace" has no domain 7/);
+  });
+
+  it("rejects a bank question that does not belong to its cert or platform", () => {
+    const dir = copyOfContent();
+    editJson(cert(dir, "questions/starter.json"), (d) => {
+      d.questions[0].certs = [{ id: "saa-c03", domain: 1 }];
+      d.questions[1].provider = "gcp";
+    });
+    const problems = problemsOf(dir).join("\n");
+    expect(problems).toMatch(/must list cert "clf-c02"/);
+    expect(problems).toMatch(/uses provider "gcp" but the cert is for "aws"/);
+  });
+
+  it("rejects an id shared between a bank question and a unit question, and an unknown unit link", () => {
+    const dir = copyOfContent();
+    editJson(cert(dir, "questions/starter.json"), (d) => {
+      d.questions[0].id = "object-storage-001";
+      d.questions[1].unitId = "ghost-unit";
+    });
+    const problems = problemsOf(dir).join("\n");
+    expect(problems).toMatch(/question id "object-storage-001" is already used/);
+    expect(problems).toMatch(/names unknown unit "ghost-unit"/);
+  });
+});
+
 describe("broken content is rejected", () => {
   const unit = (dir: string, file: string) => path.join(dir, "units", "object-storage", file);
 

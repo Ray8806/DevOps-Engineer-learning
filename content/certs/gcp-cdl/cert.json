@@ -1,0 +1,59 @@
+{
+  "id": "gcp-cdl",
+  "name": "Google Cloud Digital Leader",
+  "summary": "Google Cloud 的入門證照，確認你能說明 Google Cloud 核心產品的功能，以及它們如何協助組織達成目標。不需要技術背景。",
+  "provider": "gcp",
+  "level": "foundational",
+  "source": {
+    "guideUrl": "https://services.google.com/fh/files/misc/cloud_digital_leader_exam_guide_english.pdf",
+    "officialPageUrl": "https://cloud.google.com/learn/certification/cloud-digital-leader",
+    "verifiedOn": "2026-11-12",
+    "note": "Google 未公布及格分數。各範圍比重為官方指南標示的約略值。依據 2026 年 8 月 12 日啟用的考試指南。"
+  },
+  "exam": {
+    "questionCountMin": 50,
+    "questionCountMax": 60,
+    "durationMinutes": 90,
+    "questionTypes": [
+      "single"
+    ]
+  },
+  "domains": [
+    {
+      "id": 1,
+      "title": "Digital Transformation with Google Cloud",
+      "titleZh": "運用 Google Cloud 進行數位轉型",
+      "weightPercent": 18
+    },
+    {
+      "id": 2,
+      "title": "Exploring Data Transformation with Google Cloud",
+      "titleZh": "運用 Google Cloud 進行資料轉型",
+      "weightPercent": 18
+    },
+    {
+      "id": 3,
+      "title": "Innovating with Google Cloud Artificial Intelligence",
+      "titleZh": "運用 Google Cloud AI 創新",
+      "weightPercent": 18
+    },
+    {
+      "id": 4,
+      "title": "Modernize Infrastructure and Applications with Google Cloud",
+      "titleZh": "運用 Google Cloud 翻新基礎架構與應用程式",
+      "weightPercent": 18
+    },
+    {
+      "id": 5,
+      "title": "Trust and Security with Google Cloud",
+      "titleZh": "Google Cloud 的信任與安全",
+      "weightPercent": 18
+    },
+    {
+      "id": 6,
+      "title": "Scaling with Google Cloud Operations",
+      "titleZh": "運用 Google Cloud 維運來擴展",
+      "weightPercent": 10
+    }
+  ]
+}

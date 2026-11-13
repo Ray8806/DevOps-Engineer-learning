@@ -1,0 +1,48 @@
+{
+  "id": "gcp-ace",
+  "name": "Google Associate Cloud Engineer",
+  "summary": "Google Cloud 的助理級證照，確認你能部署並保護應用程式與基礎架構、監控多個專案的運作，並維護企業解決方案。",
+  "provider": "gcp",
+  "level": "associate",
+  "source": {
+    "guideUrl": "https://services.google.com/fh/files/misc/associate_cloud_engineer_exam_guide_english.pdf",
+    "officialPageUrl": "https://cloud.google.com/learn/certification/cloud-engineer",
+    "verifiedOn": "2026-11-12",
+    "note": "Google 未公布及格分數。各範圍比重為官方指南標示的約略值。"
+  },
+  "exam": {
+    "questionCountMin": 50,
+    "questionCountMax": 60,
+    "durationMinutes": 120,
+    "questionTypes": [
+      "single",
+      "multiple"
+    ]
+  },
+  "domains": [
+    {
+      "id": 1,
+      "title": "Setting up a cloud solution environment",
+      "titleZh": "建立雲端解決方案的環境",
+      "weightPercent": 20
+    },
+    {
+      "id": 2,
+      "title": "Planning and implementing a cloud solution",
+      "titleZh": "規劃與實作雲端解決方案",
+      "weightPercent": 30
+    },
+    {
+      "id": 3,
+      "title": "Ensuring the successful operation of a cloud solution",
+      "titleZh": "確保雲端解決方案順利運作",
+      "weightPercent": 30
+    },
+    {
+      "id": 4,
+      "title": "Configuring access and security",
+      "titleZh": "設定存取權與安全性",
+      "weightPercent": 20
+    }
+  ]
+}

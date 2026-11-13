@@ -1,0 +1,52 @@
+{
+  "id": "clf-c02",
+  "name": "AWS Certified Cloud Practitioner (CLF-C02)",
+  "summary": "AWS 的入門證照，確認你對 AWS 雲端的整體認識，不限定特定職務。適合剛接觸雲端的人。",
+  "provider": "aws",
+  "level": "foundational",
+  "source": {
+    "guideUrl": "https://docs.aws.amazon.com/aws-certification/latest/cloud-practitioner-02/cloud-practitioner-02.html",
+    "verifiedOn": "2026-11-12",
+    "note": "官方考試指南未列出考試時間，報名前請到 AWS 認證官網確認時間與費用。"
+  },
+  "exam": {
+    "questionCountMin": 65,
+    "questionCountMax": 65,
+    "scoredQuestions": 50,
+    "questionTypes": [
+      "single",
+      "multiple"
+    ],
+    "passingScore": {
+      "score": 700,
+      "scaleMin": 100,
+      "scaleMax": 1000
+    }
+  },
+  "domains": [
+    {
+      "id": 1,
+      "title": "Cloud Concepts",
+      "titleZh": "雲端概念",
+      "weightPercent": 24
+    },
+    {
+      "id": 2,
+      "title": "Security and Compliance",
+      "titleZh": "安全與合規",
+      "weightPercent": 30
+    },
+    {
+      "id": 3,
+      "title": "Cloud Technology and Services",
+      "titleZh": "雲端技術與服務",
+      "weightPercent": 34
+    },
+    {
+      "id": 4,
+      "title": "Billing, Pricing, and Support",
+      "titleZh": "帳單、定價與支援",
+      "weightPercent": 12
+    }
+  ]
+}

@@ -1,0 +1,460 @@
+{
+  "questions": [
+    {
+      "id": "gcp-cdl-d1-001",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 1
+        }
+      ],
+      "difficulty": 1,
+      "question": "開發團隊想專心撰寫自己的應用程式，不想管理伺服器和作業系統。哪一種雲端服務模式最符合？",
+      "options": [
+        {
+          "id": "a",
+          "text": "基礎架構即服務（IaaS）",
+          "explanation": "IaaS 提供虛擬機和網路，作業系統以上仍要自己管理。"
+        },
+        {
+          "id": "b",
+          "text": "平台即服務（PaaS）",
+          "explanation": "正確。PaaS 由供應商管理基礎架構和執行環境，團隊只需要部署程式碼。"
+        },
+        {
+          "id": "c",
+          "text": "軟體即服務（SaaS）",
+          "explanation": "SaaS 是直接使用現成的軟體，不是用來開發自己的應用程式。"
+        },
+        {
+          "id": "d",
+          "text": "地端自建機房",
+          "explanation": "自建機房需要管理所有東西，和需求相反。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d1-002",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 1
+        }
+      ],
+      "difficulty": 1,
+      "question": "一家公司把部分系統留在自己的機房，其餘放在公有雲，兩邊互相連接並一起運作。這種架構稱為什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "公有雲",
+          "explanation": "公有雲指資源全部由雲端供應商提供。"
+        },
+        {
+          "id": "b",
+          "text": "私有雲",
+          "explanation": "私有雲指資源專供單一組織使用，題目中還用了公有雲。"
+        },
+        {
+          "id": "c",
+          "text": "混合雲",
+          "explanation": "正確。混合雲結合了自有環境（或私有雲）與公有雲。"
+        },
+        {
+          "id": "d",
+          "text": "多雲",
+          "explanation": "多雲指同時使用兩家以上的公有雲供應商。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d2-001",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "difficulty": 1,
+      "question": "客服中心保存了大量通話錄音、客戶寄來的照片和電子郵件內文。這些資料屬於哪一種類型？",
+      "options": [
+        {
+          "id": "a",
+          "text": "結構化資料",
+          "explanation": "結構化資料有固定的欄位和格式，例如資料表裡的訂單紀錄。"
+        },
+        {
+          "id": "b",
+          "text": "半結構化資料",
+          "explanation": "半結構化資料有部分組織方式但不是固定的表格，例如 JSON。"
+        },
+        {
+          "id": "c",
+          "text": "非結構化資料",
+          "explanation": "正確。音訊、影像和自由文字沒有預先定義的資料模型。"
+        },
+        {
+          "id": "d",
+          "text": "關聯式資料",
+          "explanation": "關聯式資料指存放在關聯式資料庫的結構化資料。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d2-002",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "分析團隊想用 SQL 查詢數 PB 的資料，而且不想管理任何基礎架構。應該選擇哪一項產品？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud SQL",
+          "explanation": "Cloud SQL 是代管的關聯式資料庫，適合交易型工作負載，不是為 PB 級分析設計。"
+        },
+        {
+          "id": "b",
+          "text": "BigQuery",
+          "explanation": "正確。BigQuery 是無伺服器的資料倉儲，可以用 SQL 分析非常大量的資料。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud Storage",
+          "explanation": "Cloud Storage 是物件儲存，本身不提供 SQL 分析。"
+        },
+        {
+          "id": "d",
+          "text": "Firestore",
+          "explanation": "Firestore 是 NoSQL 文件資料庫，適合應用程式資料。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d3-001",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "準備訓練機器學習模型時，發現同一位客戶在資料集裡重複出現了好幾次。這是資料品質的哪一個面向出了問題？",
+      "options": [
+        {
+          "id": "a",
+          "text": "完整性（completeness）",
+          "explanation": "完整性指的是資料有沒有缺漏。"
+        },
+        {
+          "id": "b",
+          "text": "唯一性（uniqueness）",
+          "explanation": "正確。唯一性指每筆紀錄應該只出現一次。"
+        },
+        {
+          "id": "c",
+          "text": "及時性（timeliness）",
+          "explanation": "及時性指資料是否夠新。"
+        },
+        {
+          "id": "d",
+          "text": "有效性（validity）",
+          "explanation": "有效性指資料是否符合規定的格式或範圍。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d3-002",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "一家零售商想自動辨識商品照片裡的物體和文字，但公司沒有機器學習專家，也希望盡快上線。最適合的做法是什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "使用預先訓練好的 Vision API",
+          "explanation": "正確。預先訓練的 API 不需要自己準備訓練資料或建立模型，導入最快。"
+        },
+        {
+          "id": "b",
+          "text": "使用 Speech-to-Text API",
+          "explanation": "Speech-to-Text 是把語音轉成文字，不處理影像。"
+        },
+        {
+          "id": "c",
+          "text": "使用 Cloud Translation API",
+          "explanation": "Translation API 用來翻譯文字。"
+        },
+        {
+          "id": "d",
+          "text": "從零開始自行建立並訓練模型",
+          "explanation": "自建模型需要專業人力、資料和時間，不符合題目的條件。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d4-001",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 4
+        }
+      ],
+      "difficulty": 1,
+      "question": "把地端的虛擬機幾乎不做修改，直接搬到雲端的虛擬機上執行。這屬於哪一種遷移策略？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Rehost（lift and shift）",
+          "explanation": "正確。Rehost 是原封不動搬移，速度最快，但不會立刻享受到雲端原生的好處。"
+        },
+        {
+          "id": "b",
+          "text": "Refactor",
+          "explanation": "Refactor 會修改應用程式的架構或程式碼，讓它更適合雲端。"
+        },
+        {
+          "id": "c",
+          "text": "Replatform（move and improve）",
+          "explanation": "Replatform 會在搬移時做一些最佳化，例如改用代管服務。"
+        },
+        {
+          "id": "d",
+          "text": "Retire",
+          "explanation": "Retire 是把不再需要的系統下線。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d4-002",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個封裝成容器的無狀態網站服務，希望能自動依流量擴縮（沒有流量時縮減到零），而且不想管理底層基礎架構。最適合哪一項產品？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Compute Engine",
+          "explanation": "Compute Engine 是虛擬機，需要自己管理機器和擴縮設定。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud Run",
+          "explanation": "正確。Cloud Run 是全代管的無伺服器容器平台，會自動擴縮，包含縮減到零。"
+        },
+        {
+          "id": "c",
+          "text": "自行管理節點的 Google Kubernetes Engine 叢集",
+          "explanation": "GKE 能執行容器，但需要管理叢集，不符合不想管理基礎架構的需求。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud Storage",
+          "explanation": "Cloud Storage 是物件儲存，不能執行容器。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d5-001",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 5
+        }
+      ],
+      "difficulty": 2,
+      "question": "在雲端的共同責任模型中，下列哪一項是客戶的責任？",
+      "options": [
+        {
+          "id": "a",
+          "text": "資料中心的實體安全",
+          "explanation": "這由雲端供應商負責。"
+        },
+        {
+          "id": "b",
+          "text": "伺服器硬體的維護",
+          "explanation": "這由雲端供應商負責。"
+        },
+        {
+          "id": "c",
+          "text": "設定誰可以存取自己的資料",
+          "explanation": "正確。客戶要負責自己資料的存取控制，例如設定 IAM 權限。"
+        },
+        {
+          "id": "d",
+          "text": "底層網路設備的安全",
+          "explanation": "這由雲端供應商負責。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d5-002",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 5
+        }
+      ],
+      "difficulty": 1,
+      "question": "只授予使用者完成工作所需的權限，不多給。這個安全原則稱為什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "零信任（zero trust）",
+          "explanation": "零信任指不因為位於內部網路就預設信任，每次存取都要驗證。"
+        },
+        {
+          "id": "b",
+          "text": "最小權限（least privilege）",
+          "explanation": "正確。"
+        },
+        {
+          "id": "c",
+          "text": "縱深防禦（defense in depth）",
+          "explanation": "縱深防禦指使用多層防護，任何一層失效仍有其他層保護。"
+        },
+        {
+          "id": "d",
+          "text": "靜態加密（encryption at rest）",
+          "explanation": "這是保護儲存中資料的技術，不是授權原則。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d6-001",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 6
+        }
+      ],
+      "difficulty": 1,
+      "question": "組織從自建機房搬到雲端後，IT 支出的型態通常會有什麼變化？",
+      "options": [
+        {
+          "id": "a",
+          "text": "從營運支出（OpEx）轉為資本支出（CapEx）",
+          "explanation": "方向相反。"
+        },
+        {
+          "id": "b",
+          "text": "從資本支出（CapEx）轉為營運支出（OpEx）",
+          "explanation": "正確。不再預先採購硬體，改成依用量持續付費。"
+        },
+        {
+          "id": "c",
+          "text": "資本支出和營運支出都變成零",
+          "explanation": "使用雲端仍然要付費。"
+        },
+        {
+          "id": "d",
+          "text": "支出型態不會改變",
+          "explanation": "採購硬體和依用量付費是不同的支出型態。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d6-002",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 6
+        }
+      ],
+      "difficulty": 2,
+      "question": "服務供應商與客戶簽訂的可用性承諾，沒達到時通常會有補償。這指的是什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "服務等級指標（SLI）",
+          "explanation": "SLI 是實際量測到的指標，例如成功請求的比例。"
+        },
+        {
+          "id": "b",
+          "text": "服務等級目標（SLO）",
+          "explanation": "SLO 是團隊為 SLI 設定的內部目標值。"
+        },
+        {
+          "id": "c",
+          "text": "服務等級協議（SLA）",
+          "explanation": "正確。SLA 是對客戶的正式承諾，通常包含未達標時的補償。"
+        },
+        {
+          "id": "d",
+          "text": "錯誤預算（error budget）",
+          "explanation": "錯誤預算是在 SLO 之下還可以容許的不可靠程度。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    }
+  ]
+}

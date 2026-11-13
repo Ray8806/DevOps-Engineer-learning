@@ -53,24 +53,29 @@ export function setPreferredProvider(progress: Progress, preferredProvider: Pref
   return { ...progress, preferredProvider };
 }
 
-/**
- * Records one finished quiz attempt: per-question history, and the unit's
- * best score so far (a worse retake never lowers it).
- */
-export function recordQuizAttempt(
-  progress: Progress,
-  unitId: string,
-  results: readonly { questionId: string; correct: boolean }[],
-): Progress {
+type AnswerResult = { questionId: string; correct: boolean };
+
+/** Records per-question history (attempt count and last result). */
+export function recordAnswers(progress: Progress, results: readonly AnswerResult[]): Progress {
   if (results.length === 0) return progress;
   const questions = { ...progress.questions };
   for (const r of results) {
     questions[r.questionId] = { attempts: (questions[r.questionId]?.attempts ?? 0) + 1, lastCorrect: r.correct };
   }
+  return { ...progress, questions };
+}
+
+/**
+ * Records one finished unit quiz attempt: per-question history, and the
+ * unit's best score so far (a worse retake never lowers it).
+ */
+export function recordQuizAttempt(progress: Progress, unitId: string, results: readonly AnswerResult[]): Progress {
+  if (results.length === 0) return progress;
+  const withAnswers = recordAnswers(progress, results);
   const current = progress.units[unitId] ?? { read: false, labsDone: [] };
   const score = results.filter((r) => r.correct).length / results.length;
   const quizScore = Math.max(current.quizScore ?? 0, score);
-  return { ...progress, questions, units: { ...progress.units, [unitId]: { ...current, quizScore } } };
+  return { ...withAnswers, units: { ...progress.units, [unitId]: { ...current, quizScore } } };
 }
 
 /** Marks a lab as completed. Completing it again changes nothing. */
