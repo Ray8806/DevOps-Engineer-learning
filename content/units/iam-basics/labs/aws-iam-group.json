@@ -1,0 +1,34 @@
+{
+  "id": "aws-iam-group",
+  "title": "用群組管理 IAM 權限",
+  "description": "建立群組、附加受管政策，再把使用者加入群組。",
+  "provider": "aws",
+  "estimatedMinutes": 10,
+  "initialState": { "files": {}, "cloud": {} },
+  "steps": [
+    {
+      "instruction": "建立一個名為 developers 的 IAM 群組。",
+      "hint": "aws iam create-group --group-name developers",
+      "check": { "type": "state", "path": ["cloud", "aws", "iam", "groups", "developers"], "exists": true }
+    },
+    {
+      "instruction": "把受管政策 AmazonS3ReadOnlyAccess 附加到 developers 群組。政策的 ARN 是 arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess。",
+      "hint": "aws iam attach-group-policy --group-name developers --policy-arn arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess",
+      "check": {
+        "type": "state",
+        "path": ["cloud", "aws", "iam", "groups", "developers", "policies", "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"],
+        "exists": true
+      }
+    },
+    {
+      "instruction": "建立一位名為 alice 的 IAM 使用者。",
+      "hint": "aws iam create-user --user-name alice",
+      "check": { "type": "state", "path": ["cloud", "aws", "iam", "users", "alice"], "exists": true }
+    },
+    {
+      "instruction": "把 alice 加入 developers 群組。完成後可以用 aws iam list-groups-for-user --user-name alice 確認。",
+      "hint": "aws iam add-user-to-group --group-name developers --user-name alice",
+      "check": { "type": "state", "path": ["cloud", "aws", "iam", "users", "alice", "groups", "developers"], "exists": true }
+    }
+  ]
+}

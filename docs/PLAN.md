@@ -237,19 +237,25 @@ Lab 引擎維護一份虛擬狀態（檔案系統加雲端資源），指令會�
 | `["cwd"]` | 目前目錄，例如 `"~/projects"` |
 | `["cloud", "s3", "buckets", 名稱, "region" \| "storageClass" \| "objects", key]` | S3 |
 | `["cloud", "gcs", "buckets", 名稱, "location" \| "storageClass" \| "objects", 名稱]` | Cloud Storage |
+| `["cloud", "aws", "iam", "users" \| "groups", 名稱, "groups" \| "policies", 名稱或 ARN]` | IAM 使用者、群組、附加的政策 |
+| `["cloud", "aws", "ec2", "securityGroups", 群組名稱, "ingress" \| "runningInstances"]` | 安全群組的規則（例如 `"tcp:443:0.0.0.0/0"`）與使用它的執行中執行個體數 |
+| `["cloud", "aws", "ec2", "counts", "running" \| "stopped" \| "terminated"]` | 各狀態的執行個體數量（ID 是產生的，Lab 無法預先知道，所以用數量檢查） |
+| `["cloud", "gcp", "serviceAccounts", 電子郵件]`、`["cloud", "gcp", "bindings", 角色, 成員]` | 服務帳戶與專案的 IAM 授權 |
+| `["cloud", "gcp", "instances", 名稱, "status" \| "zone" \| "machineType" \| "tags"]` | Compute Engine 執行個體 |
+| `["cloud", "gcp", "firewallRules", 名稱, "allow" \| "sourceRanges" \| "targetTags", 值]` | 防火牆規則 |
 | `["git", "~/project", "branch" \| "commitCount" \| "lastMessage" \| "clean"]` | Git 儲存庫目前的分支、提交數等 |
 | `["git", "~/project", "branches" \| "staged", 名稱]` | 分支是否存在、檔案是否在暫存區 |
 | `["git", "~/project", "branchFiles", 分支, 路徑]` | 某分支最新的提交是否包含某檔案 |
 
 步驟依序完成，完成後不會退回：後面的步驟把前面的條件改掉（例如把剛複製的檔案改名）不影響已完成的步驟。
 
-`initialState.files` 的路徑要以 `~/` 或 `/` 開頭。`initialState.cloud` 可以預先放 bucket，形狀與上表相同。
+`initialState.files` 的路徑要以 `~/` 或 `/` 開頭。`initialState.cloud` 可以預先放 bucket，形狀與上表相同；也可以用 `cloud.gcp` 預設專案 ID 和既有的 IAM 授權（`{ "project": "…", "bindings": { 角色: [成員] } }`）。
 
 ### Lab 引擎
 
 程式在 `src/lib/lab-engine/`，是不依賴瀏覽器的純函式：`execute(state, line)` 回傳新的狀態與輸出，不修改傳入的狀態。
 
-- **支援的指令**：`pwd ls cd mkdir touch cat echo cp mv rm rmdir clear help whoami`；`aws s3 mb|rb|ls|cp|mv|rm`；`gcloud storage buckets create|delete|list|describe` 與 `gcloud storage ls|cp|mv|rm|cat`；`gsutil mb|rb|ls|cp|mv|rm|cat`；`git init|status|add|commit|log|branch|switch|checkout|merge`（只有本機操作，沒有遠端；合併衝突會取消合併）。
+- **支援的指令**：`pwd ls cd mkdir touch cat echo cp mv rm rmdir clear help whoami`；`aws s3 mb|rb|ls|cp|mv|rm`；`gcloud storage buckets create|delete|list|describe` 與 `gcloud storage ls|cp|mv|rm|cat`；`gsutil mb|rb|ls|cp|mv|rm|cat`；`aws iam`（使用者、群組、受管政策）；`aws ec2`（安全群組與執行個體）；`gcloud iam service-accounts`；`gcloud projects`（IAM 授權）；`gcloud compute instances|firewall-rules`；`gcloud config`；`git init|status|add|commit|log|branch|switch|checkout|merge`（只有本機操作，沒有遠端；合併衝突會取消合併）。
 - **支援的語法**：引號、反斜線跳脫、註解、`>` 與 `>>`、`&&` 與 `;`。不支援管線、變數與萬用字元，會明確告知。
 - **新增指令**：在 `engine.ts` 的 `commands` 註冊一個 `Command`（收到可修改的草稿狀態與輸出函式，回傳結束碼），並補上測試。
 - **輸出訊息是近似值**：格式盡量貼近真實 CLI，但不保證逐字相同。
@@ -300,11 +306,13 @@ interface Progress {
 | 階段 | 單元 | 狀態 |
 |---|---|---|
 | 0 基礎 | Linux 指令基礎、網路基礎、Git 基礎 | 完成（網路基礎沒有 Lab） |
-| 1 雲端核心 | 物件儲存 | 完成 |
-| 1 雲端核心 | 身分與權限、虛擬機、無伺服器運算、區塊與檔案儲存、虛擬網路、關聯式資料庫、NoSQL 資料庫 | 待寫 |
+| 1 雲端核心 | 身分與權限、虛擬機、物件儲存 | 完成 |
+| 1 雲端核心 | 無伺服器運算、區塊與檔案儲存、虛擬網路、關聯式資料庫、NoSQL 資料庫 | 待寫 |
 | 2 維運 | 全部 5 個單元 | 待寫 |
 | 3 自動化 | 全部 5 個單元 | 待寫 |
 | 4 實戰 | 架構設計案例、面試題 | 待寫 |
+
+雲端服務單元的內容要對照官方文件再寫（環境已開放 `docs.aws.amazon.com` 和 `docs.cloud.google.com`）。用 `curl` 下載後閱讀，不要憑記憶寫限制、預設值和用語。
 
 證照題庫目前是每個考試範圍 2 題的起始題庫，目標每張 150 題。
 

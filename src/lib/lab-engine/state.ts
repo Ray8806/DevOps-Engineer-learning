@@ -29,6 +29,32 @@ export interface GitRepo {
   index: Map<string, string>;
 }
 
+export interface AwsState {
+  iam: {
+    users: Map<string, { groups: Set<string>; policies: Set<string> }>;
+    groups: Map<string, { policies: Set<string> }>;
+  };
+  ec2: {
+    /** Keyed by instance id. */
+    instances: Map<string, { imageId: string; instanceType: string; state: "running" | "stopped" | "terminated"; securityGroups: string[] }>;
+    /** Keyed by security group id. Ingress entries look like "tcp:443:0.0.0.0/0". */
+    securityGroups: Map<string, { name: string; description: string; ingress: Set<string> }>;
+    /** Number of ids handed out so far, so new ids are deterministic. */
+    created: number;
+  };
+}
+
+export interface GcpState {
+  project: string;
+  /** Keyed by service account email. */
+  serviceAccounts: Map<string, { displayName: string }>;
+  /** Project IAM policy: role -> members. */
+  bindings: Map<string, Set<string>>;
+  instances: Map<string, { zone: string; machineType: string; status: "RUNNING" | "TERMINATED"; tags: Set<string> }>;
+  /** Allow entries look like "tcp:80". */
+  firewallRules: Map<string, { allow: Set<string>; sourceRanges: Set<string>; targetTags: Set<string> }>;
+}
+
 export interface LabState {
   cwd: string;
   /** Absolute path -> content. */
@@ -39,6 +65,8 @@ export interface LabState {
   gcs: Map<string, Bucket>;
   /** Git repositories by the absolute path of their working directory. */
   git: Map<string, GitRepo>;
+  aws: AwsState;
+  gcp: GcpState;
 }
 
 export interface InitialState {
@@ -150,6 +178,31 @@ export function createLabState(initial: InitialState = {}): LabState {
     s3: bucketsFrom(cloud, "s3", DEFAULT_S3_REGION),
     gcs: bucketsFrom(cloud, "gcs", DEFAULT_GCS_LOCATION),
     git: new Map(),
+    aws: {
+      iam: { users: new Map(), groups: new Map() },
+      ec2: { instances: new Map(), securityGroups: new Map(), created: 0 },
+    },
+    gcp: gcpFrom(cloud),
+  };
+}
+
+export const DEFAULT_GCP_PROJECT = "my-project";
+
+/** Seeds the simulated GCP project from `initialState.cloud.gcp` ({ project, bindings: { role: [members] } }). */
+function gcpFrom(cloud: Record<string, unknown>): GcpState {
+  const gcp = isRecord(cloud.gcp) ? cloud.gcp : {};
+  const bindings = new Map<string, Set<string>>();
+  if (isRecord(gcp.bindings)) {
+    for (const [role, members] of Object.entries(gcp.bindings)) {
+      if (Array.isArray(members)) bindings.set(role, new Set(members.filter((m): m is string => typeof m === "string")));
+    }
+  }
+  return {
+    project: typeof gcp.project === "string" ? gcp.project : DEFAULT_GCP_PROJECT,
+    serviceAccounts: new Map(),
+    bindings,
+    instances: new Map(),
+    firewallRules: new Map(),
   };
 }
 
@@ -170,6 +223,9 @@ export function cloneState(state: LabState): LabState {
     s3: cloneBuckets(state.s3),
     gcs: cloneBuckets(state.gcs),
     git: new Map([...state.git].map(([root, repo]) => [root, cloneRepo(repo)])),
+    // Plain data made of Maps, Sets, arrays and primitives.
+    aws: structuredClone(state.aws),
+    gcp: structuredClone(state.gcp),
   };
 }
 
@@ -221,6 +277,35 @@ function bucketsView(buckets: Map<string, Bucket>, locationKey: "region" | "loca
   };
 }
 
+/** Maps become objects, Sets become { member: true }, so checks can walk them. */
+function plain(value: unknown): unknown {
+  if (value instanceof Map) return Object.fromEntries([...value].map(([k, v]) => [String(k), plain(v)]));
+  if (value instanceof Set) return Object.fromEntries([...value].map((k) => [String(k), true]));
+  if (Array.isArray(value)) return value.map(plain);
+  if (typeof value === "object" && value !== null) return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, plain(v)]));
+  return value;
+}
+
+function awsView(aws: AwsState) {
+  const instances = [...aws.ec2.instances.values()];
+  const count = (state: string, groupId?: string) =>
+    instances.filter((i) => i.state === state && (groupId === undefined || i.securityGroups.includes(groupId))).length;
+  return {
+    iam: plain(aws.iam),
+    ec2: {
+      instances: plain(aws.ec2.instances),
+      counts: { running: count("running"), stopped: count("stopped"), terminated: count("terminated") },
+      // By name, because ids are generated and a lab cannot know them in advance.
+      securityGroups: Object.fromEntries(
+        [...aws.ec2.securityGroups].map(([id, g]) => [
+          g.name,
+          { id, ingress: plain(g.ingress), runningInstances: count("running", id) },
+        ]),
+      ),
+    },
+  };
+}
+
 const keysTrue = (keys: Iterable<string>) => Object.fromEntries([...keys].map((k) => [k, true]));
 
 function repoView(state: LabState, root: string, repo: GitRepo) {
@@ -245,6 +330,12 @@ function repoView(state: LabState, root: string, repo: GitRepo) {
  *   files["~/a.txt"], dirs["~/projects"], cwd,
  *   cloud.s3.buckets[name].{region,storageClass,objects[key]},
  *   cloud.gcs.buckets[name].{location,storageClass,objects[name]},
+ *   cloud.aws.iam.users[name].{groups[name],policies[arn]}, cloud.aws.iam.groups[name].policies[arn],
+ *   cloud.aws.ec2.counts.{running,stopped,terminated}, cloud.aws.ec2.instances[id].{state,instanceType},
+ *   cloud.aws.ec2.securityGroups[name].{id,ingress["tcp:443:0.0.0.0/0"],runningInstances},
+ *   cloud.gcp.{project, serviceAccounts[email], bindings[role][member]},
+ *   cloud.gcp.instances[name].{zone,machineType,status,tags[tag]},
+ *   cloud.gcp.firewallRules[name].{allow["tcp:80"],sourceRanges[cidr],targetTags[tag]},
  *   git["~/project"].{branch, branches[name], commitCount, lastMessage,
  *     staged[path], clean, branchFiles[branch][path]}.
  */
@@ -253,7 +344,12 @@ export function checkView(state: LabState): Record<string, unknown> {
     cwd: displayPath(state.cwd),
     files: Object.fromEntries([...state.files].map(([p, c]) => [displayPath(p), c])),
     dirs: Object.fromEntries([...state.dirs].map((d) => [displayPath(d), true])),
-    cloud: { s3: bucketsView(state.s3, "region"), gcs: bucketsView(state.gcs, "location") },
+    cloud: {
+      s3: bucketsView(state.s3, "region"),
+      gcs: bucketsView(state.gcs, "location"),
+      aws: awsView(state.aws),
+      gcp: plain(state.gcp),
+    },
     git: Object.fromEntries([...state.git].map(([root, repo]) => [displayPath(root), repoView(state, root, repo)])),
   };
 }

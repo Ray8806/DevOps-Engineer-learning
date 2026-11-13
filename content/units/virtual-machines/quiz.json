@@ -1,0 +1,115 @@
+{
+  "questions": [
+    {
+      "id": "virtual-machines-001",
+      "type": "single",
+      "provider": "general",
+      "unitId": "virtual-machines",
+      "difficulty": 1,
+      "question": "你建立了一台練習用的虛擬機，練習結束後把它「停止」，但沒有刪除。一個月後帳單上最可能出現什麼？",
+      "options": [
+        { "id": "a", "text": "完全沒有費用，因為機器已經關機", "explanation": "停止後不收運算費用，但磁碟還在，仍然會收費。" },
+        { "id": "b", "text": "磁碟的儲存費用", "explanation": "正確。停止只是關機，磁碟上的資料還保留著，所以磁碟持續收費。不用的機器要刪除。" },
+        { "id": "c", "text": "和執行中完全相同的費用", "explanation": "停止後不再收取 CPU 和記憶體的運算費用。" },
+        { "id": "d", "text": "停止狀態的額外罰金", "explanation": "沒有這種費用。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "virtual-machines-002",
+      "type": "single",
+      "provider": "general",
+      "unitId": "virtual-machines",
+      "difficulty": 2,
+      "question": "一台網站伺服器需要讓所有人瀏覽 HTTPS 網站，並讓管理員從公司網路（203.0.113.0/24）用 SSH 登入。哪一組防火牆規則最合適？",
+      "options": [
+        { "id": "a", "text": "TCP 443 和 TCP 22 都開放給 0.0.0.0/0", "explanation": "這樣全世界都能嘗試用 SSH 登入，是常見的資安錯誤。" },
+        { "id": "b", "text": "TCP 443 開放給 0.0.0.0/0，TCP 22 只開放給 203.0.113.0/24", "explanation": "正確。對外的服務開放給所有人，管理用的連接埠只開放給需要的來源。" },
+        { "id": "c", "text": "TCP 443 和 TCP 22 都只開放給 203.0.113.0/24", "explanation": "這樣公司以外的訪客就無法瀏覽網站。" },
+        { "id": "d", "text": "開放所有連接埠給 0.0.0.0/0，比較不會連不上", "explanation": "這完全放棄了防火牆的保護。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "virtual-machines-003",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "clf-c02", "domain": 3 }],
+      "unitId": "virtual-machines",
+      "difficulty": 1,
+      "question": "在 Amazon EC2 中，啟動執行個體時用來提供作業系統和預先安裝軟體的範本叫什麼？",
+      "options": [
+        { "id": "a", "text": "安全群組（security group）", "explanation": "安全群組是防火牆，控制哪些連線可以進出。" },
+        { "id": "b", "text": "AMI（Amazon Machine Image）", "explanation": "正確。AMI 包含作業系統和軟體，執行個體由它啟動。" },
+        { "id": "c", "text": "金鑰對（key pair）", "explanation": "金鑰對用來透過 SSH 登入。" },
+        { "id": "d", "text": "執行個體類型（instance type）", "explanation": "執行個體類型決定 CPU 和記憶體的規格。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "virtual-machines-004",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "clf-c02", "domain": 3 }],
+      "unitId": "virtual-machines",
+      "difficulty": 2,
+      "question": "你剛建立一個新的 EC2 安全群組，還沒有加入任何規則就把它掛到執行個體上。這時的連線行為是什麼？",
+      "options": [
+        { "id": "a", "text": "所有輸入和輸出的連線都被允許", "explanation": "新的安全群組沒有輸入規則，不會允許任何連線進來。" },
+        { "id": "b", "text": "所有輸入的連線都被拒絕，輸出的連線被允許", "explanation": "正確。安全群組預設沒有輸入規則，輸出則預設全部允許。" },
+        { "id": "c", "text": "所有輸入和輸出的連線都被拒絕", "explanation": "輸出預設是允許的，所以機器可以對外下載更新。" },
+        { "id": "d", "text": "只允許來自同一個 Region 的連線", "explanation": "安全群組沒有這種預設規則。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "virtual-machines-005",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 3 }],
+      "unitId": "virtual-machines",
+      "difficulty": 2,
+      "question": "gcloud compute instances list 顯示某台執行個體的狀態是 TERMINATED。這代表什麼？",
+      "options": [
+        { "id": "a", "text": "執行個體已經永久刪除", "explanation": "被刪除的執行個體不會出現在清單裡。這是和 AWS 用語最容易混淆的地方。" },
+        { "id": "b", "text": "執行個體已經停止，之後可以再啟動", "explanation": "正確。在 Compute Engine，TERMINATED 表示已停止，磁碟等附加資源仍然存在並收費。" },
+        { "id": "c", "text": "執行個體正在重新開機", "explanation": "TERMINATED 是穩定的停止狀態，不是過渡狀態。" },
+        { "id": "d", "text": "執行個體因為沒付費被停權", "explanation": "TERMINATED 只表示機器目前是停止的。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "virtual-machines-006",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 2 }],
+      "unitId": "virtual-machines",
+      "difficulty": 2,
+      "question": "專案裡有十台 Compute Engine 執行個體，只有其中三台網站伺服器需要開放 TCP 80。要讓一條防火牆規則只套用到這三台，應該怎麼做？",
+      "options": [
+        { "id": "a", "text": "為這三台加上相同的網路標記，並在規則上指定這個目標標記", "explanation": "正確。防火牆規則設定在 VPC 網路上，用目標標記決定套用到哪些執行個體。" },
+        { "id": "b", "text": "把規則的來源範圍設成這三台的 IP 位址", "explanation": "來源範圍是指連線從哪裡來，不是規則套用到誰。" },
+        { "id": "c", "text": "不需要做任何事，防火牆規則本來就只套用到網站伺服器", "explanation": "沒有指定目標的規則會套用到網路裡所有的執行個體。" },
+        { "id": "d", "text": "把這三台搬到另一個專案", "explanation": "可以達到隔離，但只是為了一條規則而拆專案並不合理。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "virtual-machines-007",
+      "type": "multiple",
+      "provider": "general",
+      "certs": [{ "id": "gcp-cdl", "domain": 4 }],
+      "unitId": "virtual-machines",
+      "difficulty": 2,
+      "question": "和無伺服器或全代管的服務相比，選擇虛擬機時，下列哪兩項會是你自己的責任？（選兩個）",
+      "options": [
+        { "id": "a", "text": "安裝作業系統的安全性更新", "explanation": "正確。虛擬機裡的作業系統由你自己維護。" },
+        { "id": "b", "text": "維護資料中心的電力與冷卻", "explanation": "這是雲端供應商的責任。" },
+        { "id": "c", "text": "設定防火牆，決定允許哪些連線", "explanation": "正確。開放哪些連接埠給誰，由你決定和負責。" },
+        { "id": "d", "text": "更換故障的實體硬碟", "explanation": "實體硬體由雲端供應商負責。" },
+        { "id": "e", "text": "管理實體伺服器上的虛擬化軟體", "explanation": "虛擬化層由雲端供應商負責。" }
+      ],
+      "answer": ["a", "c"]
+    }
+  ]
+}
