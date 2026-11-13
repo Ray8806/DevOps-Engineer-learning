@@ -1,9 +1,12 @@
 import { parseArgs, type Command, type Ctx } from "./context";
+import { compute } from "./gcloud-compute";
+import { projects, serviceAccounts } from "./gcloud-iam";
 import { byteLength, listPrefix, parseLocation, transfer, type TransferStyle } from "./object-store";
 import { DEFAULT_GCS_LOCATION, displayPath, type Bucket } from "./state";
 
 const SUPPORTED =
   "這個模擬終端機目前支援 gcloud storage 的 buckets create／delete／list／describe，以及 ls、cp、mv、rm、cat。";
+const GROUPS = "這個模擬終端機支援的 gcloud 指令群組：storage、iam service-accounts、projects、compute instances、compute firewall-rules、config。";
 
 const style = (command: string): TransferStyle => ({
   scheme: "gs",
@@ -242,7 +245,24 @@ export const gcloud: Command = (ctx, args) => {
     return 0;
   }
   if (args[0] === "storage") return storage(ctx, args.slice(1));
-  ctx.err(`ERROR: (gcloud) 不支援 '${args[0] ?? ""}'。${SUPPORTED}`);
+  if (args[0] === "compute") return compute(ctx, args.slice(1));
+  if (args[0] === "projects") return projects(ctx, args.slice(1));
+  if (args[0] === "iam") {
+    if (args[1] === "service-accounts") return serviceAccounts(ctx, args.slice(2));
+    ctx.err(`ERROR: (gcloud.iam) 不支援 '${args[1] ?? ""}'。這個模擬終端機支援 gcloud iam service-accounts。`);
+    return 2;
+  }
+  if (args[0] === "config") {
+    // Enough for the common "which project am I in?" check.
+    if (args[1] === "get-value" && args[2] === "project") ctx.out(`${ctx.state.gcp.project}\n`);
+    else if (args[1] === "list") ctx.out(`[core]\nproject = ${ctx.state.gcp.project}\n`);
+    else if (args[1] !== "set") {
+      ctx.err("ERROR: (gcloud.config) 這個模擬終端機支援 gcloud config list 和 gcloud config get-value project。");
+      return 2;
+    }
+    return 0;
+  }
+  ctx.err(`ERROR: (gcloud) 不支援 '${args[0] ?? ""}'。${GROUPS}`);
   return 2;
 };
 

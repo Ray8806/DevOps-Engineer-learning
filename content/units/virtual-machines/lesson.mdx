@@ -1,0 +1,174 @@
+## 什麼是虛擬機
+
+**虛擬機**（virtual machine，VM）是一台用軟體模擬出來的電腦。雲端供應商在資料中心裡有大量的實體伺服器，每一台會切成多個虛擬機租給不同的客戶。對你來說，它就像一台真的電腦：有 CPU、記憶體、硬碟和作業系統，可以登入進去安裝任何軟體。
+
+和自己買伺服器相比，差別在於：
+
+- **幾分鐘就能取得**，不必採購和等待出貨。
+- **用多少付多少**，不需要時可以關掉或刪掉。
+- **隨時可以換規格**，流量變大就換大一點的機器。
+
+虛擬機是雲端上最有彈性的運算方式，但也是你要管最多東西的方式：作業系統的更新、軟體的安裝、安全性的設定，都是你的責任。
+
+## 建立虛擬機要決定的事
+
+不管在哪個平台，建立一台虛擬機都要回答這幾個問題：
+
+| 要決定的事 | 說明 |
+|---|---|
+| 規格 | 幾個 CPU、多少記憶體。規格越大越貴 |
+| 作業系統 | 從映像檔選擇，例如某個版本的 Linux |
+| 位置 | 放在哪個區域的哪個可用區，盡量靠近使用者 |
+| 磁碟 | 開機磁碟多大，要不要加掛其他磁碟 |
+| 網路與防火牆 | 放在哪個網路，允許哪些連線進來 |
+| 身分 | 上面的程式要用什麼身分存取其他雲端服務 |
+
+<Callout title="一台虛擬機只在一個可用區">
+虛擬機建立在某一個可用區裡。那個可用區故障時，機器就會停擺。需要高可用的服務，會在多個可用區各放幾台，前面再加上負載平衡。
+</Callout>
+
+## 防火牆：沒有允許的就是拒絕
+
+雲端防火牆的基本原則是：**沒有被規則明確允許的輸入連線，一律拒絕**。你要自己開放需要的連接埠。規則由三個部分組成：通訊協定、連接埠、來源的 IP 範圍。
+
+常見的設定：
+
+| 用途 | 通訊協定與連接埠 | 來源 |
+|---|---|---|
+| 對外的網站 | TCP 443 | `0.0.0.0/0`（所有人） |
+| SSH 管理 | TCP 22 | 只開放你自己的 IP 範圍 |
+
+把 SSH 的連接埠開放給 `0.0.0.0/0` 是很常見的資安錯誤。
+
+從虛擬機**往外**的連線，預設則是允許的，所以機器可以自己下載更新。
+
+## 停止和刪除不一樣
+
+這是初學者最容易誤會、也最容易多花錢的地方：
+
+| 動作 | 機器 | 磁碟上的資料 | 還會收費嗎 |
+|---|---|---|---|
+| 停止 | 關機，之後可以再啟動 | 保留 | 不收運算費用，但**磁碟仍然收費** |
+| 刪除 | 永久移除，無法復原 | 開機磁碟預設會一起刪除 | 不再收費 |
+
+所以練習用的機器，用完要**刪除**而不只是停止，否則磁碟會一直產生費用。
+
+## 在兩個平台上怎麼做
+
+<ProviderTabs>
+<Provider name="aws">
+
+### Amazon EC2
+
+EC2（Elastic Compute Cloud）是 AWS 的虛擬機服務，一台虛擬機稱為**執行個體**（instance）。
+
+**執行個體類型**決定規格，名稱有固定的格式，以 `t3.micro` 為例：
+
+- `t`：系列，代表用途（一般用途、運算最佳化、記憶體最佳化等）。
+- `3`：世代，數字越大越新。
+- `micro`：大小，從 `nano`、`micro`、`small` 一路到 `xlarge` 以上。
+
+**AMI**（Amazon Machine Image）是啟動執行個體用的範本，包含作業系統和預先安裝的軟體。AMI 的 ID 在每個 Region 都不同。
+
+**安全群組**（security group）是 EC2 的防火牆，直接掛在執行個體上。新建的安全群組沒有任何輸入規則，也就是不允許任何連線進來；輸出則預設全部允許。
+
+**金鑰對**（key pair）用來透過 SSH 登入 Linux 執行個體。
+
+**狀態與計費**
+
+| 狀態 | 說明 | 執行個體費用 |
+|---|---|---|
+| running | 執行中 | 收費，以秒計算，最少一分鐘 |
+| stopped | 已關機，可以再啟動 | 不收費，但 EBS 磁碟仍收費 |
+| terminated | 已永久刪除，無法再啟動 | 不收費 |
+
+即使執行個體閒置、沒有人連線，只要是 running 狀態就會持續收費。
+
+**常用指令**
+
+```bash
+# 建立安全群組
+aws ec2 create-security-group --group-name web-sg --description "Web server"
+
+# 允許所有人連到 HTTPS
+aws ec2 authorize-security-group-ingress --group-name web-sg --protocol tcp --port 443 --cidr 0.0.0.0/0
+
+# 啟動一台執行個體
+aws ec2 run-instances --image-id ami-0abcdef1234567890 --instance-type t3.micro --security-groups web-sg
+
+# 列出執行個體
+aws ec2 describe-instances
+
+# 停止、啟動、終止（要換成你自己的執行個體 ID）
+aws ec2 stop-instances --instance-ids i-0123456789abcdef0
+aws ec2 start-instances --instance-ids i-0123456789abcdef0
+aws ec2 terminate-instances --instance-ids i-0123456789abcdef0
+```
+
+AWS 的指令以**執行個體 ID** 來指定機器，ID 會在啟動時的輸出裡，也可以用 `describe-instances` 查到。
+
+</Provider>
+<Provider name="gcp">
+
+### Compute Engine
+
+Compute Engine 是 Google Cloud 的虛擬機服務。
+
+**機器類型**決定規格，例如 `e2-micro`、`e2-medium`、`n2-standard-4`。開頭的字母和數字是機器系列，後面是用途和大小。
+
+**映像檔**（image）是開機磁碟的範本。通常用「映像檔系列」來指定，這樣會自動取得該系列最新的版本。
+
+**可用區**：建立執行個體時要指定，例如 `asia-east1-b`。`asia-east1` 是區域，最後的字母代表區域裡的某一個可用區。
+
+**防火牆規則**設定在 VPC 網路上，不是直接掛在執行個體上。用**網路標記**（network tag）決定規則套用到哪些執行個體：在規則上指定目標標記 `web`，就只有帶著 `web` 標記的執行個體適用。
+
+<Callout title="default 網路已經有幾條規則">
+每個專案自動建立的 `default` 網路，附帶了允許從任何地方連入 SSH、RDP 和 ICMP 的預設規則。正式環境建議改用自己建立的網路，或把這幾條規則的來源範圍縮小。
+</Callout>
+
+**狀態與計費**
+
+| 狀態 | 說明 | CPU 與記憶體費用 |
+|---|---|---|
+| RUNNING | 執行中 | 收費 |
+| TERMINATED | 已停止，可以再啟動 | 不收費，但磁碟等附加資源仍收費 |
+
+注意這個容易誤會的名稱：在 Compute Engine，**TERMINATED 是「已停止」**，機器還在，可以再啟動。要永久移除必須執行刪除。
+
+**常用指令**
+
+```bash
+# 建立一台執行個體，並加上網路標記
+gcloud compute instances create web-1 --zone=asia-east1-b --machine-type=e2-micro --tags=web
+
+# 建立防火牆規則，允許所有人連到帶有 web 標記的執行個體的 80 連接埠
+gcloud compute firewall-rules create allow-http --allow=tcp:80 --source-ranges=0.0.0.0/0 --target-tags=web
+
+# 列出執行個體
+gcloud compute instances list
+
+# 停止、啟動、刪除
+gcloud compute instances stop web-1 --zone=asia-east1-b
+gcloud compute instances start web-1 --zone=asia-east1-b
+gcloud compute instances delete web-1 --zone=asia-east1-b
+```
+
+Google Cloud 的指令以**名稱加可用區**來指定機器。
+
+</Provider>
+</ProviderTabs>
+
+## 兩個平台的差異
+
+<Compare />
+
+最需要小心的是 **terminated 這個字在兩邊的意思相反**：在 AWS 代表已經永久刪除，在 Google Cloud 代表只是停止。
+
+## 重點整理
+
+- 虛擬機是雲端上最有彈性的運算方式，但作業系統以上都要自己管理。
+- 建立時要決定規格、作業系統、位置、磁碟、防火牆和身分。
+- 一台虛擬機只在一個可用區；要高可用就要跨可用區部署。
+- 沒有被規則允許的輸入連線一律拒絕；管理用的連接埠不要開放給所有人。
+- 停止只是關機，磁碟仍然收費；不用的機器要刪除。
+- AWS 用安全群組和執行個體 ID；Google Cloud 用 VPC 防火牆規則加網路標記，並以名稱和可用區指定機器。

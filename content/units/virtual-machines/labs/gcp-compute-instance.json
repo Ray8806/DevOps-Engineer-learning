@@ -1,0 +1,90 @@
+{
+  "id": "gcp-compute-instance",
+  "title": "建立並管理 Compute Engine 執行個體",
+  "description": "建立執行個體、用網路標記套用防火牆規則，並體驗停止與刪除的差別。",
+  "provider": "gcp",
+  "estimatedMinutes": 15,
+  "initialState": {
+    "files": {},
+    "cloud": {}
+  },
+  "steps": [
+    {
+      "instruction": "在可用區 asia-east1-b 建立一台名為 web-1 的執行個體，機器類型用 e2-micro，並加上網路標記 web。",
+      "hint": "gcloud compute instances create web-1 --zone=asia-east1-b --machine-type=e2-micro --tags=web",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "instances",
+          "web-1",
+          "tags",
+          "web"
+        ],
+        "exists": true
+      }
+    },
+    {
+      "instruction": "建立一條名為 allow-http 的防火牆規則，允許所有人連到 TCP 80。",
+      "hint": "gcloud compute firewall-rules create allow-http --allow=tcp:80 --source-ranges=0.0.0.0/0 --target-tags=web",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "firewallRules",
+          "allow-http",
+          "allow",
+          "tcp:80"
+        ],
+        "exists": true
+      }
+    },
+    {
+      "instruction": "確認這條規則只套用到帶有 web 標記的執行個體。用 gcloud compute firewall-rules list 檢查 TARGET_TAGS 欄位。",
+      "hint": "如果建立時沒有加上 --target-tags=web，先用 gcloud compute firewall-rules delete allow-http 刪除，再重新建立。",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "firewallRules",
+          "allow-http",
+          "targetTags",
+          "web"
+        ],
+        "exists": true
+      }
+    },
+    {
+      "instruction": "停止 web-1，然後用 gcloud compute instances list 看看它的狀態顯示成什麼。",
+      "hint": "gcloud compute instances stop web-1 --zone=asia-east1-b",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "instances",
+          "web-1",
+          "status"
+        ],
+        "equals": "TERMINATED"
+      }
+    },
+    {
+      "instruction": "TERMINATED 只是停止，磁碟還在收費。練習結束，刪除 web-1。",
+      "hint": "gcloud compute instances delete web-1 --zone=asia-east1-b",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "instances",
+          "web-1"
+        ],
+        "exists": false
+      }
+    }
+  ]
+}

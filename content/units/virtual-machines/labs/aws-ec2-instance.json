@@ -1,0 +1,39 @@
+{
+  "id": "aws-ec2-instance",
+  "title": "啟動並管理 EC2 執行個體",
+  "description": "建立安全群組、啟動執行個體，並體驗停止與終止的差別。",
+  "provider": "aws",
+  "estimatedMinutes": 15,
+  "initialState": { "files": {}, "cloud": {} },
+  "steps": [
+    {
+      "instruction": "建立一個名為 web-sg 的安全群組，描述隨意填寫。",
+      "hint": "aws ec2 create-security-group --group-name web-sg --description \"Web server\"",
+      "check": { "type": "state", "path": ["cloud", "aws", "ec2", "securityGroups", "web-sg"], "exists": true }
+    },
+    {
+      "instruction": "在 web-sg 加入一條輸入規則，允許所有人（0.0.0.0/0）連到 TCP 443。",
+      "hint": "aws ec2 authorize-security-group-ingress --group-name web-sg --protocol tcp --port 443 --cidr 0.0.0.0/0",
+      "check": {
+        "type": "state",
+        "path": ["cloud", "aws", "ec2", "securityGroups", "web-sg", "ingress", "tcp:443:0.0.0.0/0"],
+        "exists": true
+      }
+    },
+    {
+      "instruction": "用 AMI ami-0abcdef1234567890 啟動一台 t3.micro 執行個體，並套用 web-sg 安全群組。記下輸出裡的 InstanceId。",
+      "hint": "aws ec2 run-instances --image-id ami-0abcdef1234567890 --instance-type t3.micro --security-groups web-sg",
+      "check": { "type": "state", "path": ["cloud", "aws", "ec2", "securityGroups", "web-sg", "runningInstances"], "equals": 1 }
+    },
+    {
+      "instruction": "停止這台執行個體。可以用滑鼠選取終端機裡的 InstanceId 複製貼上，或用 aws ec2 describe-instances 再查一次。",
+      "hint": "aws ec2 stop-instances --instance-ids 你的執行個體ID",
+      "check": { "type": "state", "path": ["cloud", "aws", "ec2", "counts", "stopped"], "equals": 1 }
+    },
+    {
+      "instruction": "練習結束，終止這台執行個體，避免磁碟繼續收費。",
+      "hint": "aws ec2 terminate-instances --instance-ids 你的執行個體ID",
+      "check": { "type": "state", "path": ["cloud", "aws", "ec2", "counts", "terminated"], "equals": 1 }
+    }
+  ]
+}

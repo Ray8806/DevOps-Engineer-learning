@@ -1,0 +1,65 @@
+{
+  "id": "iam-basics",
+  "title": "身分與權限",
+  "summary": "誰可以對哪些資源做什麼事。這是雲端安全的基礎，也是之後每一項服務都會用到的設定。",
+  "stage": 1,
+  "prerequisites": [
+    "linux-basics"
+  ],
+  "providers": {
+    "aws": {
+      "services": [
+        "IAM"
+      ]
+    },
+    "gcp": {
+      "services": [
+        "Cloud IAM"
+      ]
+    }
+  },
+  "compare": [
+    {
+      "aspect": "服務名稱",
+      "aws": "AWS Identity and Access Management（IAM）",
+      "gcp": "Identity and Access Management（IAM）"
+    },
+    {
+      "aspect": "權限的集合",
+      "aws": "政策（policy），以 JSON 文件描述",
+      "gcp": "角色（role），是一組權限"
+    },
+    {
+      "aspect": "授權的方式",
+      "aws": "把政策附加到使用者、群組或角色",
+      "gcp": "在資源上把角色繫結給主體"
+    },
+    {
+      "aspect": "給程式用的身分",
+      "aws": "IAM 角色",
+      "gcp": "服務帳戶"
+    },
+    {
+      "aspect": "現成的權限組合",
+      "aws": "AWS 受管政策",
+      "gcp": "預先定義的角色"
+    },
+    {
+      "aspect": "權限的繼承",
+      "aws": "政策主要附加在身分上，授權不會沿著資源階層往下繼承",
+      "gcp": "機構、資料夾、專案的設定會往下繼承"
+    },
+    {
+      "aspect": "最高權限的身分",
+      "aws": "帳戶的 root 使用者",
+      "gcp": "機構管理員與專案擁有者"
+    }
+  ],
+  "certDomains": [
+    "clf-c02:2",
+    "saa-c03:1",
+    "gcp-cdl:5",
+    "gcp-ace:4"
+  ],
+  "estimatedMinutes": 35
+}

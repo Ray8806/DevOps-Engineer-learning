@@ -1,0 +1,115 @@
+{
+  "questions": [
+    {
+      "id": "iam-basics-001",
+      "type": "single",
+      "provider": "general",
+      "unitId": "iam-basics",
+      "difficulty": 1,
+      "question": "使用者登入後，系統判斷他可以讀取報表、但不能刪除資料。這個判斷屬於哪一件事？",
+      "options": [
+        { "id": "a", "text": "驗證（authentication）", "explanation": "驗證是確認使用者的身分，例如檢查密碼，發生在這個判斷之前。" },
+        { "id": "b", "text": "授權（authorization）", "explanation": "正確。授權決定已經確認身分的人可以做哪些事。" },
+        { "id": "c", "text": "加密（encryption）", "explanation": "加密是保護資料不被讀取，和權限判斷無關。" },
+        { "id": "d", "text": "稽核（auditing）", "explanation": "稽核是事後記錄並檢視誰做了什麼。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "iam-basics-002",
+      "type": "single",
+      "provider": "general",
+      "certs": [{ "id": "gcp-cdl", "domain": 5 }],
+      "unitId": "iam-basics",
+      "difficulty": 1,
+      "question": "新進的資料分析師只需要查看銷售報表。依照最小權限原則，應該怎麼授權？",
+      "options": [
+        { "id": "a", "text": "給管理員權限，之後有需要再縮小", "explanation": "先給大再縮小，中間這段時間就是風險，而且實務上常常忘記縮小。" },
+        { "id": "b", "text": "只給讀取報表所需的權限", "explanation": "正確。只給完成工作所需的權限，不多給。" },
+        { "id": "c", "text": "讓他和主管共用同一個帳號", "explanation": "共用帳號無法分辨是誰做的操作，權限也會超出需要。" },
+        { "id": "d", "text": "給所有資料的讀取和寫入權限，方便以後擴充", "explanation": "「以後可能用到」不是給權限的理由，需要時再加。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "iam-basics-003",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "clf-c02", "domain": 2 }],
+      "unitId": "iam-basics",
+      "difficulty": 2,
+      "question": "團隊有十位開發人員，都需要相同的 S3 讀取權限，之後還會有新人加入。在 AWS IAM 中最容易管理的做法是什麼？",
+      "options": [
+        { "id": "a", "text": "把政策分別附加到每一位使用者", "explanation": "可以運作，但每次有人加入或權限要調整，都得逐一修改。" },
+        { "id": "b", "text": "建立群組並附加政策，再把使用者加入群組", "explanation": "正確。權限設定在群組上，人員異動只需要調整群組成員。" },
+        { "id": "c", "text": "讓所有人共用 root 使用者", "explanation": "root 擁有無法限制的完整權限，不應該用於日常工作，更不該共用。" },
+        { "id": "d", "text": "建立一位使用者，把存取金鑰發給所有人", "explanation": "共用憑證無法追蹤是誰做的操作，有人離職時也無法只撤銷他的權限。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "iam-basics-004",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 4 }],
+      "unitId": "iam-basics",
+      "difficulty": 2,
+      "question": "在 Google Cloud 的某個專案上，把 roles/storage.objectViewer 授予一位使用者。他可以讀取哪些 Cloud Storage 物件？",
+      "options": [
+        { "id": "a", "text": "只有他自己上傳的物件", "explanation": "角色的範圍取決於授予的層級，和物件是誰上傳的無關。" },
+        { "id": "b", "text": "這個專案裡所有 bucket 的物件", "explanation": "正確。在專案上授予的角色會往下繼承到專案裡的所有資源。" },
+        { "id": "c", "text": "整個機構裡所有專案的物件", "explanation": "權限是往下繼承，不會往上或擴散到其他專案。" },
+        { "id": "d", "text": "沒有任何物件，還要在每個 bucket 上再授權一次", "explanation": "專案層級的授權已經涵蓋底下的資源，不需要逐一設定。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "iam-basics-005",
+      "type": "multiple",
+      "provider": "general",
+      "unitId": "iam-basics",
+      "difficulty": 2,
+      "question": "一個在虛擬機上執行的應用程式需要讀取儲存服務裡的檔案。下列哪兩種是建議的做法？（選兩個）",
+      "options": [
+        { "id": "a", "text": "在 AWS 上，把具備所需權限的 IAM 角色附加到 EC2 執行個體", "explanation": "正確。應用程式會自動取得臨時憑證，不需要保存金鑰。" },
+        { "id": "b", "text": "把長期有效的存取金鑰寫在程式碼裡", "explanation": "金鑰會跟著程式碼外流，是最常見的憑證外洩原因。" },
+        { "id": "c", "text": "在 Google Cloud 上，把具備所需角色的服務帳戶附加到執行個體", "explanation": "正確。應用程式會以服務帳戶的身分呼叫 API，不需要下載金鑰。" },
+        { "id": "d", "text": "把儲存空間設成公開，就不需要權限", "explanation": "這會讓所有人都能讀取資料。" },
+        { "id": "e", "text": "用管理員的個人帳號登入虛擬機來執行程式", "explanation": "程式不應該使用個人的身分，權限也遠超過需要。" }
+      ],
+      "answer": ["a", "c"]
+    },
+    {
+      "id": "iam-basics-006",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 4 }],
+      "unitId": "iam-basics",
+      "difficulty": 2,
+      "question": "關於 Google Cloud 的基本角色，哪一個說法正確？",
+      "options": [
+        { "id": "a", "text": "基本角色只包含單一服務的權限，是最細緻的選擇", "explanation": "相反。基本角色涵蓋所有服務的大量權限，針對單一服務的是預先定義的角色。" },
+        { "id": "b", "text": "基本角色的權限範圍很大，正式環境應該改用預先定義或自訂的角色", "explanation": "正確。基本角色包含上千個權限，不符合最小權限原則。" },
+        { "id": "c", "text": "基本角色由使用者自己列出要包含的權限", "explanation": "這是自訂角色。" },
+        { "id": "d", "text": "基本角色只能授予服務帳戶", "explanation": "基本角色可以授予任何主體，問題在於範圍太大。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "iam-basics-007",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 1 }],
+      "unitId": "iam-basics",
+      "difficulty": 2,
+      "question": "在 AWS IAM 中，「角色」和「使用者」最主要的差別是什麼？",
+      "options": [
+        { "id": "a", "text": "角色擁有長期的密碼和存取金鑰，使用者沒有", "explanation": "相反。使用者擁有長期憑證，角色沒有。" },
+        { "id": "b", "text": "角色可以被擔任並提供臨時憑證，沒有長期憑證", "explanation": "正確。所以角色適合給應用程式和需要暫時取得權限的情況使用。" },
+        { "id": "c", "text": "角色不能附加政策", "explanation": "角色的權限同樣由附加的政策決定。" },
+        { "id": "d", "text": "角色只能給人使用，不能給 AWS 服務使用", "explanation": "角色最常見的用途之一就是給 EC2、Lambda 這類服務上的程式使用。" }
+      ],
+      "answer": ["b"]
+    }
+  ]
+}

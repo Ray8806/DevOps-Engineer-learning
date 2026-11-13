@@ -23,8 +23,14 @@ const HELP = `可用的指令：
   檔案與目錄  pwd  ls  cd  mkdir  touch  cat  echo  cp  mv  rm  rmdir
   Git         git init | status | add | commit | log | branch | switch | checkout | merge
   AWS         aws s3 mb | rb | ls | cp | mv | rm
+              aws iam  使用者、群組與政策（輸入 aws iam 看完整清單）
+              aws ec2  安全群組與執行個體（輸入 aws ec2 看完整清單）
   GCP         gcloud storage buckets create | delete | list | describe
               gcloud storage ls | cp | mv | rm | cat      （也支援 gsutil）
+              gcloud iam service-accounts create | list | delete
+              gcloud projects get-iam-policy | add-iam-policy-binding | remove-iam-policy-binding
+              gcloud compute instances create | list | describe | stop | start | delete | add-tags
+              gcloud compute firewall-rules create | list | delete
   其他        clear  help  whoami
 支援 > 與 >> 輸出到檔案、用 && 或 ; 串接指令。按 Tab 補完路徑，上下鍵瀏覽歷史指令。
 `;

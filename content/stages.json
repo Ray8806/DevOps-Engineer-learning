@@ -15,6 +15,8 @@
       "title": "雲端核心",
       "description": "身分與權限、運算、儲存、網路、資料庫，每個平台都有的核心服務。",
       "units": [
+        "iam-basics",
+        "virtual-machines",
         "object-storage"
       ]
     },

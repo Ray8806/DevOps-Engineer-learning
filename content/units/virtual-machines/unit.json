@@ -1,0 +1,24 @@
+{
+  "id": "virtual-machines",
+  "title": "虛擬機",
+  "summary": "在雲端租用一台電腦：選規格、選作業系統、設定誰連得進來，並了解停止和刪除的差別。",
+  "stage": 1,
+  "prerequisites": ["linux-basics", "networking-basics"],
+  "providers": {
+    "aws": { "services": ["EC2"] },
+    "gcp": { "services": ["Compute Engine"] }
+  },
+  "compare": [
+    { "aspect": "服務名稱", "aws": "Amazon EC2", "gcp": "Compute Engine" },
+    { "aspect": "一台虛擬機的稱呼", "aws": "執行個體（instance）", "gcp": "執行個體（instance），也常稱 VM" },
+    { "aspect": "規格", "aws": "執行個體類型，例如 t3.micro", "gcp": "機器類型，例如 e2-micro" },
+    { "aspect": "作業系統範本", "aws": "AMI（Amazon Machine Image）", "gcp": "映像檔（image）" },
+    { "aspect": "放置的位置", "aws": "Region 裡的 Availability Zone", "gcp": "區域（region）裡的可用區（zone）" },
+    { "aspect": "防火牆", "aws": "安全群組，直接掛在執行個體上", "gcp": "VPC 防火牆規則，用網路標記指定套用到哪些執行個體" },
+    { "aspect": "停止後顯示的狀態", "aws": "stopped", "gcp": "TERMINATED" },
+    { "aspect": "永久移除", "aws": "終止（terminate），狀態變成 terminated", "gcp": "刪除（delete），執行個體直接消失" },
+    { "aspect": "命令列工具", "aws": "aws ec2", "gcp": "gcloud compute" }
+  ],
+  "certDomains": ["clf-c02:3", "saa-c03:3", "gcp-cdl:4", "gcp-ace:2", "gcp-ace:3"],
+  "estimatedMinutes": 40
+}
