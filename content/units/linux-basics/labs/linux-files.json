@@ -1,0 +1,38 @@
+{
+  "id": "linux-files",
+  "title": "整理檔案與目錄",
+  "description": "練習建立目錄、寫入檔案、複製、改名與刪除。",
+  "provider": "general",
+  "estimatedMinutes": 10,
+  "initialState": {
+    "files": { "~/todo.txt": "1. learn linux\n2. learn cloud\n" },
+    "cloud": {}
+  },
+  "steps": [
+    {
+      "instruction": "先用 ls 看看家目錄有什麼，然後建立一個名為 projects 的目錄。",
+      "hint": "建立目錄的指令是 mkdir。",
+      "check": { "type": "state", "path": ["dirs", "~/projects"], "exists": true }
+    },
+    {
+      "instruction": "在 projects 目錄裡建立 notes.txt，內容是 hello。",
+      "hint": "可以用 echo hello > projects/notes.txt，或先 cd projects 再寫入。",
+      "check": { "type": "state", "path": ["files", "~/projects/notes.txt"], "equals": "hello\n" }
+    },
+    {
+      "instruction": "把家目錄的 todo.txt 複製一份到 projects 目錄。",
+      "hint": "使用 cp 來源 目的地。在家目錄時是 cp todo.txt projects/。",
+      "check": { "type": "state", "path": ["files", "~/projects/todo.txt"], "exists": true }
+    },
+    {
+      "instruction": "把 projects 裡的 todo.txt 改名為 done.txt。",
+      "hint": "改名用 mv 舊名稱 新名稱。",
+      "check": { "type": "state", "path": ["files", "~/projects/done.txt"], "exists": true }
+    },
+    {
+      "instruction": "刪除家目錄原本的 todo.txt。",
+      "hint": "刪除檔案用 rm。先用 pwd 確認位置，或直接寫 rm ~/todo.txt。",
+      "check": { "type": "state", "path": ["files", "~/todo.txt"], "exists": false }
+    }
+  ]
+}

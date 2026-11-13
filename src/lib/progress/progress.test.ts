@@ -5,10 +5,14 @@ import {
   defaultProvider,
   matchesProvider,
   missingPrerequisites,
+  isLabDone,
   isUnitDone,
   parseProgress,
   quizScore,
+  recordLabDone,
   recordQuizAttempt,
+  remainingLabs,
+  requiredLabs,
   setPreferredProvider,
   setUnitRead,
   unitStatus,
@@ -17,9 +21,22 @@ import {
 } from "./progress";
 import { STORAGE_KEY, createLocalProgressStore } from "./store";
 
-const iam: UnitRef = { id: "iam", prerequisites: [], providers: ["aws", "gcp"] };
-const s3: UnitRef = { id: "s3-deep-dive", prerequisites: ["iam"], providers: ["aws"] };
-const linux: UnitRef = { id: "linux", prerequisites: [], providers: [] };
+const iam: UnitRef = { id: "iam", prerequisites: [], providers: ["aws", "gcp"], labs: [] };
+const s3: UnitRef = { id: "s3-deep-dive", prerequisites: ["iam"], providers: ["aws"], labs: [] };
+const linux: UnitRef = { id: "linux", prerequisites: [], providers: [], labs: [] };
+/** A unit with one lab per platform and one general lab. */
+const storage: UnitRef = {
+  id: "storage",
+  prerequisites: [],
+  providers: ["aws", "gcp"],
+  labs: [
+    { id: "lab-aws", provider: "aws" },
+    { id: "lab-gcp", provider: "gcp" },
+    { id: "lab-general", provider: "general" },
+  ],
+};
+const all = [iam, s3, linux, storage];
+const find = (id: string) => all.find((u) => u.id === id);
 
 const attempt = (...correct: boolean[]) => correct.map((c, i) => ({ questionId: `q${i + 1}`, correct: c }));
 
@@ -52,43 +69,83 @@ describe("progress updates", () => {
 
 describe("unit status", () => {
   it("is available with no prerequisites, locked until prerequisites are done", () => {
-    expect(unitStatus(EMPTY_PROGRESS, iam)).toBe("available");
-    expect(unitStatus(EMPTY_PROGRESS, s3)).toBe("locked");
-    expect(missingPrerequisites(EMPTY_PROGRESS, s3)).toEqual(["iam"]);
+    expect(unitStatus(EMPTY_PROGRESS, iam, find)).toBe("available");
+    expect(unitStatus(EMPTY_PROGRESS, s3, find)).toBe("locked");
+    expect(missingPrerequisites(EMPTY_PROGRESS, s3, find)).toEqual(["iam"]);
 
     const afterIam = complete(EMPTY_PROGRESS, "iam");
-    expect(unitStatus(afterIam, iam)).toBe("done");
-    expect(unitStatus(afterIam, s3)).toBe("available");
+    expect(unitStatus(afterIam, iam, find)).toBe("done");
+    expect(unitStatus(afterIam, s3, find)).toBe("available");
   });
 
   it("needs both the lesson and a passed quiz to be done", () => {
     const readOnly = setUnitRead(EMPTY_PROGRESS, "iam", true);
-    expect(unitStatus(readOnly, iam)).toBe("in-progress");
-    expect(unitStatus(readOnly, s3)).toBe("locked");
+    expect(unitStatus(readOnly, iam, find)).toBe("in-progress");
+    expect(unitStatus(readOnly, s3, find)).toBe("locked");
 
     const quizOnly = recordQuizAttempt(EMPTY_PROGRESS, "iam", attempt(true));
-    expect(unitStatus(quizOnly, iam)).toBe("in-progress");
+    expect(unitStatus(quizOnly, iam, find)).toBe("in-progress");
 
     const failedQuiz = recordQuizAttempt(readOnly, "iam", attempt(true, false));
-    expect(unitStatus(failedQuiz, iam)).toBe("in-progress");
+    expect(unitStatus(failedQuiz, iam, find)).toBe("in-progress");
 
-    expect(isUnitDone(recordQuizAttempt(readOnly, "iam", attempt(true)), "iam")).toBe(true);
+    expect(isUnitDone(recordQuizAttempt(readOnly, "iam", attempt(true)), iam)).toBe(true);
   });
 
   it("passes at exactly 80% and fails just below", () => {
     const read = setUnitRead(EMPTY_PROGRESS, "iam", true);
-    expect(isUnitDone(recordQuizAttempt(read, "iam", attempt(true, true, true, true, false)), "iam")).toBe(true);
-    expect(isUnitDone(recordQuizAttempt(read, "iam", attempt(true, true, true, false, false)), "iam")).toBe(false);
+    expect(isUnitDone(recordQuizAttempt(read, "iam", attempt(true, true, true, true, false)), iam)).toBe(true);
+    expect(isUnitDone(recordQuizAttempt(read, "iam", attempt(true, true, true, false, false)), iam)).toBe(false);
   });
 
   it("locks a unit again when its prerequisite is un-marked", () => {
     const p = setUnitRead(complete(EMPTY_PROGRESS, "iam"), "iam", false);
-    expect(unitStatus(p, s3)).toBe("locked");
+    expect(unitStatus(p, s3, find)).toBe("locked");
+  });
+
+  it("ignores a prerequisite id that does not exist", () => {
+    const orphan: UnitRef = { id: "orphan", prerequisites: ["ghost"], providers: [], labs: [] };
+    expect(unitStatus(EMPTY_PROGRESS, orphan, find)).toBe("available");
   });
 
   it("counts done units", () => {
     const p = complete(EMPTY_PROGRESS, "iam");
     expect(countDone(p, [iam, s3, linux])).toEqual({ done: 1, total: 3 });
+  });
+});
+
+describe("labs", () => {
+  const lessonAndQuiz = complete(EMPTY_PROGRESS, "storage");
+  const withLabs = (p: Progress, ...ids: string[]) => ids.reduce((acc, id) => recordLabDone(acc, "storage", id), p);
+
+  it("a unit with labs is not done until every required lab is finished", () => {
+    expect(isUnitDone(lessonAndQuiz, storage)).toBe(false);
+    expect(remainingLabs(lessonAndQuiz, storage).map((l) => l.id)).toEqual(["lab-aws", "lab-gcp", "lab-general"]);
+    expect(isUnitDone(withLabs(lessonAndQuiz, "lab-aws", "lab-gcp"), storage)).toBe(false);
+    expect(isUnitDone(withLabs(lessonAndQuiz, "lab-aws", "lab-gcp", "lab-general"), storage)).toBe(true);
+  });
+
+  it("with a main platform, only that platform's labs and general labs are required", () => {
+    const gcp = setPreferredProvider(lessonAndQuiz, "gcp");
+    expect(requiredLabs(gcp, storage).map((l) => l.id)).toEqual(["lab-gcp", "lab-general"]);
+    expect(isUnitDone(withLabs(gcp, "lab-gcp", "lab-general"), storage)).toBe(true);
+    // The same progress is not enough once the learner switches back to both.
+    expect(isUnitDone(setPreferredProvider(withLabs(gcp, "lab-gcp", "lab-general"), "both"), storage)).toBe(false);
+  });
+
+  it("labs alone do not finish a unit, but they mark it as started", () => {
+    const labsOnly = withLabs(EMPTY_PROGRESS, "lab-aws", "lab-gcp", "lab-general");
+    expect(isUnitDone(labsOnly, storage)).toBe(false);
+    expect(unitStatus(labsOnly, storage, find)).toBe("in-progress");
+  });
+
+  it("recording the same lab twice changes nothing, and other fields are kept", () => {
+    const once = recordLabDone(lessonAndQuiz, "storage", "lab-aws");
+    expect(recordLabDone(once, "storage", "lab-aws")).toBe(once);
+    expect(once.units.storage).toEqual({ read: true, quizScore: 1, labsDone: ["lab-aws"] });
+    expect(isLabDone(once, "storage", "lab-aws")).toBe(true);
+    expect(isLabDone(once, "storage", "lab-gcp")).toBe(false);
+    expect(lessonAndQuiz.units.storage.labsDone).toEqual([]);
   });
 });
 

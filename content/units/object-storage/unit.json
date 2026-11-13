@@ -3,10 +3,20 @@
   "title": "物件儲存",
   "summary": "認識雲端最常用的儲存方式：把檔案當成物件放進 bucket，並比較 Amazon S3 與 Google Cloud Storage。",
   "stage": 1,
-  "prerequisites": [],
+  "prerequisites": [
+    "linux-basics"
+  ],
   "providers": {
-    "aws": { "services": ["S3"] },
-    "gcp": { "services": ["Cloud Storage"] }
+    "aws": {
+      "services": [
+        "S3"
+      ]
+    },
+    "gcp": {
+      "services": [
+        "Cloud Storage"
+      ]
+    }
   },
   "compare": [
     {
@@ -45,6 +55,9 @@
       "gcp": "gs://bucket/object"
     }
   ],
-  "certDomains": ["clf-c02:3", "saa-c03:3"],
+  "certDomains": [
+    "clf-c02:3",
+    "saa-c03:3"
+  ],
   "estimatedMinutes": 25
 }

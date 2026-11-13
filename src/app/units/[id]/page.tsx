@@ -3,12 +3,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
+import { LabCard } from "@/components/LabCard";
 import { lessonComponents } from "@/components/lesson-components";
 import { MarkReadButton } from "@/components/MarkReadButton";
 import { QuizCard } from "@/components/QuizCard";
 import { ProviderBadge } from "@/components/ProviderBadge";
 import { getContent } from "@/lib/content/loader";
 import { PROVIDERS } from "@/lib/content/schema";
+import { toUnitRef } from "@/lib/content/unit-ref";
 
 export function generateStaticParams() {
   return [...getContent().units.keys()].map((id) => ({ id }));
@@ -73,7 +75,7 @@ export default async function UnitPage({ params }: PageProps<"/units/[id]">) {
       </div>
 
       <div className="mt-12">
-        <MarkReadButton unitId={meta.id} />
+        <MarkReadButton unit={toUnitRef(unit)} />
       </div>
 
       <section aria-labelledby="next-steps" className="mt-8">
@@ -85,15 +87,17 @@ export default async function UnitPage({ params }: PageProps<"/units/[id]">) {
             <QuizCard unitId={meta.id} questionCount={unit.quiz.length} />
           </li>
           {unit.labs.map((lab) => (
-            <li key={lab.id} className="rounded-xl border border-border bg-surface p-4">
-              <div className="flex items-start justify-between gap-2">
-                <h3 className="font-bold">{lab.title}</h3>
-                {lab.provider !== "general" ? <ProviderBadge provider={lab.provider} /> : null}
-              </div>
-              <p className="mt-1 text-sm text-muted">
-                {lab.description}（約 {lab.estimatedMinutes} 分鐘）
-              </p>
-              <p className="mt-3 text-xs font-semibold text-muted">即將開放</p>
+            <li key={lab.id}>
+              <LabCard
+                unitId={meta.id}
+                lab={{
+                  id: lab.id,
+                  title: lab.title,
+                  description: lab.description,
+                  provider: lab.provider,
+                  estimatedMinutes: lab.estimatedMinutes,
+                }}
+              />
             </li>
           ))}
         </ul>

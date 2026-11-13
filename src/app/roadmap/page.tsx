@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Roadmap, type RoadmapStage } from "@/components/Roadmap";
 import { getContent } from "@/lib/content/loader";
-import { PROVIDERS } from "@/lib/content/schema";
+import { toUnitRef } from "@/lib/content/unit-ref";
 
 export const metadata: Metadata = { title: "學習路線" };
 
@@ -12,16 +12,15 @@ export default function RoadmapPage() {
     title: stage.title,
     description: stage.description,
     units: stage.units.map((id) => {
-      const { meta } = content.units.get(id)!;
-      const providers = PROVIDERS.filter((p) => meta.providers[p]);
+      const unit = content.units.get(id)!;
+      const { meta } = unit;
+      const ref = toUnitRef(unit);
       return {
-        id,
+        ...ref,
         title: meta.title,
         summary: meta.summary,
         estimatedMinutes: meta.estimatedMinutes,
-        prerequisites: meta.prerequisites,
-        providers,
-        services: Object.fromEntries(providers.map((p) => [p, meta.providers[p]!.services])),
+        services: Object.fromEntries(ref.providers.map((p) => [p, meta.providers[p]!.services])),
       };
     }),
   }));

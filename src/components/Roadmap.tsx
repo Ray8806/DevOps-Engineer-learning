@@ -5,10 +5,12 @@ import type { Provider } from "@/lib/content/schema";
 import {
   QUIZ_PASS_SCORE,
   countDone,
+  isLabDone,
   isUnitRead,
   matchesProvider,
   missingPrerequisites,
   quizScore,
+  requiredLabs,
   setPreferredProvider,
   unitStatus,
   type PreferredProvider,
@@ -94,18 +96,24 @@ function ProgressBar({ done, total, label }: { done: number; total: number; labe
 export function Roadmap({ stages }: { stages: RoadmapStage[] }) {
   const [progress, update] = useProgress();
   const preferred = progress.preferredProvider;
-  const titleOf = new Map(stages.flatMap((s) => s.units).map((u) => [u.id, u.title]));
+  const allUnits = new Map(stages.flatMap((s) => s.units).map((u) => [u.id, u]));
+  const findUnit = (id: string) => allUnits.get(id);
 
-  /** What is still open in a started unit, e.g. "課文已讀 · 測驗 60%（需 80%）". */
-  function stepSummary(unitId: string): string {
+  /** What is still open in a started unit, e.g. "課文已讀 · 測驗 60%（需 80%） · Lab 1/2". */
+  function stepSummary(unit: RoadmapUnit): string {
+    const unitId = unit.id;
     const best = quizScore(progress, unitId);
+    const labs = requiredLabs(progress, unit);
+    const labsDone = labs.filter((lab) => isLabDone(progress, unitId, lab.id)).length;
     const quiz =
       best === undefined
         ? "測驗未作答"
         : best >= QUIZ_PASS_SCORE
           ? "測驗已通過"
           : `測驗 ${Math.round(best * 100)}%（需 ${Math.round(QUIZ_PASS_SCORE * 100)}%）`;
-    return `${isUnitRead(progress, unitId) ? "課文已讀" : "課文未讀"} · ${quiz}`;
+    const parts = [isUnitRead(progress, unitId) ? "課文已讀" : "課文未讀", quiz];
+    if (labs.length > 0) parts.push(`Lab ${labsDone}/${labs.length}`);
+    return parts.join(" · ");
   }
 
   const visibleStages = stages.map((stage) => ({
@@ -193,8 +201,8 @@ export function Roadmap({ stages }: { stages: RoadmapStage[] }) {
               ) : (
                 <ul className="mt-3 grid gap-3 sm:grid-cols-2">
                   {stage.units.map((unit) => {
-                    const status = unitStatus(progress, unit);
-                    const missing = missingPrerequisites(progress, unit);
+                    const status = unitStatus(progress, unit, findUnit);
+                    const missing = missingPrerequisites(progress, unit, findUnit);
                     return (
                       <li key={unit.id}>
                         <Link
@@ -218,9 +226,9 @@ export function Roadmap({ stages }: { stages: RoadmapStage[] }) {
                             </div>
                             <p className="mt-2 text-xs font-semibold text-muted">
                               {status === "locked"
-                                ? `建議先完成：${missing.map((id) => titleOf.get(id) ?? id).join("、")}`
+                                ? `建議先完成：${missing.map((id) => allUnits.get(id)?.title ?? id).join("、")}`
                                 : status === "in-progress"
-                                  ? `${STATUS_LABEL[status]}：${stepSummary(unit.id)}`
+                                  ? `${STATUS_LABEL[status]}：${stepSummary(unit)}`
                                   : STATUS_LABEL[status]}
                             </p>
                           </div>

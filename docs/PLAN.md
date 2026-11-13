@@ -97,7 +97,7 @@
 
 - **框架**：Next.js（App Router）、TypeScript（strict）、Tailwind CSS。
 - **內容**：MDX 加 JSON，放在 repo 內，建置時載入並用 Zod 驗證格式。
-- **終端機**：xterm.js 加自寫的指令模擬引擎。
+- **終端機**：自寫的 React 終端機元件加指令模擬引擎。沒有用 xterm.js：它需要自己處理行編輯，中文輸入法、手機鍵盤和螢幕閱讀器的支援都比原生輸入框差，而這裡只需要一行輸入加輸出紀錄。
 - **測試**：Vitest（Lab 引擎、抽題邏輯、內容格式驗證），Playwright（主要流程）。
 - **會員與資料庫（第二版）**：Supabase（Auth 加 Postgres）。
 - **部署**：Vercel。
@@ -223,7 +223,29 @@ src/
 
 Lab 引擎維護一份虛擬狀態（檔案系統加雲端資源），指令會改變狀態，步驟以**狀態**判定通過，而不是比對指令字串，這樣同一步驟的多種正確寫法都能過。
 
-`check.path` 是鍵的陣列而不是用點分隔的字串，因為物件名稱本身會含有點（例如 `report.txt`）。`check` 必須剛好有 `exists` 或 `equals` 其中一個。
+`check.path` 是鍵的陣列而不是用點分隔的字串，因為物件名稱本身會含有點（例如 `report.txt`）。`check` 必須剛好有 `exists` 或 `equals` 其中一個。可檢查的路徑：
+
+| 路徑 | 內容 |
+|---|---|
+| `["files", "~/a.txt"]` | 檔案內容 |
+| `["dirs", "~/projects"]` | 目錄是否存在 |
+| `["cwd"]` | 目前目錄，例如 `"~/projects"` |
+| `["cloud", "s3", "buckets", 名稱, "region" \| "storageClass" \| "objects", key]` | S3 |
+| `["cloud", "gcs", "buckets", 名稱, "location" \| "storageClass" \| "objects", 名稱]` | Cloud Storage |
+
+步驟依序完成，完成後不會退回：後面的步驟把前面的條件改掉（例如把剛複製的檔案改名）不影響已完成的步驟。
+
+`initialState.files` 的路徑要以 `~/` 或 `/` 開頭。`initialState.cloud` 可以預先放 bucket，形狀與上表相同。
+
+### Lab 引擎
+
+程式在 `src/lib/lab-engine/`，是不依賴瀏覽器的純函式：`execute(state, line)` 回傳新的狀態與輸出，不修改傳入的狀態。
+
+- **支援的指令**：`pwd ls cd mkdir touch cat echo cp mv rm rmdir clear help whoami`；`aws s3 mb|rb|ls|cp|mv|rm`；`gcloud storage buckets create|delete|list|describe` 與 `gcloud storage ls|cp|mv|rm|cat`；`gsutil mb|rb|ls|cp|mv|rm|cat`。
+- **支援的語法**：引號、反斜線跳脫、註解、`>` 與 `>>`、`&&` 與 `;`。不支援管線、變數與萬用字元，會明確告知。
+- **新增指令**：在 `engine.ts` 的 `commands` 註冊一個 `Command`（收到可修改的草稿狀態與輸出函式，回傳結束碼），並補上測試。
+- **輸出訊息是近似值**：格式盡量貼近真實 CLI，但不保證逐字相同。
+- 每個 Lab 都必須在 `engine.test.ts` 有一條能從頭做到完成的指令腳本。
 
 所有格式的權威定義在 `src/lib/content/schema.ts`，本節與它不一致時以程式為準。
 
@@ -240,7 +262,7 @@ interface Progress {
 
 `preferredProvider` 預設為 `both`。透過 `ProgressStore` 介面存取（`src/lib/progress/store.ts`），第一版實作為 localStorage，第二版加上 Supabase 實作並在登入時合併。進度的讀取與判斷都是 `src/lib/progress/progress.ts` 裡的純函式。
 
-- **單元完成的定義**：課文標記為已讀完，且單元測驗通過（答對 80% 以上，`QUIZ_PASS_SCORE`）。階段 4 加入 Lab 後，在 `isUnitDone` 擴充。
+- **單元完成的定義**：課文標記為已讀完、單元測驗通過（答對 80% 以上，`QUIZ_PASS_SCORE`），且必做的 Lab 都完成。必做的 Lab 是不分平台的 Lab 加上主要平台的 Lab；主要平台選「兩者」時全部都要做。
 - **測驗成績**：`quizScore` 是 0 到 1 的最高分，重考分數較低不會蓋掉。每題的作答次數與最近一次對錯記在 `questions`。
 - **測驗題目依主要平台篩選**：選了 AWS 或 GCP 時略過另一個平台的題目，分數以實際作答的題數計算。
 - **計分規則**：選項必須與答案完全一致才算對，複選題少選或多選都算錯（`src/lib/quiz/quiz.ts`）。
@@ -254,7 +276,7 @@ interface Progress {
 | 1 ✅ | 骨架與內容系統 | 專案、版面、導覽、內容載入器與 Zod schema、一個完整範例單元（物件儲存，含 AWS 與 GCP 分頁） | 範例單元可瀏覽；格式錯誤的內容會讓建置失敗 |
 | 2 ✅ | 路線圖與進度 | 技能樹頁、平台篩選、localStorage 進度、主要平台設定 | 完成單元後路線圖更新，重新整理後仍在 |
 | 3 ✅ | 測驗系統 | 單元測驗介面、解析、成績寫入進度 | 單選、多選都正確計分 |
-| 4 | Lab 引擎 | 終端機、虛擬檔案系統、基本 Linux 指令、`aws s3` 與 `gcloud storage` 子集、3 個範例 Lab | Lab 可從頭做到完成；引擎有單元測試 |
+| 4 ✅ | Lab 引擎 | 終端機、虛擬檔案系統、基本 Linux 指令、`aws s3` 與 `gcloud storage` 子集、3 個範例 Lab | Lab 可從頭做到完成；引擎有單元測試 |
 | 5 | 證照練習 | 證照頁、依 domain 抽題練習、服務對照表 | 四張證照頁都可進入並練習 |
 | 6 | 內容擴充 | 依第 3 節補齊所有單元、測驗、Lab 與每張證照題庫 | 每單元至少 5 題、每張證照至少 150 題 |
 | 7 | 會員 | Supabase 登入、進度同步與合併 | 兩個裝置登入後進度一致 |
