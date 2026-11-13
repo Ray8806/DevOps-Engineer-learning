@@ -1,5 +1,5 @@
 import { parseArgs, type Command, type Ctx } from "./context";
-import { HOME, addDirWithParents, basename, dirname, isWithin, listDir, resolvePath, type LabState } from "./state";
+import { HOME, addDirWithParents, basename, cloneRepo, dirname, isWithin, listDir, resolvePath, type LabState } from "./state";
 
 const isDir = (s: LabState, p: string) => s.dirs.has(p);
 const isFile = (s: LabState, p: string) => s.files.has(p);
@@ -156,6 +156,17 @@ function subtree(state: LabState, abs: string): { dirs: string[]; files: string[
   };
 }
 
+/** Keeps git repositories attached to their directories when a tree is copied, moved or removed. */
+function relocateRepos(state: LabState, from: string, to: string | null, keepSource: boolean) {
+  // Removing or moving away a repository's own .git directory ends the repository.
+  if (basename(from) === ".git" && !keepSource) state.git.delete(dirname(from));
+  for (const [root, repo] of [...state.git]) {
+    if (!isWithin(root, from)) continue;
+    if (to !== null) state.git.set(to + root.slice(from.length), keepSource ? cloneRepo(repo) : repo);
+    if (!keepSource) state.git.delete(root);
+  }
+}
+
 /** Shared by cp and mv: copies `src` to `dst`, optionally removing the source. */
 function copyOrMove(ctx: Ctx, cmd: "cp" | "mv", args: string[]): number {
   const parsed = parseArgs(args, { shortFlags: cmd === "cp" ? "rR" : "" });
@@ -201,6 +212,7 @@ function copyOrMove(ctx: Ctx, cmd: "cp" | "mv", args: string[]): number {
       const tree = subtree(state, src);
       for (const d of tree.dirs) state.dirs.add(target + d);
       for (const f of tree.files) state.files.set(target + f, state.files.get(src + f)!);
+      relocateRepos(state, src, target, cmd === "cp");
       if (cmd === "mv") {
         for (const d of tree.dirs) state.dirs.delete(src + d);
         for (const f of tree.files) state.files.delete(src + f);
@@ -243,6 +255,7 @@ const rm: Command = (ctx, args) => {
       const tree = subtree(state, abs);
       for (const d of tree.dirs) state.dirs.delete(abs + d);
       for (const f of tree.files) state.files.delete(abs + f);
+      relocateRepos(state, abs, null, false);
     }
   }
   return code;
@@ -265,7 +278,10 @@ const rmdir: Command = (ctx, args) => {
     else if (!isDir(state, abs)) fail("No such file or directory");
     else if (listDir(state, abs).length > 0) fail("Directory not empty");
     else if (isWithin(HOME, abs) || isWithin(state.cwd, abs)) fail("不能刪除家目錄或目前所在的目錄");
-    else state.dirs.delete(abs);
+    else {
+      state.dirs.delete(abs);
+      relocateRepos(state, abs, null, false);
+    }
   }
   return code;
 };

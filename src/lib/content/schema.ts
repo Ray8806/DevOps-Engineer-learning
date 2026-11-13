@@ -138,6 +138,9 @@ export const QuizFileSchema = z.strictObject({
  *   ["cwd"]                         current directory, e.g. "~/projects"
  *   ["cloud", "s3", "buckets", name, "region" | "storageClass" | "objects", key]
  *   ["cloud", "gcs", "buckets", name, "location" | "storageClass" | "objects", name]
+ *   ["git", "~/project", "branch" | "commitCount" | "lastMessage" | "clean"]
+ *   ["git", "~/project", "branches" | "staged", name]
+ *   ["git", "~/project", "branchFiles", branch, path]
  * Set exactly one of `exists` / `equals`. Steps are completed in order and
  * stay completed.
  */
@@ -152,9 +155,9 @@ const StateCheckSchema = z
     (c) => (c.exists === undefined) !== (c.equals === undefined),
     "set exactly one of `exists` or `equals`",
   )
-  .refine((c) => ["files", "dirs", "cwd", "cloud"].includes(c.path[0]), {
+  .refine((c) => ["files", "dirs", "cwd", "cloud", "git"].includes(c.path[0]), {
     path: ["path"],
-    message: 'path must start with "files", "dirs", "cwd" or "cloud"',
+    message: 'path must start with "files", "dirs", "cwd", "cloud" or "git"',
   });
 
 /** Local paths in lab files are written from the home directory or the root. */

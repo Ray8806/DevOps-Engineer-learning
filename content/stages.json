@@ -5,7 +5,9 @@
       "title": "基礎",
       "description": "Linux 指令、網路基礎與 Git，進入雲端之前要有的底子。",
       "units": [
-        "linux-basics"
+        "linux-basics",
+        "networking-basics",
+        "git-basics"
       ]
     },
     {
