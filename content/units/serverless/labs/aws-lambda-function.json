@@ -1,0 +1,109 @@
+{
+  "id": "aws-lambda-function",
+  "title": "建立並呼叫 Lambda 函式",
+  "description": "建立執行角色、打包程式碼、建立 Python 函式並呼叫它，最後調整逾時與記憶體。模擬環境不會真的執行程式碼，呼叫時會照範例程式的行為，把事件原樣放在回應的 body 傳回。",
+  "provider": "aws",
+  "estimatedMinutes": 15,
+  "initialState": {
+    "files": {
+      "~/lambda_function.py": "import json\n\n\ndef lambda_handler(event, context):\n    # Echo the event back so you can see what the function received.\n    return {\"statusCode\": 200, \"body\": json.dumps(event)}\n",
+      "~/trust-policy.json": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Effect\": \"Allow\",\n      \"Principal\": {\n        \"Service\": \"lambda.amazonaws.com\"\n      },\n      \"Action\": \"sts:AssumeRole\"\n    }\n  ]\n}\n"
+    },
+    "cloud": {}
+  },
+  "steps": [
+    {
+      "instruction": "先用 cat trust-policy.json 看看信任政策允許誰扮演角色。然後用它建立一個名為 lambda-basic-role 的 IAM 角色。",
+      "hint": "aws iam create-role --role-name lambda-basic-role --assume-role-policy-document file://trust-policy.json",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "iam",
+          "roles",
+          "lambda-basic-role",
+          "trustedServices",
+          "lambda.amazonaws.com"
+        ],
+        "exists": true
+      }
+    },
+    {
+      "instruction": "替這個角色附加 AWS 受管政策 AWSLambdaBasicExecutionRole，讓函式可以寫入 CloudWatch 日誌。",
+      "hint": "aws iam attach-role-policy --role-name lambda-basic-role --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "iam",
+          "roles",
+          "lambda-basic-role",
+          "policies",
+          "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        ],
+        "exists": true
+      }
+    },
+    {
+      "instruction": "把 lambda_function.py 壓縮成部署套件 function.zip。",
+      "hint": "zip function.zip lambda_function.py",
+      "check": {
+        "type": "state",
+        "path": [
+          "files",
+          "~/function.zip"
+        ],
+        "exists": true
+      }
+    },
+    {
+      "instruction": "建立函式 hello：Runtime 用 python3.14，處理函式是 lambda_function.lambda_handler，執行角色用剛才的 lambda-basic-role（ARN 可以從 create-role 的輸出複製）。",
+      "hint": "aws lambda create-function --function-name hello --runtime python3.14 --handler lambda_function.lambda_handler --role arn:aws:iam::123456789012:role/lambda-basic-role --zip-file fileb://function.zip",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "lambda",
+          "functions",
+          "hello"
+        ],
+        "exists": true
+      }
+    },
+    {
+      "instruction": "呼叫 hello，傳入事件 {\"name\": \"Ray\"}，把回應寫進 response.json，再用 cat 看看內容。",
+      "hint": "aws lambda invoke --function-name hello --cli-binary-format raw-in-base64-out --payload '{\"name\": \"Ray\"}' response.json",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "lambda",
+          "functions",
+          "hello",
+          "invoked"
+        ],
+        "equals": true
+      }
+    },
+    {
+      "instruction": "預設逾時只有 3 秒。把 hello 的逾時改成 30 秒、記憶體改成 256 MB。",
+      "hint": "aws lambda update-function-configuration --function-name hello --timeout 30 --memory-size 256",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "lambda",
+          "functions",
+          "hello",
+          "timeout"
+        ],
+        "equals": 30
+      }
+    }
+  ]
+}

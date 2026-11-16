@@ -20,21 +20,24 @@ export interface ExecResult {
 }
 
 const HELP = `可用的指令：
-  檔案與目錄  pwd  ls  cd  mkdir  touch  cat  echo  cp  mv  rm  rmdir
+  檔案與目錄  pwd  ls  cd  mkdir  touch  cat  echo  cp  mv  rm  rmdir  zip
   Git         git init | status | add | commit | log | branch | switch | checkout | merge
   AWS         aws s3 mb | rb | ls | cp | mv | rm
-              aws iam  使用者、群組與政策（輸入 aws iam 看完整清單）
-              aws ec2  安全群組、執行個體、VPC、子網路、閘道與路由表（輸入 aws ec2 看完整清單）
+              aws iam  使用者、群組、角色與政策（輸入 aws iam 看完整清單）
+              aws ec2  安全群組、執行個體、EBS 磁碟區與快照、VPC、子網路、閘道與路由表（輸入 aws ec2 看完整清單）
+              aws lambda create-function | invoke | get-function | list-functions | update-function-configuration | update-function-code | delete-function
               aws rds  資料庫子網路群組、執行個體、唯讀複本與快照（輸入 aws rds 看完整清單）
   GCP         gcloud storage buckets create | delete | list | describe
               gcloud storage ls | cp | mv | rm | cat      （也支援 gsutil）
               gcloud iam service-accounts create | list | delete
               gcloud projects get-iam-policy | add-iam-policy-binding | remove-iam-policy-binding
-              gcloud compute instances create | list | describe | stop | start | delete | add-tags
+              gcloud compute instances create | list | describe | stop | start | delete | add-tags | attach-disk | detach-disk
+              gcloud compute disks create | list | describe | resize | snapshot | delete，snapshots create | list | describe | delete
               gcloud compute firewall-rules create | list | delete
               gcloud compute networks create | list | describe | delete
               gcloud compute networks subnets create | list | describe | delete
               gcloud compute routers create | list | describe | delete，routers nats create | list | delete
+              gcloud run deploy，run services list | describe | update | delete | add-iam-policy-binding，run revisions list
               gcloud sql instances create | list | describe | patch | delete
               gcloud sql databases | users create | list | delete，sql backups create | list
   其他        clear  help  whoami

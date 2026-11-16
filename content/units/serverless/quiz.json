@@ -1,0 +1,130 @@
+{
+  "questions": [
+    {
+      "id": "serverless-001",
+      "type": "single",
+      "provider": "general",
+      "certs": [{ "id": "clf-c02", "domain": 3 }],
+      "unitId": "serverless",
+      "difficulty": 1,
+      "question": "一個公司內部的報表 API，平常一天只有幾十次請求，月底會突然暴增。和一直開著的虛擬機相比，改用無伺服器運算最主要的好處是什麼？",
+      "options": [
+        { "id": "a", "text": "程式不需要任何權限設定", "explanation": "無伺服器的程式一樣要用某個身分執行，也要依最小權限原則設定。" },
+        { "id": "b", "text": "依流量自動擴展，沒有流量時不必為閒置的機器付費", "explanation": "正確。平台會依請求量增減執行環境，可以縮到零，依實際用量計費，很適合流量忽高忽低的服務。" },
+        { "id": "c", "text": "每次執行都沒有時間上限", "explanation": "無伺服器服務都有逾時上限，例如 Lambda 最多 15 分鐘。" },
+        { "id": "d", "text": "可以把資料直接存在執行環境的記憶體裡長期保存", "explanation": "執行環境隨時可能被回收，程式要設計成無狀態，資料存到資料庫或物件儲存。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "serverless-002",
+      "type": "single",
+      "provider": "general",
+      "unitId": "serverless",
+      "difficulty": 2,
+      "question": "某個無伺服器 API 在沒人使用一段時間後，第一個請求明顯比較慢，之後的請求就恢復正常。最可能的原因是什麼？",
+      "options": [
+        { "id": "a", "text": "冷啟動：平台要先建立並初始化新的執行環境", "explanation": "正確。沒有可用的執行環境時，平台要先載入程式碼並初始化，第一個請求就會比較慢。" },
+        { "id": "b", "text": "第一個請求一定會觸發逾時", "explanation": "變慢不等於逾時；逾時是執行超過設定的上限而被中斷。" },
+        { "id": "c", "text": "資料庫在閒置時會自動刪除", "explanation": "資料庫不會因為 API 閒置而被刪除。" },
+        { "id": "d", "text": "平台故意限制第一個請求的速度", "explanation": "沒有這種限制，延遲來自初始化執行環境。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "serverless-003",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 3 }],
+      "unitId": "serverless",
+      "difficulty": 2,
+      "question": "一個每晚執行的資料轉換工作，實測需要大約 40 分鐘才能完成。直接放進 AWS Lambda（一般的事件函式）會發生什麼事？",
+      "options": [
+        { "id": "a", "text": "可以正常完成，Lambda 沒有時間限制", "explanation": "Lambda 事件函式每次呼叫最多執行 900 秒（15 分鐘）。" },
+        { "id": "b", "text": "執行到逾時上限就會被中斷，最多只能設定 15 分鐘", "explanation": "正確。逾時預設 3 秒，最多只能調到 900 秒，40 分鐘的工作需要拆小或改用其他服務。" },
+        { "id": "c", "text": "Lambda 會自動把工作切成三段執行", "explanation": "Lambda 不會自動切分工作。" },
+        { "id": "d", "text": "只要把記憶體調到最大，就能延長執行時間", "explanation": "記憶體影響可用的 CPU 和速度，不會改變逾時上限。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "serverless-004",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 1 }],
+      "unitId": "serverless",
+      "difficulty": 2,
+      "question": "你建立 Lambda 函式時收到錯誤：「The role defined for the function cannot be assumed by Lambda」。最可能要修正什麼？",
+      "options": [
+        { "id": "a", "text": "把函式的記憶體調高", "explanation": "記憶體和角色能不能被扮演無關。" },
+        { "id": "b", "text": "角色的信任政策要允許 lambda.amazonaws.com 扮演這個角色", "explanation": "正確。執行角色的信任政策必須把 Lambda 服務主體 lambda.amazonaws.com 列為可以扮演的服務。" },
+        { "id": "c", "text": "替角色附加 AdministratorAccess", "explanation": "附加政策決定的是角色能做什麼，不是誰可以扮演它；而且給管理員權限違反最小權限原則。" },
+        { "id": "d", "text": "把函式改成用容器映像檔部署", "explanation": "部署方式和執行角色的信任政策無關。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "serverless-005",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 4 }],
+      "unitId": "serverless",
+      "difficulty": 3,
+      "question": "關於 AWS Lambda 的計費與效能設定，哪些敘述正確？（選兩個）",
+      "options": [
+        { "id": "a", "text": "費用依請求次數，加上執行時間乘以設定的記憶體（GB-秒）計算", "explanation": "正確。這是 Lambda 事件函式的計費方式。" },
+        { "id": "b", "text": "CPU 依設定的記憶體比例分配，調高記憶體也會得到更多 CPU", "explanation": "正確。記憶體是控制 Lambda 效能的主要設定。" },
+        { "id": "c", "text": "函式不論有沒有被呼叫，都依開機時間按小時收費", "explanation": "這是虛擬機的計費方式。Lambda 沒有被呼叫就不會產生執行時間費用。" },
+        { "id": "d", "text": "佈建並行（provisioned concurrency）是免費的，應該一律開啟", "explanation": "佈建並行會事先初始化執行環境，需要另外付費，只在需要減少冷啟動時使用。" }
+      ],
+      "answer": ["a", "b"]
+    },
+    {
+      "id": "serverless-006",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 2 }],
+      "unitId": "serverless",
+      "difficulty": 2,
+      "question": "你部署了一個 Cloud Run 服務，用瀏覽器打開它的網址卻得到 403 Forbidden。最可能的原因是什麼？",
+      "options": [
+        { "id": "a", "text": "Cloud Run 服務不能從網際網路連線", "explanation": "Cloud Run 服務有公開的 HTTPS 網址，問題在於誰被允許呼叫。" },
+        { "id": "b", "text": "服務還在做 Invoker IAM 檢查，你的請求沒有 roles/run.invoker 權限", "explanation": "正確。Cloud Run 預設會做 Invoker IAM 檢查。要公開給所有人，可以關閉這個檢查，或把 roles/run.invoker 授權給 allUsers。" },
+        { "id": "c", "text": "最少執行個體設成 0", "explanation": "最少執行個體是 0 只會讓第一個請求有冷啟動，不會回傳 403。" },
+        { "id": "d", "text": "容器映像檔太大", "explanation": "映像檔大小不會造成 403。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "serverless-007",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-cdl", "domain": 4 }],
+      "unitId": "serverless",
+      "difficulty": 2,
+      "question": "團隊已經把一個 Node.js 網站做成容器映像檔，想用無伺服器的方式執行，依流量自動擴展、沒有流量時縮到零。Google Cloud 上最直接的選擇是？",
+      "options": [
+        { "id": "a", "text": "Cloud Run 服務", "explanation": "正確。Cloud Run 服務直接執行容器映像檔，提供 HTTPS 網址，並依請求自動擴展到零。" },
+        { "id": "b", "text": "Compute Engine 執行個體", "explanation": "Compute Engine 是虛擬機，要自己管理作業系統和擴展。" },
+        { "id": "c", "text": "Cloud SQL", "explanation": "Cloud SQL 是代管的關聯式資料庫，不是用來執行網站程式的。" },
+        { "id": "d", "text": "Cloud Storage", "explanation": "Cloud Storage 是物件儲存，只能放靜態檔案，不能執行容器。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "serverless-008",
+      "type": "single",
+      "provider": "gcp",
+      "unitId": "serverless",
+      "difficulty": 3,
+      "question": "同樣是每秒 100 個請求、每個請求處理 1 秒，下列哪個敘述最能說明 Cloud Run 和 Lambda 在擴展上的差別？",
+      "options": [
+        { "id": "a", "text": "Cloud Run 一個執行個體可以同時處理多個請求，所以需要的執行個體通常比 Lambda 的執行環境少", "explanation": "正確。Lambda 的執行環境預設一次處理一個請求；Cloud Run 的執行個體預設可以同時處理多個（用 gcloud 建立時是 80 × vCPU 數）。" },
+        { "id": "b", "text": "兩者都是一個執行個體一次只能處理一個請求", "explanation": "這只描述了 Lambda 的預設行為。" },
+        { "id": "c", "text": "Cloud Run 不會自動擴展，必須手動增加執行個體", "explanation": "Cloud Run 預設依請求自動擴展，手動調整是選用的。" },
+        { "id": "d", "text": "Lambda 一個執行環境可以同時處理 1,000 個請求", "explanation": "1,000 是每個 Region 同時執行數的預設帳戶配額，不是單一執行環境的並行數。" }
+      ],
+      "answer": ["a"]
+    }
+  ]
+}

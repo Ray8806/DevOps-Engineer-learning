@@ -1,0 +1,105 @@
+{
+  "id": "aws-ebs-volume",
+  "title": "建立、掛載與快照 EBS 磁碟區",
+  "description": "啟動一台執行個體，替它加上一個 gp3 資料磁碟區，建立快照後在另一個可用區還原，最後線上加大磁碟區。",
+  "provider": "aws",
+  "estimatedMinutes": 15,
+  "initialState": {
+    "files": {},
+    "cloud": {}
+  },
+  "steps": [
+    {
+      "instruction": "在可用區 us-east-1a 用 AMI ami-0abcdef1234567890 啟動一台 t3.micro 執行個體，記下輸出裡的 InstanceId。",
+      "hint": "aws ec2 run-instances --image-id ami-0abcdef1234567890 --instance-type t3.micro --placement AvailabilityZone=us-east-1a",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "ec2",
+          "counts",
+          "running"
+        ],
+        "equals": 1
+      }
+    },
+    {
+      "instruction": "在同一個可用區建立一個 20 GiB 的 gp3 磁碟區，記下 VolumeId。注意：沒有寫 --volume-type 的話會建立成 gp2。",
+      "hint": "aws ec2 create-volume --availability-zone us-east-1a --size 20 --volume-type gp3",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "ec2",
+          "volumeSpecs",
+          "us-east-1a/gp3/20"
+        ],
+        "exists": true
+      }
+    },
+    {
+      "instruction": "把這個磁碟區以 /dev/sdf 掛到剛才的執行個體。",
+      "hint": "aws ec2 attach-volume --volume-id 你的VolumeId --instance-id 你的InstanceId --device /dev/sdf",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "ec2",
+          "volumeSpecs",
+          "us-east-1a/gp3/20",
+          "attached"
+        ],
+        "equals": 1
+      }
+    },
+    {
+      "instruction": "AWS 不會自動備份磁碟區。替它建立一個快照，記下 SnapshotId。",
+      "hint": "aws ec2 create-snapshot --volume-id 你的VolumeId --description \"lab backup\"",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "ec2",
+          "snapshotCount"
+        ],
+        "equals": 1
+      }
+    },
+    {
+      "instruction": "磁碟區只能掛在同一個可用區。用這個快照在 us-east-1b 建立一個新的 gp3 磁碟區，這就是把資料搬到其他可用區的方法。",
+      "hint": "aws ec2 create-volume --snapshot-id 你的SnapshotId --availability-zone us-east-1b --volume-type gp3",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "ec2",
+          "volumeSpecs",
+          "us-east-1b/gp3/20",
+          "fromSnapshot"
+        ],
+        "equals": 1
+      }
+    },
+    {
+      "instruction": "空間不夠了。把掛在執行個體上的那個磁碟區從 20 GiB 加大到 50 GiB，不必卸離。（試試看能不能縮小。）",
+      "hint": "aws ec2 modify-volume --volume-id 你的VolumeId --size 50",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "ec2",
+          "volumeSpecs",
+          "us-east-1a/gp3/50",
+          "attached"
+        ],
+        "equals": 1
+      }
+    }
+  ]
+}

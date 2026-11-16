@@ -1,12 +1,13 @@
 import { EC2_COMMANDS, ec2 } from "./aws-ec2";
 import { IAM_COMMANDS, iam } from "./aws-iam";
+import { LAMBDA_COMMANDS, lambda } from "./aws-lambda";
 import { RDS_COMMANDS, rds } from "./aws-rds";
 import { parseArgs, type Command, type Ctx } from "./context";
 import { LISTING_TIME, byteLength, listPrefix, parseLocation, relativeToCwd, transfer, type TransferStyle } from "./object-store";
 import { DEFAULT_S3_REGION } from "./state";
 
 const S3_SUPPORTED = "這個模擬終端機目前支援 aws s3 的 mb、rb、ls、cp、mv、rm。";
-const SUPPORTED = `這個模擬終端機支援的 AWS 服務：s3（mb、rb、ls、cp、mv、rm）、iam（${IAM_COMMANDS}）、ec2（${EC2_COMMANDS}）、rds（${RDS_COMMANDS.join("、")}）。`;
+const SUPPORTED = `這個模擬終端機支援的 AWS 服務：s3（mb、rb、ls、cp、mv、rm）、iam（${IAM_COMMANDS}）、ec2（${EC2_COMMANDS}）、rds（${RDS_COMMANDS.join("、")}）、lambda（${LAMBDA_COMMANDS.join("、")}）。`;
 
 const apiError = (code: string, operation: string, message: string) =>
   `An error occurred (${code}) when calling the ${operation} operation: ${message}`;
@@ -172,6 +173,7 @@ export const aws: Command = (ctx, args) => {
   if (args[0] === "iam") return iam(ctx, args.slice(1));
   if (args[0] === "ec2") return ec2(ctx, args.slice(1));
   if (args[0] === "rds") return rds(ctx, args.slice(1));
+  if (args[0] === "lambda") return lambda(ctx, args.slice(1));
   ctx.err(args[0] ? `aws: 不支援的服務 '${args[0]}'。${SUPPORTED}` : `usage: aws <service> <command> [parameters]\n${SUPPORTED}`);
   return 252;
 };

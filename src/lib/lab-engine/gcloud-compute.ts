@@ -1,5 +1,6 @@
 import { parseArgs, type Ctx } from "./context";
 import { NAME, NAME_RULE, error, list, networkUrl, subnetUrl, table, zoneRegion } from "./gcloud-common";
+import { attachDetach, disks, snapshots } from "./gcloud-disks";
 import { networks, routers } from "./gcloud-network";
 
 const ZONE = /^[a-z]+-[a-z]+\d+-[a-z]$/;
@@ -52,6 +53,7 @@ function networkInterface(ctx: Ctx, command: string, region: string, networkArg?
 
 function instances(ctx: Ctx, args: string[]): number {
   const [action, ...rest] = args;
+  if (action === "attach-disk" || action === "detach-disk") return attachDetach(ctx, action, rest);
   const command = `gcloud.compute.instances.${action}`;
   const parsed = parseArgs(rest, {
     options: ["--zone", "--machine-type", "--tags", "--image-family", "--image-project", "--image", "--network", "--subnet", "--boot-disk-size", "--project", "--format"],
@@ -71,7 +73,7 @@ function instances(ctx: Ctx, args: string[]): number {
     return 0;
   }
   if (!["create", "stop", "start", "delete", "add-tags", "describe"].includes(action ?? "")) {
-    return error(ctx, "gcloud.compute.instances", `不支援的指令 '${action ?? ""}'。支援 create、list、describe、stop、start、delete、add-tags。`);
+    return error(ctx, "gcloud.compute.instances", `不支援的指令 '${action ?? ""}'。支援 create、list、describe、stop、start、delete、add-tags、attach-disk、detach-disk。`);
   }
   const names = parsed.positional;
   if (names.length === 0) return error(ctx, command, "argument INSTANCE_NAMES: Must be specified.");
@@ -117,6 +119,8 @@ function instances(ctx: Ctx, args: string[]): number {
         break;
       case "delete":
         gcp.instances.delete(name);
+        // Attached data disks stay; they are only detached.
+        for (const disk of gcp.disks.values()) disk.users.delete(name);
         ctx.out(`Deleted [${url(name, instance.zone)}].\n`);
         break;
       case "add-tags": {
@@ -203,9 +207,11 @@ export function compute(ctx: Ctx, args: string[]): number {
   if (args[0] === "firewall-rules") return firewallRules(ctx, args.slice(1));
   if (args[0] === "networks") return networks(ctx, args.slice(1));
   if (args[0] === "routers") return routers(ctx, args.slice(1));
+  if (args[0] === "disks") return disks(ctx, args.slice(1));
+  if (args[0] === "snapshots") return snapshots(ctx, args.slice(1));
   return error(
     ctx,
     "gcloud.compute",
-    `不支援 '${args[0] ?? ""}'。這個模擬終端機支援 gcloud compute instances、firewall-rules、networks（含 networks subnets）和 routers（含 routers nats）。`,
+    `不支援 '${args[0] ?? ""}'。這個模擬終端機支援 gcloud compute instances、firewall-rules、networks（含 networks subnets）、routers（含 routers nats）、disks 和 snapshots。`,
   );
 }

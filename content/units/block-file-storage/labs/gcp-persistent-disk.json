@@ -1,0 +1,104 @@
+{
+  "id": "gcp-persistent-disk",
+  "title": "建立、掛載與快照 Persistent Disk",
+  "description": "建立一台 VM 和一個 pd-balanced 資料磁碟，掛載後加大容量，再用快照在另一個可用區建立磁碟。",
+  "provider": "gcp",
+  "estimatedMinutes": 15,
+  "initialState": {
+    "files": {},
+    "cloud": {}
+  },
+  "steps": [
+    {
+      "instruction": "在可用區 asia-east1-b 建立一台名為 web-1 的 VM，機器類型用 e2-micro。",
+      "hint": "gcloud compute instances create web-1 --zone=asia-east1-b --machine-type=e2-micro",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "instances",
+          "web-1",
+          "zone"
+        ],
+        "equals": "asia-east1-b"
+      }
+    },
+    {
+      "instruction": "在同一個可用區建立一個 50 GB 的 pd-balanced 磁碟 data-disk。注意：沒有寫 --type 的話會建立成 pd-standard。",
+      "hint": "gcloud compute disks create data-disk --size=50GB --type=pd-balanced --zone=asia-east1-b",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "disks",
+          "data-disk",
+          "type"
+        ],
+        "equals": "pd-balanced"
+      }
+    },
+    {
+      "instruction": "把 data-disk 以讀寫模式掛到 web-1。",
+      "hint": "gcloud compute instances attach-disk web-1 --disk=data-disk --zone=asia-east1-b",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "disks",
+          "data-disk",
+          "users",
+          "web-1"
+        ],
+        "equals": "rw"
+      }
+    },
+    {
+      "instruction": "把 data-disk 加大到 100 GB。（試試看能不能縮小。）",
+      "hint": "gcloud compute disks resize data-disk --size=100GB --zone=asia-east1-b",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "disks",
+          "data-disk",
+          "sizeGb"
+        ],
+        "equals": 100
+      }
+    },
+    {
+      "instruction": "替 data-disk 建立快照 data-snap。",
+      "hint": "gcloud compute snapshots create data-snap --source-disk=data-disk --source-disk-zone=asia-east1-b",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "snapshots",
+          "data-snap",
+          "sourceDisk"
+        ],
+        "equals": "data-disk"
+      }
+    },
+    {
+      "instruction": "磁碟只能掛在同一個可用區的 VM。用 data-snap 在 asia-east1-a 建立一個新的 pd-balanced 磁碟 data-copy。",
+      "hint": "gcloud compute disks create data-copy --source-snapshot=data-snap --type=pd-balanced --zone=asia-east1-a",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "disks",
+          "data-copy",
+          "sourceSnapshot"
+        ],
+        "equals": "data-snap"
+      }
+    }
+  ]
+}

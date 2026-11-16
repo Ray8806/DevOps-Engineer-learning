@@ -17,7 +17,9 @@
       "units": [
         "iam-basics",
         "virtual-machines",
+        "serverless",
         "object-storage",
+        "block-file-storage",
         "virtual-networks",
         "relational-databases"
       ]

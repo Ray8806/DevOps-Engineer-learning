@@ -1,3 +1,4 @@
+import { encodeArchive } from "./archive";
 import { parseArgs, type Command, type Ctx } from "./context";
 import { HOME, addDirWithParents, basename, cloneRepo, dirname, isWithin, listDir, resolvePath, type LabState } from "./state";
 
@@ -286,4 +287,48 @@ const rmdir: Command = (ctx, args) => {
   return code;
 };
 
-export const linuxCommands: Record<string, Command> = { pwd, whoami, cd, ls, mkdir, touch, cat, echo, cp, mv, rm, rmdir };
+/**
+ * `zip [-r] archive[.zip] file…`: entries keep the paths as typed (relative to
+ * the current directory), like the real tool. Rewrites the archive each time.
+ */
+const zip: Command = (ctx, args) => {
+  const parsed = parseArgs(args, { shortFlags: "rq" });
+  if (usageError(ctx, "zip", parsed)) return 2;
+  const [archiveArg, ...inputs] = parsed.positional;
+  if (!archiveArg || inputs.length === 0) {
+    ctx.err("zip error: Nothing to do!（用法：zip function.zip lambda_function.py）");
+    return 12;
+  }
+  const recursive = parsed.flags.has("-r");
+  const archiveName = archiveArg.endsWith(".zip") ? archiveArg : `${archiveArg}.zip`;
+  const archive = resolvePath(ctx.state.cwd, archiveName);
+  const entries: Record<string, string> = {};
+  for (const input of inputs) {
+    const abs = resolvePath(ctx.state.cwd, input);
+    const name = input.replace(/^\.\//, "").replace(/\/+$/, "");
+    if (isFile(ctx.state, abs)) entries[name] = ctx.state.files.get(abs)!;
+    else if (isDir(ctx.state, abs)) {
+      if (!recursive) {
+        ctx.err(`zip warning: ${input} 是目錄，要加入目錄裡的檔案請加上 -r`);
+        continue;
+      }
+      for (const rel of subtree(ctx.state, abs).files) entries[`${name}${rel}`] = ctx.state.files.get(abs + rel)!;
+    } else {
+      ctx.err(`zip warning: name not matched: ${input}`);
+    }
+  }
+  const names = Object.keys(entries).filter((n) => resolvePath(ctx.state.cwd, n) !== archive);
+  if (names.length === 0) {
+    ctx.err("zip error: Nothing to do!");
+    return 12;
+  }
+  if (!isDir(ctx.state, dirname(archive))) {
+    ctx.err(`zip I/O error: No such file or directory: ${archiveName}`);
+    return 15;
+  }
+  if (!parsed.flags.has("-q")) for (const n of names) ctx.out(`  adding: ${n} (deflated 0%)\n`);
+  ctx.state.files.set(archive, encodeArchive(Object.fromEntries(names.map((n) => [n, entries[n]]))));
+  return 0;
+};
+
+export const linuxCommands: Record<string, Command> = { pwd, whoami, cd, ls, mkdir, touch, cat, echo, cp, mv, rm, rmdir, zip };

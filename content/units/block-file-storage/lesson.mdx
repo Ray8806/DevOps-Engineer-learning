@@ -1,0 +1,194 @@
+## 三種儲存方式
+
+雲端上的儲存大致分成三種，差別在於「資料用什麼方式被存取」：
+
+| 類型 | 像是 | 怎麼存取 | 例子 |
+|---|---|---|---|
+| 區塊儲存 | 一顆硬碟 | 掛到一台機器上，格式化後當作磁碟使用 | 虛擬機的開機磁碟、資料庫的資料磁碟 |
+| 檔案儲存 | 公司的共用資料夾 | 多台機器透過網路掛載同一個檔案系統（例如 NFS） | 多台網站伺服器共用上傳的圖片 |
+| 物件儲存 | 網路硬碟 | 用 HTTP API 整個上傳、整個下載 | 備份檔、靜態網站、資料湖 |
+
+物件儲存在「物件儲存」單元介紹過，這個單元講前兩種。
+
+## 區塊儲存：雲端上的硬碟
+
+虛擬機的每一顆磁碟，背後都是一個**區塊儲存的磁碟區**。雲端的磁碟區有幾個和實體硬碟不同的地方：
+
+- **透過網路連接**：資料存在供應商的儲存系統裡，不在虛擬機所在的實體主機上，所以可以把磁碟區從一台機器卸下、掛到另一台。
+- **和虛擬機分開存在**：刪除或停止虛擬機時，額外掛上的資料磁碟可以保留下來。
+- **綁在一個可用區**：磁碟區只能掛到**同一個可用區**的虛擬機。
+- **可以加大，不能縮小**：容量不夠時直接加大，不必停機搬資料；但兩個平台都不能把磁碟縮小。
+
+### 選擇磁碟類型
+
+磁碟類型決定效能和價格，主要看兩個數字：
+
+- **IOPS**：每秒能處理幾次讀寫。資料庫這類大量小筆讀寫的工作最在意這個。
+- **輸送量**：每秒能讀寫多少資料（MB/s）。大檔案循序讀寫，例如日誌分析，最在意這個。
+
+一般原則：大多數工作用**一般用途的 SSD** 就夠了；高負載的資料庫用**可以指定 IOPS 的 SSD**；大量循序讀取、又想省錢的資料用 **HDD**。
+
+<Callout title="小心命令列的預設類型">
+用命令列建立磁碟時，如果沒有指定類型，給的都不是最推薦的選項：AWS CLI 預設是上一代的 `gp2`，而不是較新的 `gp3`；gcloud 預設是 HDD 的 `pd-standard`，而 Google Cloud 主控台預設是 `pd-balanced`。建立時最好明確寫出類型。
+</Callout>
+
+### 快照：備份與搬移
+
+**快照**是磁碟在某個時間點的備份。兩個平台的快照都是**增量**的：第一次存完整的資料，之後只存有變動的區塊，所以比每次完整複製便宜很多。
+
+快照有兩個用途：
+
+1. **備份**：雲端供應商**不會**自動替你的磁碟做備份，要自己定期建立快照，或用排程工具自動建立。
+2. **搬移**：磁碟綁在一個可用區，想把資料搬到另一個可用區（甚至另一個區域），做法是**先建立快照，再用快照在目標位置建立新磁碟**。
+
+### 本機的臨時磁碟
+
+有些機器類型附有**直接裝在實體主機上的本機磁碟**，速度最快，但它跟著主機走：虛擬機停止或終止後，資料就會消失。只適合放快取、暫存檔這類遺失也沒關係的資料。
+
+## 檔案儲存：多台機器共用
+
+區塊儲存的磁碟一般一次只掛在一台機器上。如果多台網站伺服器要讀寫同一批檔案，就需要**檔案儲存**：
+
+- 透過 **NFS** 等網路檔案系統協定掛載，看起來就像一般的資料夾。
+- 很多台機器可以**同時讀寫**。
+- 由雲端供應商代管，不必自己架檔案伺服器。
+
+## 在兩個平台上怎麼做
+
+<ProviderTabs>
+<Provider name="aws">
+
+### Amazon EBS
+
+EBS（Elastic Block Store）是 EC2 用的區塊儲存。磁碟區和執行個體**必須在同一個可用區**，一台執行個體可以掛多個磁碟區。
+
+**磁碟區類型**
+
+| 類型 | 用途 | 大小 |
+|---|---|---|
+| `gp3` | 一般用途 SSD，大多數工作的首選。基本就有 3,000 IOPS 和 125 MiB/s，可以另外加購 | 1 GiB 到 64 TiB |
+| `gp2` | 上一代的一般用途 SSD，效能隨容量增加 | 1 GiB 到 16 TiB |
+| `io2`、`io1` | 佈建 IOPS SSD，給需要穩定高 IOPS 的資料庫 | io2 4 GiB 到 64 TiB；io1 4 GiB 到 16 TiB |
+| `st1` | 輸送量最佳化 HDD，大數據、日誌處理 | 125 GiB 到 16 TiB，不能當開機磁碟 |
+| `sc1` | Cold HDD，不常存取、最在意成本的資料 | 125 GiB 到 16 TiB，不能當開機磁碟 |
+
+**Multi-Attach**：只有 `io1` 和 `io2` 支援把一個磁碟區同時掛到多台執行個體，最多 16 台、必須在同一個可用區，而且是 Nitro 系統的執行個體。
+
+**修改磁碟區**（Elastic Volumes）：可以加大容量、更換類型、調整效能，通常不必卸離磁碟區或重新開機；但**不能縮小**。
+
+**終止執行個體時磁碟區會不會被刪除**，由 `DeleteOnTermination` 屬性決定，預設值依情況不同：
+
+| 磁碟區 | 什麼時候掛上 | 預設 |
+|---|---|---|
+| 開機磁碟 | 啟動時 | 刪除 |
+| 資料磁碟 | 啟動時，用 CLI | 刪除 |
+| 資料磁碟 | 啟動時，用主控台 | 保留 |
+| 資料磁碟 | 啟動之後才掛上 | 保留 |
+
+**EBS 快照**存在 Amazon S3 裡（但你無法用 S3 的 API 直接存取），會自動複寫到 Region 內所有可用區，所以可以在任何一個可用區用它建立新磁碟區。快照是增量的，刪除某一個快照不一定會減少儲存費用，因為其他快照可能還參照同一批資料。
+
+**執行個體儲存**（instance store）：部分執行個體類型附帶的本機磁碟。重新開機資料還在，但執行個體**停止、休眠或終止**後，資料就會被清除。
+
+**常用指令**
+
+```bash
+# 在 us-east-1a 建立一個 20 GiB 的 gp3 磁碟區（不寫 --volume-type 會是 gp2）
+aws ec2 create-volume --availability-zone us-east-1a --size 20 --volume-type gp3
+
+# 掛到同一個可用區的執行個體
+aws ec2 attach-volume --volume-id vol-0123456789abcdef0 --instance-id i-0123456789abcdef0 --device /dev/sdf
+
+# 建立快照，再用快照在另一個可用區建立新磁碟區
+aws ec2 create-snapshot --volume-id vol-0123456789abcdef0 --description "before upgrade"
+aws ec2 create-volume --snapshot-id snap-0123456789abcdef0 --availability-zone us-east-1b --volume-type gp3
+
+# 加大容量、卸離、刪除
+aws ec2 modify-volume --volume-id vol-0123456789abcdef0 --size 50
+aws ec2 detach-volume --volume-id vol-0123456789abcdef0
+aws ec2 delete-volume --volume-id vol-0123456789abcdef0
+```
+
+### Amazon EFS
+
+EFS（Elastic File System）是全代管的檔案儲存，使用 **NFSv4** 協定。
+
+- 容量**自動增減**，不必預先配置，可以成長到 PB 等級。
+- 很多 EC2 執行個體（也包括 ECS、EKS、Lambda 等）可以同時存取。
+- **Regional**（建議）檔案系統把資料重複存放在多個可用區；**One Zone** 只存在一個可用區，比較便宜，但那個可用區損毀時資料可能遺失。
+- 在 VPC 裡建立**掛載目標**（mount target），執行個體透過它掛載檔案系統。
+- 儲存類別有 Standard、Infrequent Access 和 Archive，可以用生命週期政策把不常用的檔案自動移到較便宜的類別。
+
+</Provider>
+<Provider name="gcp">
+
+### Persistent Disk 與 Hyperdisk
+
+Compute Engine 的區塊儲存有兩個系列：
+
+- **Hyperdisk**：效能更高、可以分別設定 IOPS 和輸送量。Google 現在建議 VM 的開機磁碟和資料磁碟優先使用 Hyperdisk。
+- **Persistent Disk**：如果機器類型不支援 Hyperdisk，就使用 Persistent Disk。這個單元的指令和練習都用 Persistent Disk。
+
+**Persistent Disk 類型**
+
+| 類型 | 說明 |
+|---|---|
+| `pd-balanced` | SSD，兼顧效能與價格，適合大多數一般用途 |
+| `pd-ssd` | SSD，延遲更低、IOPS 更高，適合高效能資料庫 |
+| `pd-standard` | HDD，適合大量循序讀寫的資料處理 |
+| `pd-extreme` | SSD，可以指定目標 IOPS，給高階資料庫，只支援部分機器類型 |
+
+用 gcloud 建立時沒有指定 `--size`，預設大小是 `pd-standard` 500 GB、`pd-balanced` 和 `pd-ssd` 100 GB。單一磁碟最大 64 TiB。
+
+**zonal 與 regional**：一般的 **zonal** Persistent Disk 只能在一個可用區使用。**regional** Persistent Disk 在同一個區域的兩個可用區各保存一份副本，主要可用區故障時可以立即使用另一個可用區的副本，適合需要高可用的工作。
+
+**多台 VM 共用**：可以把同一個磁碟以**唯讀模式**掛到多台 VM，比為每台機器各複製一份資料便宜。也有 **multi-writer** 模式讓多台 VM 同時讀寫，適合高可用的共用檔案系統或資料庫，但限制較多。
+
+**調整大小**：可以隨時加大，不能縮小。
+
+**快照**：增量備份，預設是**全球資源**，可以在任何區域用它建立新磁碟；也可以選擇只存在某個區域的快照。磁碟是可用區資源，要搬到其他可用區，就先建立快照，再用 `--source-snapshot` 在新的可用區建立磁碟。
+
+**本機 SSD**（Local SSD）：直接裝在主機上，延遲很低，但 VM 停止或終止時資料可能遺失，重要資料要放在 Hyperdisk 或 Persistent Disk。
+
+**常用指令**
+
+```bash
+# 建立 50 GB 的 pd-balanced 磁碟（不寫 --type 會是 pd-standard）
+gcloud compute disks create data-disk --size=50GB --type=pd-balanced --zone=asia-east1-b
+
+# 掛到同一個可用區的 VM（--mode=ro 可以唯讀掛載）
+gcloud compute instances attach-disk web-1 --disk=data-disk --zone=asia-east1-b
+
+# 加大容量
+gcloud compute disks resize data-disk --size=100GB --zone=asia-east1-b
+
+# 建立快照，再用快照在另一個可用區建立磁碟
+gcloud compute snapshots create data-snap --source-disk=data-disk --source-disk-zone=asia-east1-b
+gcloud compute disks create data-copy --source-snapshot=data-snap --type=pd-balanced --zone=asia-east1-a
+
+# 卸離與刪除（掛載中的磁碟不能刪除）
+gcloud compute instances detach-disk web-1 --disk=data-disk --zone=asia-east1-b
+gcloud compute disks delete data-disk --zone=asia-east1-b
+```
+
+### Filestore
+
+Filestore 是全代管的檔案伺服器，支援 NFS 協定。Compute Engine VM、GKE 叢集、Cloud Run 服務，甚至地端的機器，都可以同時掛載同一個 Filestore 執行個體。容量可以隨需要調整，不必停機。
+
+</Provider>
+</ProviderTabs>
+
+## 兩個平台的差異
+
+<Compare />
+
+兩邊的觀念幾乎一樣：磁碟綁在可用區、只能加大、用快照備份與搬移。要注意的是兩邊的命令列都有「不是最新推薦選項」的預設磁碟類型，建立時最好明確指定。
+
+## 重點整理
+
+- 區塊儲存是虛擬機的硬碟，檔案儲存是多台機器共用的資料夾，物件儲存用 HTTP API 存取整個檔案。
+- 磁碟綁在一個可用區，只能掛到同一個可用區的虛擬機。
+- 磁碟可以加大，不能縮小。
+- 快照是增量備份，也是把資料搬到其他可用區的方法；供應商不會自動替你備份。
+- 本機的臨時磁碟最快，但停止或終止後資料會消失。
+- 用命令列建立磁碟時記得指定類型：AWS CLI 預設 `gp2`，gcloud 預設 `pd-standard`。
+- 多台機器要同時讀寫檔案，用 EFS 或 Filestore 這類檔案儲存。

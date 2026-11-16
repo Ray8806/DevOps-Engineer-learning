@@ -1,0 +1,93 @@
+{
+  "id": "gcp-cloud-run-service",
+  "title": "部署並管理 Cloud Run 服務",
+  "description": "用 Google 提供的範例容器部署 Cloud Run 服務，設定誰可以呼叫、用環境變數建立新的修訂版本、限制最多執行個體，最後刪除服務。",
+  "provider": "gcp",
+  "estimatedMinutes": 15,
+  "initialState": {
+    "files": {},
+    "cloud": {}
+  },
+  "steps": [
+    {
+      "instruction": "在 asia-east1 部署服務 hello，映像檔用 us-docker.pkg.dev/cloudrun/container/hello。先不要加 --allow-unauthenticated，看看輸出裡的服務網址。",
+      "hint": "gcloud run deploy hello --image=us-docker.pkg.dev/cloudrun/container/hello --region=asia-east1",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "run",
+          "services",
+          "hello",
+          "region"
+        ],
+        "equals": "asia-east1"
+      }
+    },
+    {
+      "instruction": "這個服務目前只有擁有 roles/run.invoker 的身分能呼叫。把它公開給所有人。",
+      "hint": "gcloud run services add-iam-policy-binding hello --region=asia-east1 --member=allUsers --role=roles/run.invoker（也可以用 gcloud run services update hello --region=asia-east1 --no-invoker-iam-check）",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "run",
+          "services",
+          "hello",
+          "public"
+        ],
+        "equals": true
+      }
+    },
+    {
+      "instruction": "加上環境變數 GREETING=hello。修改設定會建立新的修訂版本，用 gcloud run revisions list --region=asia-east1 看看現在有幾個。",
+      "hint": "gcloud run services update hello --region=asia-east1 --update-env-vars=GREETING=hello",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "run",
+          "services",
+          "hello",
+          "env",
+          "GREETING"
+        ],
+        "equals": "hello"
+      }
+    },
+    {
+      "instruction": "為了避免流量暴增時費用失控，把最多執行個體從預設的 100 改成 5。",
+      "hint": "gcloud run services update hello --region=asia-east1 --max-instances=5",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "run",
+          "services",
+          "hello",
+          "maxInstances"
+        ],
+        "equals": 5
+      }
+    },
+    {
+      "instruction": "練習結束，刪除服務 hello。",
+      "hint": "gcloud run services delete hello --region=asia-east1",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "run",
+          "services",
+          "hello"
+        ],
+        "exists": false
+      }
+    }
+  ]
+}
