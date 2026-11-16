@@ -243,6 +243,10 @@ Lab 引擎維護一份虛擬狀態（檔案系統加雲端資源），指令會�
 | `["cloud", "aws", "ec2", "volumeSpecs", "可用區/類型/大小", "count" \| "attached" \| "fromSnapshot"]` | EBS 磁碟區依規格分組的數量，例如 `"us-east-1a/gp3/20"`；`["cloud", "aws", "ec2", "snapshotCount"]` 是 EBS 快照數量 |
 | `["cloud", "aws", "iam", "roles", 名稱, "trustedServices" \| "policies", 服務或 ARN]` | IAM 角色：信任政策允許扮演的服務（例如 `lambda.amazonaws.com`）與附加的政策 |
 | `["cloud", "aws", "lambda", "functions", 名稱, "runtime" \| "handler" \| "role" \| "timeout" \| "memorySize" \| "environment" \| "invoked"]` | Lambda 函式；`invoked` 代表至少成功呼叫過一次 |
+| `["cloud", "aws", "dynamodb", "tables", 名稱, "definition"]` | 資料表的定義，值像 `{ "partitionKey": "CustomerId", "sortKey": "OrderId", "billingMode": "PAY_PER_REQUEST" }`，用 `equals` 檢查 |
+| `["cloud", "aws", "dynamodb", "tables", 名稱, "itemCount" \| "ttlAttribute"]`、`[…, "items", "分割區鍵值\|排序鍵值"]`、`[…, "queriedPartitions", 分割區鍵值]` | 項目數量、TTL 屬性、某個項目是否存在（簡單主鍵只有分割區鍵值）、是否用 Query 查過某個分割區 |
+| `["cloud", "gcp", "firestore", "databases", 資料庫 ID, "location" \| "type" \| "edition" \| "deleteProtection" \| "exportCount"]` | Firestore 資料庫；預設資料庫的 ID 是 `(default)` |
+| `["cloud", "gcp", "firestore", "databases", 資料庫 ID, "indexes" \| "ttlFields", 值]` | 手動索引（例如 `"orders(customerId ASCENDING, createdAt DESCENDING)"`）與 TTL 欄位（例如 `"sessions.expiresAt"`） |
 | `["cloud", "gcp", "disks", 名稱, "zone" \| "sizeGb" \| "type" \| "sourceSnapshot" \| "users", 執行個體]` | Persistent Disk；`users` 的值是 `"rw"` 或 `"ro"` |
 | `["cloud", "gcp", "snapshots", 名稱, "sourceDisk" \| "sizeGb"]` | 磁碟快照 |
 | `["cloud", "gcp", "run", "services", 名稱, "region" \| "image" \| "public" \| "concurrency" \| "memory" \| "timeout" \| "minInstances" \| "maxInstances" \| "env" \| "revisionCount"]` | Cloud Run 服務；`public` 代表已關閉 Invoker IAM 檢查，或 `allUsers` 有 `roles/run.invoker` |
@@ -272,11 +276,11 @@ Lab 引擎維護一份虛擬狀態（檔案系統加雲端資源），指令會�
 
 程式在 `src/lib/lab-engine/`，是不依賴瀏覽器的純函式：`execute(state, line)` 回傳新的狀態與輸出，不修改傳入的狀態。
 
-- **支援的指令**：`pwd ls cd mkdir touch cat echo cp mv rm rmdir zip clear help whoami`（`zip` 產生的是模擬的封存檔，`cat` 可以看到內容）；`aws s3 mb|rb|ls|cp|mv|rm`；`gcloud storage buckets create|delete|list|describe` 與 `gcloud storage ls|cp|mv|rm|cat`；`gsutil mb|rb|ls|cp|mv|rm|cat`；`aws iam`（使用者、群組、角色、受管政策）；`aws ec2`（安全群組、執行個體、EBS 磁碟區與快照、VPC、子網路、網際網路閘道、路由表）；`aws lambda`（建立、呼叫、修改設定與程式碼；不會真的執行程式碼，呼叫時把事件原樣放在回應的 body）；`aws rds`（DB 子網路群組、執行個體、唯讀複本、快照；不含 Aurora 叢集）；`gcloud iam service-accounts`；`gcloud projects`（IAM 授權）；`gcloud compute instances|firewall-rules|networks|networks subnets|routers|routers nats|disks|snapshots`；`gcloud run deploy|services|revisions`（只能部署現成的映像檔，不能從原始碼建置）；`gcloud sql instances|databases|users|backups`；`gcloud config`；`git init|status|add|commit|log|branch|switch|checkout|merge`（只有本機操作，沒有遠端；合併衝突會取消合併）。
+- **支援的指令**：`pwd ls cd mkdir touch cat echo cp mv rm rmdir zip clear help whoami`（`zip` 產生的是模擬的封存檔，`cat` 可以看到內容）；`aws s3 mb|rb|ls|cp|mv|rm`；`gcloud storage buckets create|delete|list|describe` 與 `gcloud storage ls|cp|mv|rm|cat`；`gsutil mb|rb|ls|cp|mv|rm|cat`；`aws iam`（使用者、群組、角色、受管政策）；`aws ec2`（安全群組、執行個體、EBS 磁碟區與快照、VPC、子網路、網際網路閘道、路由表）；`aws lambda`（建立、呼叫、修改設定與程式碼；不會真的執行程式碼，呼叫時把事件原樣放在回應的 body）；`aws dynamodb`（資料表、項目、Query、Scan、TTL；不含次要索引與 filter expression）；`aws rds`（DB 子網路群組、執行個體、唯讀複本、快照；不含 Aurora 叢集）；`gcloud iam service-accounts`；`gcloud projects`（IAM 授權）；`gcloud compute instances|firewall-rules|networks|networks subnets|routers|routers nats|disks|snapshots`；`gcloud run deploy|services|revisions`（只能部署現成的映像檔，不能從原始碼建置）；`gcloud firestore databases|indexes composite|fields ttls|export`（只有管理操作，沒有讀寫文件）；`gcloud sql instances|databases|users|backups`；`gcloud config`；`git init|status|add|commit|log|branch|switch|checkout|merge`（只有本機操作，沒有遠端；合併衝突會取消合併）。
 - **支援的語法**：引號、反斜線跳脫、註解、`>` 與 `>>`、`&&` 與 `;`。不支援管線、變數與萬用字元，會明確告知。
 - **新增指令**：在 `engine.ts` 的 `commands` 註冊一個 `Command`（收到可修改的草稿狀態與輸出函式，回傳結束碼），並補上測試。
 - **輸出訊息是近似值**：格式盡量貼近真實 CLI，但不保證逐字相同。
-- 每個 Lab 都必須在測試裡（`engine.test.ts`、`cloud.test.ts`、`network-db.test.ts` 或 `serverless-storage.test.ts`）有一條能從頭做到完成的指令腳本。
+- 每個 Lab 都必須在測試裡（`engine.test.ts`、`cloud.test.ts`、`network-db.test.ts`、`serverless-storage.test.ts` 或 `nosql.test.ts`）有一條能從頭做到完成的指令腳本。
 
 所有格式的權威定義在 `src/lib/content/schema.ts`，本節與它不一致時以程式為準。
 
@@ -323,8 +327,7 @@ interface Progress {
 | 階段 | 單元 | 狀態 |
 |---|---|---|
 | 0 基礎 | Linux 指令基礎、網路基礎、Git 基礎 | 完成（網路基礎沒有 Lab） |
-| 1 雲端核心 | 身分與權限、虛擬機、無伺服器運算、物件儲存、區塊與檔案儲存、虛擬網路、關聯式資料庫 | 完成 |
-| 1 雲端核心 | NoSQL 資料庫 | 待寫 |
+| 1 雲端核心 | 全部 8 個單元 | 完成 |
 | 2 維運 | 全部 5 個單元 | 待寫 |
 | 3 自動化 | 全部 5 個單元 | 待寫 |
 | 4 實戰 | 架構設計案例、面試題 | 待寫 |

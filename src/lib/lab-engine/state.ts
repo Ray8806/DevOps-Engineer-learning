@@ -56,6 +56,7 @@ export interface AwsState {
   };
   vpc: AwsVpcState;
   lambda: { functions: Map<string, LambdaFunction> };
+  dynamodb: { tables: Map<string, DynamoTable> };
   rds: {
     subnetGroups: Map<string, { description: string; subnetIds: string[] }>;
     instances: Map<string, RdsInstance>;
@@ -92,6 +93,33 @@ export interface LambdaFunction {
   memorySize: number;
   environment: Record<string, string>;
   invocations: number;
+}
+
+/** A DynamoDB attribute value in the API's typed JSON form, e.g. { "S": "abc" } or { "N": "42" }. */
+export type DynamoValue = Record<string, unknown>;
+
+export interface DynamoTable {
+  partitionKey: { name: string; type: "S" | "N" | "B" };
+  sortKey: { name: string; type: "S" | "N" | "B" } | null;
+  billingMode: "PAY_PER_REQUEST" | "PROVISIONED";
+  provisioned: { read: number; write: number } | null;
+  ttlAttribute: string | null;
+  /** Keyed by the key values: "pk" or "pk|sk". */
+  items: Map<string, Record<string, DynamoValue>>;
+  /** Partition key values used in Query calls, so labs can check that a query was run. */
+  queried: Set<string>;
+}
+
+export interface FirestoreDatabase {
+  location: string;
+  type: "firestore-native" | "datastore-mode";
+  edition: "standard" | "enterprise";
+  deleteProtection: boolean;
+  /** Manual (composite) indexes, e.g. "orders(customerId ASCENDING, createdAt DESCENDING)". */
+  indexes: Set<string>;
+  /** TTL fields as "collectionGroup.field". */
+  ttlFields: Set<string>;
+  exports: number;
 }
 
 export interface CloudRunService {
@@ -177,6 +205,7 @@ export interface GcpState {
   /** Disk snapshots by name. */
   snapshots: Map<string, { sourceDisk: string; sizeGb: number }>;
   run: { services: Map<string, CloudRunService>; revisionsCreated: number };
+  firestore: { databases: Map<string, FirestoreDatabase> };
 }
 
 export interface LabState {
@@ -317,6 +346,7 @@ function awsFrom(cloud: Record<string, unknown>): AwsState {
     iam: { users: new Map(), groups: new Map(), roles: new Map() },
     ec2: { instances: new Map(), securityGroups: new Map(), volumes: new Map(), snapshots: new Map(), created: 0 },
     lambda: { functions: new Map() },
+    dynamodb: { tables: new Map() },
     vpc: { vpcs: new Map(), subnets: new Map(), internetGateways: new Map(), routeTables: new Map() },
     rds: { subnetGroups: new Map(), instances: new Map(), snapshots: new Map() },
   };
@@ -368,6 +398,7 @@ function gcpFrom(cloud: Record<string, unknown>): GcpState {
     disks: new Map(),
     snapshots: new Map(),
     run: { services: new Map(), revisionsCreated: 0 },
+    firestore: { databases: new Map() },
   };
 }
 
@@ -574,6 +605,20 @@ function awsView(aws: AwsState) {
     vpcs: vpcsView(aws.vpc),
     rds: rdsView(aws),
     lambda: lambdaView(aws),
+    dynamodb: {
+      tables: Object.fromEntries(
+        [...aws.dynamodb.tables].map(([name, t]) => [
+          name,
+          {
+            definition: { partitionKey: t.partitionKey.name, sortKey: t.sortKey?.name ?? null, billingMode: t.billingMode },
+            itemCount: t.items.size,
+            items: keysTrue(t.items.keys()),
+            ttlAttribute: t.ttlAttribute,
+            queriedPartitions: keysTrue(t.queried),
+          },
+        ]),
+      ),
+    },
   };
 }
 
@@ -630,6 +675,22 @@ function gcpView(gcp: GcpState) {
             maxInstances: r.maxInstances,
             env: r.env,
             revisionCount: r.revisions.length,
+          },
+        ]),
+      ),
+    },
+    firestore: {
+      databases: Object.fromEntries(
+        [...gcp.firestore.databases].map(([id, d]) => [
+          id,
+          {
+            location: d.location,
+            type: d.type,
+            edition: d.edition,
+            deleteProtection: d.deleteProtection,
+            indexes: keysTrue(d.indexes),
+            ttlFields: keysTrue(d.ttlFields),
+            exportCount: d.exports,
           },
         ]),
       ),
@@ -700,6 +761,8 @@ function repoView(state: LabState, root: string, repo: GitRepo) {
  *   cloud.aws.ec2.volumeSpecs["az/type/size"].{count, attached, fromSnapshot}, cloud.aws.ec2.snapshotCount,
  *   cloud.gcp.disks[name].{zone, sizeGb, type, sourceSnapshot, users[instance]}, cloud.gcp.snapshots[name].{sourceDisk, sizeGb},
  *   cloud.gcp.run.services[name].{region, image, public, concurrency, memory, timeout, minInstances, maxInstances, env[key], revisionCount},
+ *   cloud.aws.dynamodb.tables[name].{definition, itemCount, items["pk|sk"], ttlAttribute, queriedPartitions[pk]},
+ *   cloud.gcp.firestore.databases[id].{location, type, edition, deleteProtection, indexes[spec], ttlFields["group.field"], exportCount},
  *   cloud.gcp.sql.instances[name].{databaseVersion, edition, tier, region, availabilityType, backupsEnabled,
  *     deletionProtection, masterInstanceName, databases[name], users[name], backupCount},
  *   git["~/project"].{branch, branches[name], commitCount, lastMessage,

@@ -27,6 +27,7 @@ const HELP = `可用的指令：
               aws ec2  安全群組、執行個體、EBS 磁碟區與快照、VPC、子網路、閘道與路由表（輸入 aws ec2 看完整清單）
               aws lambda create-function | invoke | get-function | list-functions | update-function-configuration | update-function-code | delete-function
               aws rds  資料庫子網路群組、執行個體、唯讀複本與快照（輸入 aws rds 看完整清單）
+              aws dynamodb create-table | describe-table | list-tables | put-item | get-item | query | scan | delete-item | update-time-to-live | delete-table
   GCP         gcloud storage buckets create | delete | list | describe
               gcloud storage ls | cp | mv | rm | cat      （也支援 gsutil）
               gcloud iam service-accounts create | list | delete
@@ -40,6 +41,8 @@ const HELP = `可用的指令：
               gcloud run deploy，run services list | describe | update | delete | add-iam-policy-binding，run revisions list
               gcloud sql instances create | list | describe | patch | delete
               gcloud sql databases | users create | list | delete，sql backups create | list
+              gcloud firestore databases create | list | describe | update | delete，indexes composite create | list
+              gcloud firestore fields ttls update | list，firestore export
   其他        clear  help  whoami
 支援 > 與 >> 輸出到檔案、用 && 或 ; 串接指令。按 Tab 補完路徑，上下鍵瀏覽歷史指令。
 `;

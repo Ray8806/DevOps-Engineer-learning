@@ -21,7 +21,8 @@
         "object-storage",
         "block-file-storage",
         "virtual-networks",
-        "relational-databases"
+        "relational-databases",
+        "nosql-databases"
       ]
     },
     {
