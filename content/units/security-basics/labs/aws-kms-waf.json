@@ -1,0 +1,60 @@
+{
+  "id": "aws-kms-waf",
+  "title": "KMS 加解密與 WAF web ACL",
+  "description": "建立 KMS 金鑰和別名並開啟自動輪替，加密再解密一個機密檔案，排程刪除不再使用的舊金鑰，最後用 AWS 託管規則群組建立 WAF web ACL。",
+  "provider": "aws",
+  "estimatedMinutes": 30,
+  "initialState": {
+    "files": {
+      "~/secret.txt": "db-password=S3cr3t!\n",
+      "~/waf-rules.json": "[\n  {\n    \"Name\": \"common-rules\",\n    \"Priority\": 0,\n    \"Statement\": {\n      \"ManagedRuleGroupStatement\": { \"VendorName\": \"AWS\", \"Name\": \"AWSManagedRulesCommonRuleSet\" }\n    },\n    \"OverrideAction\": { \"None\": {} },\n    \"VisibilityConfig\": { \"SampledRequestsEnabled\": true, \"CloudWatchMetricsEnabled\": true, \"MetricName\": \"common-rules\" }\n  }\n]\n"
+    },
+    "cloud": {
+      "aws": {
+        "kms": {
+          "alias/legacy-app": { "description": "old app key, no longer used" }
+        }
+      }
+    }
+  },
+  "steps": [
+    {
+      "instruction": "建立一把 KMS 金鑰（描述 app data），再替它建立別名 alias/app-data。記下輸出裡的 KeyId。",
+      "hint": "aws kms create-key --description \"app data\"，然後 aws kms create-alias --alias-name alias/app-data --target-key-id 金鑰的KeyId",
+      "check": { "type": "state", "path": ["cloud", "aws", "kms", "aliases", "alias/app-data", "description"], "equals": "app data" }
+    },
+    {
+      "instruction": "開啟這把金鑰的自動輪替，使用預設的週期。先試試用別名 alias/app-data 指定金鑰，會發生什麼事？再改用金鑰 ID。最後用 get-key-rotation-status 確認。",
+      "hint": "aws kms enable-key-rotation --key-id 金鑰的KeyId，然後 aws kms get-key-rotation-status --key-id 金鑰的KeyId",
+      "check": { "type": "state", "path": ["cloud", "aws", "kms", "aliases", "alias/app-data", "rotationPeriodInDays"], "equals": 365 }
+    },
+    {
+      "instruction": "用 alias/app-data 加密 ~/secret.txt。加密的輸出是 base64 文字：先存成 ~/secret.b64，再用 base64 -d 解碼成二進位的 ~/secret.enc。用 cat 看看 secret.enc，已經看不出原本的內容。",
+      "hint": "aws kms encrypt --key-id alias/app-data --plaintext fileb://secret.txt --output text --query CiphertextBlob > secret.b64，然後 base64 -d secret.b64 > secret.enc",
+      "check": { "type": "state", "path": ["files", "~/secret.enc"], "exists": true }
+    },
+    {
+      "instruction": "把 ~/secret.enc 解密回 ~/secret.out：decrypt 的 Plaintext 也是 base64，同樣先存檔再解碼。用 cat 確認內容和 secret.txt 一樣。",
+      "hint": "aws kms decrypt --ciphertext-blob fileb://secret.enc --key-id alias/app-data --output text --query Plaintext > plain.b64，然後 base64 -d plain.b64 > secret.out",
+      "check": { "type": "state", "path": ["files", "~/secret.out"], "equals": "db-password=S3cr3t!\n" }
+    },
+    {
+      "instruction": "舊的金鑰 alias/legacy-app 已經沒有程式在用了。用 list-aliases 找到它的金鑰 ID，排程在最短的等待期後刪除。再用 describe-key 看它的狀態。",
+      "hint": "aws kms list-aliases，然後 aws kms schedule-key-deletion --key-id 舊金鑰的ID --pending-window-in-days 7",
+      "check": {
+        "type": "state",
+        "path": ["cloud", "aws", "kms", "aliases", "alias/legacy-app"],
+        "equals": { "description": "old app key, no longer used", "state": "PendingDeletion", "rotationPeriodInDays": null, "pendingWindowInDays": 7 }
+      }
+    },
+    {
+      "instruction": "用 cat 看看 ~/waf-rules.json：它用了 AWS 託管的核心規則集。建立區域性（REGIONAL）的 web ACL web-acl，預設動作是允許，規則讀取這個檔案。",
+      "hint": "aws wafv2 create-web-acl --name web-acl --scope REGIONAL --default-action Allow={} --visibility-config SampledRequestsEnabled=true,CloudWatchMetricsEnabled=true,MetricName=web-acl --rules file://waf-rules.json",
+      "check": {
+        "type": "state",
+        "path": ["cloud", "aws", "wafv2", "webAcls", "web-acl"],
+        "equals": { "scope": "REGIONAL", "defaultAction": "Allow", "rules": { "common-rules": "managed:AWS/AWSManagedRulesCommonRuleSet" }, "associatedLoadBalancers": {} }
+      }
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 import { encodeArchive } from "./archive";
 import { parseArgs, type Command, type Ctx } from "./context";
+import { fromBase64, toBase64 } from "./encoding";
 import { HOME, addDirWithParents, basename, cloneRepo, dirname, isWithin, listDir, resolvePath, type LabState } from "./state";
 
 const isDir = (s: LabState, p: string) => s.dirs.has(p);
@@ -141,6 +142,35 @@ const cat: Command = (ctx, args) => {
     } else ctx.out(ctx.state.files.get(abs)!);
   }
   return code;
+};
+
+/** base64 [-d] FILE: like GNU coreutils, encoded output is wrapped at 76 columns. */
+const base64: Command = (ctx, args) => {
+  const parsed = parseArgs(args, { flags: ["-d", "--decode"] });
+  if (usageError(ctx, "base64", parsed)) return 1;
+  const target = parsed.positional[0];
+  if (target === undefined) {
+    ctx.err("base64: 這個模擬終端機需要指定檔名，例如 base64 -d secret.b64 > secret.enc");
+    return 1;
+  }
+  const abs = resolvePath(ctx.state.cwd, target);
+  if (!isFile(ctx.state, abs)) {
+    ctx.err(`base64: ${target}: ${isDir(ctx.state, abs) ? "Is a directory" : "No such file or directory"}`);
+    return 1;
+  }
+  const content = ctx.state.files.get(abs)!;
+  if (parsed.flags.has("-d") || parsed.flags.has("--decode")) {
+    const decoded = fromBase64(content);
+    if (decoded === null) {
+      ctx.err("base64: invalid input");
+      return 1;
+    }
+    ctx.out(decoded);
+    return 0;
+  }
+  const encoded = toBase64(content);
+  ctx.out(`${encoded.match(/.{1,76}/g)?.join("\n") ?? ""}\n`);
+  return 0;
 };
 
 const echo: Command = (ctx, args) => {
@@ -331,4 +361,4 @@ const zip: Command = (ctx, args) => {
   return 0;
 };
 
-export const linuxCommands: Record<string, Command> = { pwd, whoami, cd, ls, mkdir, touch, cat, echo, cp, mv, rm, rmdir, zip };
+export const linuxCommands: Record<string, Command> = { pwd, whoami, cd, ls, mkdir, touch, cat, base64, echo, cp, mv, rm, rmdir, zip };

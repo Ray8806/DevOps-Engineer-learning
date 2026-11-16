@@ -1,0 +1,44 @@
+{
+  "id": "gcp-kms-armor",
+  "title": "Cloud KMS 與 Cloud Armor",
+  "description": "建立會自動輪替的 Cloud KMS 金鑰，加密再解密一個機密檔案，親眼看到銷毀金鑰版本的後果，再用 Cloud Armor 安全性政策封鎖惡意 IP。",
+  "provider": "gcp",
+  "estimatedMinutes": 30,
+  "initialState": {
+    "files": {
+      "~/secret.txt": "db-password=S3cr3t!\n"
+    },
+    "cloud": {}
+  },
+  "steps": [
+    {
+      "instruction": "在 asia-east1 建立金鑰環 app-ring，再建立對稱加密金鑰 app-key：每 90 天自動輪替，第一次輪替在 2027-01-01T00:00:00Z。",
+      "hint": "gcloud kms keyrings create app-ring --location=asia-east1，然後 gcloud kms keys create app-key --keyring=app-ring --location=asia-east1 --purpose=encryption --rotation-period=90d --next-rotation-time=2027-01-01T00:00:00Z",
+      "check": { "type": "state", "path": ["cloud", "gcp", "kms", "keyRings", "asia-east1/app-ring", "keys", "app-key", "rotationPeriod"], "equals": "7776000s" }
+    },
+    {
+      "instruction": "用 app-key 把 ~/secret.txt 加密成 ~/secret.enc，再解密成 ~/secret.out。用 cat 比較三個檔案。",
+      "hint": "gcloud kms encrypt --key=app-key --keyring=app-ring --location=asia-east1 --plaintext-file=secret.txt --ciphertext-file=secret.enc，然後 gcloud kms decrypt --key=app-key --keyring=app-ring --location=asia-east1 --ciphertext-file=secret.enc --plaintext-file=secret.out",
+      "check": { "type": "state", "path": ["files", "~/secret.out"], "equals": "db-password=S3cr3t!\n" }
+    },
+    {
+      "instruction": "模擬金鑰輪替：建立新的金鑰版本並設為主要版本，再排程銷毀版本 1。接著再解密一次 secret.enc（輸出到 ~/again.out），會發生什麼事？用 versions restore 1 和 versions enable 1 把它救回來。",
+      "hint": "gcloud kms keys versions create --key=app-key --keyring=app-ring --location=asia-east1 --primary，gcloud kms keys versions destroy 1 --key=app-key --keyring=app-ring --location=asia-east1，解密失敗後 gcloud kms keys versions restore 1 …，再 gcloud kms keys versions enable 1 …",
+      "check": { "type": "state", "path": ["cloud", "gcp", "kms", "keyRings", "asia-east1/app-ring", "keys", "app-key", "recovered", "1"], "exists": true }
+    },
+    {
+      "instruction": "網站被 203.0.113.0/24 的位址大量攻擊。建立 Cloud Armor 安全性政策 block-bad，加一條優先順序 1000 的規則，對這個範圍回應 403。用 describe 看看政策裡有哪些規則。",
+      "hint": "gcloud compute security-policies create block-bad --description=\"block bad IPs\"，然後 gcloud compute security-policies rules create 1000 --security-policy=block-bad --src-ip-ranges=203.0.113.0/24 --action=deny-403",
+      "check": {
+        "type": "state",
+        "path": ["cloud", "gcp", "securityPolicies", "block-bad", "rules", "1000"],
+        "equals": { "action": "deny-403", "srcIpRanges": ["203.0.113.0/24"], "preview": false }
+      }
+    },
+    {
+      "instruction": "安全性政策要掛到負載平衡器的後端服務才會生效。建立 HTTP 健康檢查 web-hc 和全域後端服務 web-backend，再把 block-bad 掛上去。",
+      "hint": "gcloud compute health-checks create http web-hc --port=80，gcloud compute backend-services create web-backend --protocol=HTTP --health-checks=web-hc --global，然後 gcloud compute backend-services update web-backend --security-policy=block-bad --global",
+      "check": { "type": "state", "path": ["cloud", "gcp", "backendServices", "web-backend", "securityPolicy"], "equals": "block-bad" }
+    }
+  ]
+}

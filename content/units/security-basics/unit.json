@@ -1,0 +1,26 @@
+{
+  "id": "security-basics",
+  "title": "資安基礎",
+  "summary": "了解雲端的共同責任模型，用金鑰管理服務加密資料、管理金鑰的輪替與刪除，再用網頁應用程式防火牆擋掉惡意的 HTTP 請求。",
+  "stage": 2,
+  "prerequisites": ["iam-basics", "virtual-networks", "load-balancing"],
+  "providers": {
+    "aws": { "services": ["KMS", "WAF", "Shield"] },
+    "gcp": { "services": ["Cloud KMS", "Cloud Armor"] }
+  },
+  "compare": [
+    { "aspect": "金鑰管理服務", "aws": "AWS Key Management Service（KMS）", "gcp": "Cloud Key Management Service（Cloud KMS）" },
+    { "aspect": "金鑰怎麼組織", "aws": "KMS 金鑰，用別名（alias/名稱）方便引用", "gcp": "位置 → 金鑰環 → 金鑰 → 金鑰版本；資源建立後不能搬到其他位置" },
+    { "aspect": "沒有自己管金鑰時", "aws": "S3 從 2023 年 1 月 5 日起預設用 SSE-S3 加密新上傳的物件", "gcp": "Google 預設用 AES-256 加密靜態資料，金鑰由 Google 擁有和管理" },
+    { "aspect": "自己管理的金鑰", "aws": "客戶管理的金鑰（customer managed key）", "gcp": "客戶管理的加密金鑰（CMEK）" },
+    { "aspect": "自動輪替", "aws": "客戶管理的金鑰可選擇開啟，預設每 365 天，可設 90 到 2560 天", "gcp": "對稱加密金鑰可以自動輪替（例如每 90 天）：建立新的金鑰版本，舊版本保留，舊資料不會自動重新加密" },
+    { "aspect": "刪除或銷毀", "aws": "排程刪除金鑰，等待期 7 到 30 天（預設 30 天），期間內可以取消", "gcp": "銷毀金鑰版本，預設排程 30 天，期間內可以還原" },
+    { "aspect": "網頁應用程式防火牆", "aws": "AWS WAF：web ACL 加上規則，可保護 CloudFront、ALB、API Gateway 等", "gcp": "Cloud Armor 安全性政策，掛在外部 Application Load Balancer 的後端服務上" },
+    { "aspect": "規則的順序", "aws": "依 Priority 由小到大評估；沒有規則符合時用 web ACL 的預設動作（Allow 或 Block）", "gcp": "依優先順序由小到大評估；優先順序 2147483647 是預設規則，不能刪除但可以修改" },
+    { "aspect": "現成的規則", "aws": "AWS 託管規則群組，例如核心規則集 AWSManagedRulesCommonRuleSet", "gcp": "預先設定的 WAF 規則（例如 XSS、SQL 注入）" },
+    { "aspect": "DDoS 防護", "aws": "AWS Shield：基本防護自動提供、不另外收費；Shield Advanced 另外付費", "gcp": "Cloud Armor 協助防護 DDoS 和應用程式層的攻擊" },
+    { "aspect": "命令列工具", "aws": "aws kms、aws wafv2", "gcp": "gcloud kms、gcloud compute security-policies" }
+  ],
+  "certDomains": ["clf-c02:2", "saa-c03:1", "gcp-cdl:5", "gcp-ace:4"],
+  "estimatedMinutes": 50
+}

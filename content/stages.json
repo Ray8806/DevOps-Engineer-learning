@@ -32,7 +32,8 @@
       "units": [
         "load-balancing",
         "monitoring-logging",
-        "dns-cdn"
+        "dns-cdn",
+        "security-basics"
       ]
     },
     {
