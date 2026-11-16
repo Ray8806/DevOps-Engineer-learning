@@ -1,0 +1,25 @@
+{
+  "id": "relational-databases",
+  "title": "關聯式資料庫",
+  "summary": "把資料庫交給雲端代管：選引擎與規格、放進私有子網路、用備用執行個體做高可用、用唯讀複本分擔讀取，並做好備份。",
+  "stage": 1,
+  "prerequisites": ["virtual-networks"],
+  "providers": {
+    "aws": { "services": ["RDS", "Aurora"] },
+    "gcp": { "services": ["Cloud SQL", "Spanner"] }
+  },
+  "compare": [
+    { "aspect": "代管的關聯式資料庫", "aws": "Amazon RDS", "gcp": "Cloud SQL" },
+    { "aspect": "支援的引擎", "aws": "MySQL、PostgreSQL、MariaDB、Oracle、SQL Server、Db2", "gcp": "MySQL、PostgreSQL、SQL Server" },
+    { "aspect": "雲端原生的關聯式資料庫", "aws": "Aurora（相容 MySQL 與 PostgreSQL）", "gcp": "Spanner（可水平擴展、可跨區域）" },
+    { "aspect": "高可用", "aws": "Multi-AZ：另一個可用區的備用執行個體，同步複寫", "gcp": "高可用（REGIONAL）：同一區域另一個可用區的備用執行個體，同步複寫" },
+    { "aspect": "高可用的備用執行個體能不能讀", "aws": "Multi-AZ 執行個體部署不能；Multi-AZ 叢集部署可以", "gcp": "不能" },
+    { "aspect": "分擔讀取", "aws": "唯讀複本（非同步複寫，最多 15 個）", "gcp": "唯讀備用資源（read replica，非同步複寫）" },
+    { "aspect": "自動備份保留", "aws": "0 到 35 天；用 CLI 建立時預設 1 天", "gcp": "預設保留 7 份（Enterprise 版本）" },
+    { "aspect": "刪除還有複本的主要執行個體", "aws": "可以，同區域的複本會升格為獨立執行個體", "gcp": "不行，要先刪除所有唯讀備用資源" },
+    { "aspect": "放進私有網路", "aws": "DB 子網路群組（至少涵蓋兩個可用區）", "gcp": "私人 IP（連接到 VPC 網路）" },
+    { "aspect": "命令列工具", "aws": "aws rds", "gcp": "gcloud sql" }
+  ],
+  "certDomains": ["clf-c02:3", "saa-c03:2", "saa-c03:3", "gcp-cdl:2", "gcp-ace:2", "gcp-ace:3"],
+  "estimatedMinutes": 45
+}

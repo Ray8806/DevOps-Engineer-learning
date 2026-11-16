@@ -39,9 +39,67 @@ export interface AwsState {
     instances: Map<string, { imageId: string; instanceType: string; state: "running" | "stopped" | "terminated"; securityGroups: string[] }>;
     /** Keyed by security group id. Ingress entries look like "tcp:443:0.0.0.0/0". */
     securityGroups: Map<string, { name: string; description: string; ingress: Set<string> }>;
-    /** Number of ids handed out so far, so new ids are deterministic. */
+    /** Number of ids handed out so far (instances, groups, VPC resources), so new ids are deterministic. */
     created: number;
   };
+  vpc: AwsVpcState;
+  rds: {
+    subnetGroups: Map<string, { description: string; subnetIds: string[] }>;
+    instances: Map<string, RdsInstance>;
+    /** Manual and final snapshots: id -> source instance. */
+    snapshots: Map<string, { instance: string; engine: string; allocatedStorage: number }>;
+  };
+}
+
+export interface AwsVpcState {
+  vpcs: Map<string, { cidr: string }>;
+  subnets: Map<string, { vpcId: string; cidr: string; availabilityZone: string; mapPublicIpOnLaunch: boolean }>;
+  /** vpcId is null while the gateway is detached. */
+  internetGateways: Map<string, { vpcId: string | null }>;
+  routeTables: Map<
+    string,
+    {
+      vpcId: string;
+      main: boolean;
+      /** Destination CIDR -> target ("local" or an internet gateway id). */
+      routes: Map<string, string>;
+      /** Association id -> subnet id (explicit associations only). */
+      associations: Map<string, string>;
+    }
+  >;
+}
+
+export interface RdsInstance {
+  engine: string;
+  instanceClass: string;
+  allocatedStorage: number;
+  masterUsername: string;
+  /** Password kept in Secrets Manager (--manage-master-user-password). */
+  managedPassword: boolean;
+  /** null means the default subnet group. */
+  subnetGroup: string | null;
+  multiAZ: boolean;
+  /** Multi-AZ change waiting for the maintenance window (no --apply-immediately). */
+  pendingMultiAZ: boolean | null;
+  publiclyAccessible: boolean;
+  backupRetentionPeriod: number;
+  deletionProtection: boolean;
+  readReplicaSource: string | null;
+}
+
+export interface CloudSqlInstance {
+  databaseVersion: string;
+  edition: "ENTERPRISE" | "ENTERPRISE_PLUS";
+  tier: string;
+  region: string;
+  availabilityType: "ZONAL" | "REGIONAL";
+  backupsEnabled: boolean;
+  deletionProtection: boolean;
+  masterInstanceName: string | null;
+  databases: Set<string>;
+  users: Set<string>;
+  /** On-demand backup ids. */
+  backups: string[];
 }
 
 export interface GcpState {
@@ -50,9 +108,28 @@ export interface GcpState {
   serviceAccounts: Map<string, { displayName: string }>;
   /** Project IAM policy: role -> members. */
   bindings: Map<string, Set<string>>;
-  instances: Map<string, { zone: string; machineType: string; status: "RUNNING" | "TERMINATED"; tags: Set<string> }>;
+  instances: Map<
+    string,
+    {
+      zone: string;
+      machineType: string;
+      status: "RUNNING" | "TERMINATED";
+      tags: Set<string>;
+      network: string;
+      subnet: string;
+      /** False when created with --no-address. */
+      externalIp: boolean;
+    }
+  >;
   /** Allow entries look like "tcp:80". */
-  firewallRules: Map<string, { allow: Set<string>; sourceRanges: Set<string>; targetTags: Set<string> }>;
+  firewallRules: Map<string, { network: string; allow: Set<string>; sourceRanges: Set<string>; targetTags: Set<string> }>;
+  /** Auto mode networks implicitly have a subnet named after the network in every region. */
+  networks: Map<string, { mode: "auto" | "custom" }>;
+  /** Keyed by "region/name": subnet names are unique per region. */
+  subnets: Map<string, { name: string; network: string; region: string; range: string }>;
+  /** Cloud Routers, keyed by "region/name"; each NAT lists "ALL" or the subnets it serves. */
+  routers: Map<string, { name: string; network: string; region: string; nats: Map<string, string[] | "ALL"> }>;
+  sql: { instances: Map<string, CloudSqlInstance>; backupsCreated: number };
 }
 
 export interface LabState {
@@ -178,12 +255,44 @@ export function createLabState(initial: InitialState = {}): LabState {
     s3: bucketsFrom(cloud, "s3", DEFAULT_S3_REGION),
     gcs: bucketsFrom(cloud, "gcs", DEFAULT_GCS_LOCATION),
     git: new Map(),
-    aws: {
-      iam: { users: new Map(), groups: new Map() },
-      ec2: { instances: new Map(), securityGroups: new Map(), created: 0 },
-    },
+    aws: awsFrom(cloud),
     gcp: gcpFrom(cloud),
   };
+}
+
+/**
+ * Seeds the simulated AWS account from `initialState.cloud.aws`:
+ * { vpcs: { [vpcId]: { cidr, subnets: { [subnetId]: { cidr, availabilityZone } } } } }.
+ * Each seeded VPC gets a main route table with only the local route.
+ */
+function awsFrom(cloud: Record<string, unknown>): AwsState {
+  const aws: AwsState = {
+    iam: { users: new Map(), groups: new Map() },
+    ec2: { instances: new Map(), securityGroups: new Map(), created: 0 },
+    vpc: { vpcs: new Map(), subnets: new Map(), internetGateways: new Map(), routeTables: new Map() },
+    rds: { subnetGroups: new Map(), instances: new Map(), snapshots: new Map() },
+  };
+  const seed = isRecord(cloud.aws) && isRecord(cloud.aws.vpcs) ? cloud.aws.vpcs : {};
+  for (const [vpcId, raw] of Object.entries(seed)) {
+    if (!isRecord(raw) || typeof raw.cidr !== "string") continue;
+    aws.vpc.vpcs.set(vpcId, { cidr: raw.cidr });
+    aws.vpc.routeTables.set(`rtb-0seed${String(aws.vpc.routeTables.size).padStart(12, "0")}`, {
+      vpcId,
+      main: true,
+      routes: new Map([[raw.cidr, "local"]]),
+      associations: new Map(),
+    });
+    for (const [subnetId, sub] of Object.entries(isRecord(raw.subnets) ? raw.subnets : {})) {
+      if (!isRecord(sub) || typeof sub.cidr !== "string") continue;
+      aws.vpc.subnets.set(subnetId, {
+        vpcId,
+        cidr: sub.cidr,
+        availabilityZone: typeof sub.availabilityZone === "string" ? sub.availabilityZone : "us-east-1a",
+        mapPublicIpOnLaunch: false,
+      });
+    }
+  }
+  return aws;
 }
 
 export const DEFAULT_GCP_PROJECT = "my-project";
@@ -203,6 +312,11 @@ function gcpFrom(cloud: Record<string, unknown>): GcpState {
     bindings,
     instances: new Map(),
     firewallRules: new Map(),
+    // Every new project starts with the auto mode "default" network.
+    networks: new Map([["default", { mode: "auto" as const }]]),
+    subnets: new Map(),
+    routers: new Map(),
+    sql: { instances: new Map(), backupsCreated: 0 },
   };
 }
 
@@ -286,6 +400,79 @@ function plain(value: unknown): unknown {
   return value;
 }
 
+/** The route table a subnet uses: its explicit association, or else the VPC's main table. */
+export function subnetRouteTable(vpc: AwsVpcState, subnetId: string): string | undefined {
+  const subnet = vpc.subnets.get(subnetId);
+  if (!subnet) return undefined;
+  const tables = [...vpc.routeTables].filter(([, t]) => t.vpcId === subnet.vpcId);
+  return (tables.find(([, t]) => [...t.associations.values()].includes(subnetId)) ?? tables.find(([, t]) => t.main))?.[0];
+}
+
+/** A route to an internet gateway counts only while that gateway is attached to the route table's VPC. */
+export function routesToInternet(vpc: AwsVpcState, tableId: string): boolean {
+  const table = vpc.routeTables.get(tableId);
+  return !!table && [...table.routes.values()].some((target) => vpc.internetGateways.get(target)?.vpcId === table.vpcId);
+}
+
+/** Public subnet = its route table has a route to an attached internet gateway. */
+export function isPublicSubnet(vpc: AwsVpcState, subnetId: string): boolean {
+  const table = subnetRouteTable(vpc, subnetId);
+  return table !== undefined && routesToInternet(vpc, table);
+}
+
+/** VPCs keyed by CIDR (ids are generated, so labs cannot know them). With duplicate CIDRs the oldest wins. */
+function vpcsView(vpc: AwsVpcState) {
+  const result: Record<string, unknown> = {};
+  for (const [vpcId, v] of vpc.vpcs) {
+    if (Object.hasOwn(result, v.cidr)) continue;
+    const subnets = [...vpc.subnets].filter(([, s]) => s.vpcId === vpcId);
+    result[v.cidr] = {
+      id: vpcId,
+      internetGateway: [...vpc.internetGateways.values()].some((g) => g.vpcId === vpcId),
+      internetRoute: [...vpc.routeTables].some(([id, t]) => t.vpcId === vpcId && routesToInternet(vpc, id)),
+      publicSubnets: keysTrue(subnets.filter(([id]) => isPublicSubnet(vpc, id)).map(([, s]) => s.cidr)),
+      subnets: Object.fromEntries(
+        subnets.map(([id, s]) => [
+          s.cidr,
+          { id, availabilityZone: s.availabilityZone, public: isPublicSubnet(vpc, id), mapPublicIpOnLaunch: s.mapPublicIpOnLaunch },
+        ]),
+      ),
+    };
+  }
+  return result;
+}
+
+function rdsView(aws: AwsState) {
+  const { rds, vpc } = aws;
+  return {
+    subnetGroups: Object.fromEntries(
+      [...rds.subnetGroups].map(([name, g]) => [
+        name,
+        {
+          subnets: keysTrue(g.subnetIds),
+          availabilityZones: keysTrue(g.subnetIds.map((id) => vpc.subnets.get(id)?.availabilityZone ?? "")),
+        },
+      ]),
+    ),
+    instances: Object.fromEntries(
+      [...rds.instances].map(([id, i]) => [
+        id,
+        {
+          engine: i.engine,
+          instanceClass: i.instanceClass,
+          multiAZ: i.multiAZ,
+          publiclyAccessible: i.publiclyAccessible,
+          subnetGroup: i.subnetGroup ?? "default",
+          backupRetentionPeriod: i.backupRetentionPeriod,
+          deletionProtection: i.deletionProtection,
+          readReplicaSource: i.readReplicaSource,
+        },
+      ]),
+    ),
+    snapshots: Object.fromEntries([...rds.snapshots].map(([id, snap]) => [id, { instance: snap.instance }])),
+  };
+}
+
 function awsView(aws: AwsState) {
   const instances = [...aws.ec2.instances.values()];
   const count = (state: string, groupId?: string) =>
@@ -300,6 +487,65 @@ function awsView(aws: AwsState) {
         [...aws.ec2.securityGroups].map(([id, g]) => [
           g.name,
           { id, ingress: plain(g.ingress), runningInstances: count("running", id) },
+        ]),
+      ),
+    },
+    vpcs: vpcsView(aws.vpc),
+    rds: rdsView(aws),
+  };
+}
+
+function gcpView(gcp: GcpState) {
+  const subnets = [...gcp.subnets.values()];
+  const routers = [...gcp.routers.values()];
+  return {
+    project: gcp.project,
+    serviceAccounts: plain(gcp.serviceAccounts),
+    bindings: plain(gcp.bindings),
+    instances: Object.fromEntries(
+      [...gcp.instances].map(([name, i]) => [
+        name,
+        {
+          zone: i.zone,
+          machineType: i.machineType,
+          status: i.status,
+          tags: keysTrue(i.tags),
+          networkInterface: { network: i.network, subnet: i.subnet, externalIp: i.externalIp },
+        },
+      ]),
+    ),
+    firewallRules: plain(gcp.firewallRules),
+    networks: Object.fromEntries(
+      [...gcp.networks].map(([name, n]) => [
+        name,
+        {
+          mode: n.mode,
+          subnets: Object.fromEntries(subnets.filter((s) => s.network === name).map((s) => [s.name, { region: s.region, range: s.range }])),
+          // Regions where a Cloud NAT gateway serves this network.
+          natRegions: keysTrue(routers.filter((r) => r.network === name && r.nats.size > 0).map((r) => r.region)),
+        },
+      ]),
+    ),
+    routers: Object.fromEntries(
+      routers.map((r) => [r.name, { network: r.network, region: r.region, nats: Object.fromEntries([...r.nats].map(([n, served]) => [n, plain(served)])) }]),
+    ),
+    sql: {
+      instances: Object.fromEntries(
+        [...gcp.sql.instances].map(([name, i]) => [
+          name,
+          {
+            databaseVersion: i.databaseVersion,
+            edition: i.edition,
+            tier: i.tier,
+            region: i.region,
+            availabilityType: i.availabilityType,
+            backupsEnabled: i.backupsEnabled,
+            deletionProtection: i.deletionProtection,
+            masterInstanceName: i.masterInstanceName,
+            databases: keysTrue(i.databases),
+            users: keysTrue(i.users),
+            backupCount: i.backups.length,
+          },
         ]),
       ),
     },
@@ -335,7 +581,17 @@ function repoView(state: LabState, root: string, repo: GitRepo) {
  *   cloud.aws.ec2.securityGroups[name].{id,ingress["tcp:443:0.0.0.0/0"],runningInstances},
  *   cloud.gcp.{project, serviceAccounts[email], bindings[role][member]},
  *   cloud.gcp.instances[name].{zone,machineType,status,tags[tag]},
- *   cloud.gcp.firewallRules[name].{allow["tcp:80"],sourceRanges[cidr],targetTags[tag]},
+ *   cloud.aws.vpcs[vpcCidr].{id, internetGateway, internetRoute, publicSubnets[cidr],
+ *     subnets[cidr].{id, availabilityZone, public, mapPublicIpOnLaunch}},
+ *   cloud.aws.rds.subnetGroups[name].{subnets[id], availabilityZones[az]},
+ *   cloud.aws.rds.instances[id].{engine, instanceClass, multiAZ, publiclyAccessible, subnetGroup,
+ *     backupRetentionPeriod, deletionProtection, readReplicaSource}, cloud.aws.rds.snapshots[id].instance,
+ *   cloud.gcp.instances[name].networkInterface = { network, subnet, externalIp },
+ *   cloud.gcp.firewallRules[name].{network, allow["tcp:80"],sourceRanges[cidr],targetTags[tag]},
+ *   cloud.gcp.networks[name].{mode, subnets[name].{region, range}, natRegions[region]},
+ *   cloud.gcp.routers[name].{network, region, nats[name]},
+ *   cloud.gcp.sql.instances[name].{databaseVersion, edition, tier, region, availabilityType, backupsEnabled,
+ *     deletionProtection, masterInstanceName, databases[name], users[name], backupCount},
  *   git["~/project"].{branch, branches[name], commitCount, lastMessage,
  *     staged[path], clean, branchFiles[branch][path]}.
  */
@@ -348,7 +604,7 @@ export function checkView(state: LabState): Record<string, unknown> {
       s3: bucketsView(state.s3, "region"),
       gcs: bucketsView(state.gcs, "location"),
       aws: awsView(state.aws),
-      gcp: plain(state.gcp),
+      gcp: gcpView(state.gcp),
     },
     git: Object.fromEntries([...state.git].map(([root, repo]) => [displayPath(root), repoView(state, root, repo)])),
   };

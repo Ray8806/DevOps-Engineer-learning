@@ -1,22 +1,53 @@
 import { parseArgs, type Ctx } from "./context";
+import { NAME, NAME_RULE, error, list, networkUrl, subnetUrl, table, zoneRegion } from "./gcloud-common";
+import { networks, routers } from "./gcloud-network";
 
-function error(ctx: Ctx, command: string, message: string): number {
-  ctx.err(`ERROR: (${command}) ${message}`);
-  return 1;
-}
-
-const NAME = /^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$/;
-const NAME_RULE = "名稱必須以小寫字母開頭，只能包含小寫字母、數字和連字號，最多 63 個字元。";
 const ZONE = /^[a-z]+-[a-z]+\d+-[a-z]$/;
-const list = (value: string | undefined) => (value ?? "").split(",").map((v) => v.trim()).filter(Boolean);
 
-function table(ctx: Ctx, header: string[], rows: string[][]) {
-  if (rows.length === 0) {
-    ctx.out("Listed 0 items.\n");
-    return;
+/**
+ * Picks the network and subnet for a new instance in `region`. Subnets are
+ * regional, so the subnet must be in the instance's region. Without flags the
+ * instance goes on the default network; auto mode networks have a subnet named
+ * after the network in every region.
+ */
+function networkInterface(ctx: Ctx, command: string, region: string, networkArg?: string, subnetArg?: string): { network: string; subnet: string } | null {
+  const gcp = ctx.state.gcp;
+  if (subnetArg !== undefined) {
+    const subnet = gcp.subnets.get(`${region}/${subnetArg}`);
+    if (!subnet) {
+      const elsewhere = [...gcp.subnets.values()].find((s) => s.name === subnetArg);
+      error(
+        ctx,
+        command,
+        `Could not fetch resource:\n - The resource 'projects/${gcp.project}/regions/${region}/subnetworks/${subnetArg}' was not found${
+          elsewhere ? `\n子網路是區域資源：${subnetArg} 在 ${elsewhere.region}，而這台執行個體的可用區在 ${region}。請改用 ${elsewhere.region} 的可用區，或在 ${region} 建立子網路。` : ""
+        }`,
+      );
+      return null;
+    }
+    if (networkArg !== undefined && networkArg !== subnet.network) {
+      error(ctx, command, `子網路 ${subnetArg} 屬於網路 ${subnet.network}，不是 ${networkArg}。`);
+      return null;
+    }
+    return { network: subnet.network, subnet: subnet.name };
   }
-  const widths = header.map((h, i) => Math.max(h.length, ...rows.map((r) => r[i].length)) + 2);
-  for (const row of [header, ...rows]) ctx.out(`${row.map((cell, i) => cell.padEnd(widths[i])).join("").trimEnd()}\n`);
+  const network = networkArg ?? "default";
+  const net = gcp.networks.get(network);
+  if (!net) {
+    error(ctx, command, `Could not fetch resource:\n - The resource 'projects/${gcp.project}/global/networks/${network}' was not found`);
+    return null;
+  }
+  if (net.mode === "auto") return { network, subnet: network };
+  const candidates = [...gcp.subnets.values()].filter((s) => s.network === network && s.region === region);
+  if (candidates.length === 1) return { network, subnet: candidates[0].name };
+  error(
+    ctx,
+    command,
+    candidates.length === 0
+      ? `網路 ${network} 是自訂模式，在區域 ${region} 沒有子網路。請先建立子網路，或選擇有子網路的區域。`
+      : `網路 ${network} 在區域 ${region} 有多個子網路，請用 --subnet 指定其中一個。`,
+  );
+  return null;
 }
 
 function instances(ctx: Ctx, args: string[]): number {
@@ -55,8 +86,11 @@ function instances(ctx: Ctx, args: string[]): number {
       if (!NAME.test(name)) return error(ctx, command, `Invalid value for field 'resource.name': '${name}'. ${NAME_RULE}`);
       if (gcp.instances.has(name)) return error(ctx, command, `The resource 'projects/${gcp.project}/zones/${gcp.instances.get(name)!.zone}/instances/${name}' already exists`);
     }
+    const nic = networkInterface(ctx, command, zoneRegion(zoneArg), parsed.options.get("--network"), parsed.options.get("--subnet"));
+    if (!nic) return 1;
+    const externalIp = !parsed.flags.has("--no-address");
     for (const name of names) {
-      gcp.instances.set(name, { zone: zoneArg, machineType, status: "RUNNING", tags: new Set(tags) });
+      gcp.instances.set(name, { zone: zoneArg, machineType, status: "RUNNING", tags: new Set(tags), ...nic, externalIp });
       ctx.out(`Created [${url(name, zoneArg)}].\n`);
     }
     table(ctx, ["NAME", "ZONE", "MACHINE_TYPE", "STATUS"], names.map((n) => [n, zoneArg, machineType, "RUNNING"]));
@@ -94,7 +128,9 @@ function instances(ctx: Ctx, args: string[]): number {
       }
       default:
         ctx.out(
-          `machineType: ${instance.machineType}\nname: ${name}\nstatus: ${instance.status}\n${
+          `machineType: ${instance.machineType}\nname: ${name}\nnetworkInterfaces:\n${
+            instance.externalIp ? "- accessConfigs:\n  - name: External NAT\n    type: ONE_TO_ONE_NAT\n  " : "- "
+          }network: ${networkUrl(gcp.project, instance.network)}\n  subnetwork: ${subnetUrl(gcp.project, zoneRegion(instance.zone), instance.subnet)}\nstatus: ${instance.status}\n${
             instance.tags.size ? `tags:\n  items:\n${[...instance.tags].sort().map((t) => `  - ${t}\n`).join("")}` : ""
           }zone: ${instance.zone}\n`,
         );
@@ -121,7 +157,7 @@ function firewallRules(ctx: Ctx, args: string[]): number {
         ["NAME", "NETWORK", "DIRECTION", "ALLOW", "SOURCE_RANGES", "TARGET_TAGS"],
         [...gcp.firewallRules].sort(([a], [b]) => (a < b ? -1 : 1)).map(([n, r]) => [
           n,
-          "default",
+          r.network,
           "INGRESS",
           [...r.allow].sort().join(","),
           [...r.sourceRanges].sort().join(","),
@@ -139,8 +175,11 @@ function firewallRules(ctx: Ctx, args: string[]): number {
       const bad = allow.find((a) => !/^(tcp|udp)(:\d{1,5}(-\d{1,5})?)?$|^icmp$/.test(a));
       if (bad) return error(ctx, command, `argument --allow: 無法解讀 '${bad}'。格式是 通訊協定:連接埠，例如 tcp:80 或 tcp:8000-8080。`);
       const ranges = list(parsed.options.get("--source-ranges"));
+      const network = parsed.options.get("--network") ?? "default";
+      if (!gcp.networks.has(network)) return error(ctx, command, `Could not fetch resource:\n - The resource 'projects/${gcp.project}/global/networks/${network}' was not found`);
       // With no source filter, Google Cloud defaults ingress rules to every IPv4 address.
       gcp.firewallRules.set(name, {
+        network,
         allow: new Set(allow),
         sourceRanges: new Set(ranges.length ? ranges : ["0.0.0.0/0"]),
         targetTags: new Set(list(parsed.options.get("--target-tags"))),
@@ -158,9 +197,15 @@ function firewallRules(ctx: Ctx, args: string[]): number {
   }
 }
 
-/** `gcloud compute instances …` and `gcloud compute firewall-rules …`. */
+/** `gcloud compute instances | firewall-rules | networks | routers …`. */
 export function compute(ctx: Ctx, args: string[]): number {
   if (args[0] === "instances") return instances(ctx, args.slice(1));
   if (args[0] === "firewall-rules") return firewallRules(ctx, args.slice(1));
-  return error(ctx, "gcloud.compute", `不支援 '${args[0] ?? ""}'。這個模擬終端機支援 gcloud compute instances 和 gcloud compute firewall-rules。`);
+  if (args[0] === "networks") return networks(ctx, args.slice(1));
+  if (args[0] === "routers") return routers(ctx, args.slice(1));
+  return error(
+    ctx,
+    "gcloud.compute",
+    `不支援 '${args[0] ?? ""}'。這個模擬終端機支援 gcloud compute instances、firewall-rules、networks（含 networks subnets）和 routers（含 routers nats）。`,
+  );
 }

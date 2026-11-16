@@ -1,3 +1,5 @@
+import { VPC_COMMANDS, newId, vpc } from "./aws-vpc";
+import { parseCidr } from "./cidr";
 import { parseArgs, type Ctx } from "./context";
 
 const json = (ctx: Ctx, value: unknown) => ctx.out(`${JSON.stringify(value, null, 4)}\n`);
@@ -7,28 +9,9 @@ function fail(ctx: Ctx, code: string, operation: string, message: string): numbe
   return 254;
 }
 
-export const EC2_COMMANDS =
+const INSTANCE_COMMANDS =
   "create-security-group、authorize-security-group-ingress、describe-security-groups、delete-security-group、run-instances、describe-instances、stop-instances、start-instances、terminate-instances";
-
-/** Deterministic 17-hex-digit resource id, e.g. i-0a3f…; `n` is a running counter. */
-function newId(prefix: string, n: number): string {
-  let hash = 0x811c9dc5;
-  let hex = "";
-  for (let round = 0; round < 2; round++) {
-    for (const ch of `${prefix}${n}:${round}`) {
-      hash ^= ch.charCodeAt(0);
-      hash = Math.imul(hash, 0x01000193) >>> 0;
-    }
-    hex += hash.toString(16).padStart(8, "0");
-  }
-  return `${prefix}-0${hex}`;
-}
-
-const CIDR = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})\/(\d{1,2})$/;
-function validCidr(cidr: string): boolean {
-  const m = CIDR.exec(cidr);
-  return m !== null && m.slice(1, 5).every((o) => Number(o) <= 255) && Number(m[5]) <= 32;
-}
+export const EC2_COMMANDS = `${INSTANCE_COMMANDS}、${VPC_COMMANDS.join("、")}`;
 
 export function ec2(ctx: Ctx, args: string[]): number {
   const [sub, ...rest] = args;
@@ -37,6 +20,7 @@ export function ec2(ctx: Ctx, args: string[]): number {
     ctx.err(sub ? `aws: 不支援的 ec2 指令 '${sub}'。支援：${EC2_COMMANDS}` : `usage: aws ec2 <command> [parameters]\n支援：${EC2_COMMANDS}`);
     return 252;
   }
+  if (VPC_COMMANDS.includes(sub)) return vpc(ctx, sub, rest);
   const parsed = parseArgs(rest, {
     options: [
       "--group-name", "--group-id", "--description", "--protocol", "--port", "--cidr", "--vpc-id",
@@ -101,7 +85,7 @@ export function ec2(ctx: Ctx, args: string[]): number {
       const cidr = opt("cidr")!;
       if (!["tcp", "udp"].includes(protocol)) return fail(ctx, "InvalidParameterValue", operation, `這個模擬終端機只支援 tcp 和 udp，收到 '${protocol}'`);
       if (!/^\d{1,5}$/.test(port) || Number(port) > 65535) return fail(ctx, "InvalidParameterValue", operation, `Invalid value '${port}' for port. 請輸入 0 到 65535 的單一連接埠`);
-      if (!validCidr(cidr)) return fail(ctx, "InvalidParameterValue", operation, `CIDR block ${cidr} is malformed`);
+      if (!parseCidr(cidr)) return fail(ctx, "InvalidParameterValue", operation, `CIDR block ${cidr} is malformed`);
       const rule = `${protocol}:${Number(port)}:${cidr}`;
       const group = securityGroups.get(id)!;
       if (group.ingress.has(rule)) {

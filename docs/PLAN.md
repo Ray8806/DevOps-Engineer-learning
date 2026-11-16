@@ -242,24 +242,35 @@ Lab 引擎維護一份虛擬狀態（檔案系統加雲端資源），指令會�
 | `["cloud", "aws", "ec2", "counts", "running" \| "stopped" \| "terminated"]` | 各狀態的執行個體數量（ID 是產生的，Lab 無法預先知道，所以用數量檢查） |
 | `["cloud", "gcp", "serviceAccounts", 電子郵件]`、`["cloud", "gcp", "bindings", 角色, 成員]` | 服務帳戶與專案的 IAM 授權 |
 | `["cloud", "gcp", "instances", 名稱, "status" \| "zone" \| "machineType" \| "tags"]` | Compute Engine 執行個體 |
-| `["cloud", "gcp", "firewallRules", 名稱, "allow" \| "sourceRanges" \| "targetTags", 值]` | 防火牆規則 |
+| `["cloud", "gcp", "instances", 名稱, "networkInterface"]` | 執行個體的網路，值像 `{ "network": "lab-net", "subnet": "web", "externalIp": false }`，用 `equals` 檢查 |
+| `["cloud", "gcp", "firewallRules", 名稱, "network"]`、`["cloud", "gcp", "firewallRules", 名稱, "allow" \| "sourceRanges" \| "targetTags", 值]` | 防火牆規則 |
+| `["cloud", "aws", "vpcs", VPC 的 CIDR, "internetGateway" \| "internetRoute" \| "publicSubnets"]` | VPC（以 CIDR 而不是產生的 ID 當鍵；同一段 CIDR 有多個 VPC 時取最早建立的）：是否連接網際網路閘道、是否有路由表通往閘道、公有子網路的集合（例如 `{ "10.0.1.0/24": true }`） |
+| `["cloud", "aws", "vpcs", VPC 的 CIDR, "subnets", 子網路 CIDR, "availabilityZone" \| "public" \| "mapPublicIpOnLaunch"]` | 子網路；`public` 代表它使用的路由表（明確關聯的或主路由表）有路由通往已連接的網際網路閘道 |
+| `["cloud", "aws", "rds", "subnetGroups", 名稱, "subnets" \| "availabilityZones", 值]` | DB 子網路群組 |
+| `["cloud", "aws", "rds", "instances", 識別碼, "engine" \| "multiAZ" \| "publiclyAccessible" \| "subnetGroup" \| "backupRetentionPeriod" \| "deletionProtection" \| "readReplicaSource"]` | RDS 執行個體（`readReplicaSource` 是來源的識別碼，不是複本時為 `null`） |
+| `["cloud", "aws", "rds", "snapshots", 識別碼, "instance"]` | 手動快照與最終快照 |
+| `["cloud", "gcp", "networks", 名稱, "mode" \| "subnets" \| "natRegions", …]` | VPC 網路：`mode` 是 `auto` 或 `custom`；`subnets.名稱.region` 與 `.range`；`natRegions.區域` 代表該區域有 Cloud NAT 服務這個網路 |
+| `["cloud", "gcp", "routers", 名稱, "network" \| "region" \| "nats", 名稱]` | Cloud Router 與上面的 NAT |
+| `["cloud", "gcp", "sql", "instances", 名稱, "databaseVersion" \| "edition" \| "tier" \| "region" \| "availabilityType" \| "backupsEnabled" \| "masterInstanceName" \| "databases" \| "users" \| "backupCount", …]` | Cloud SQL 執行個體；`backupCount` 是隨選備份的份數 |
 | `["git", "~/project", "branch" \| "commitCount" \| "lastMessage" \| "clean"]` | Git 儲存庫目前的分支、提交數等 |
 | `["git", "~/project", "branches" \| "staged", 名稱]` | 分支是否存在、檔案是否在暫存區 |
 | `["git", "~/project", "branchFiles", 分支, 路徑]` | 某分支最新的提交是否包含某檔案 |
 
 步驟依序完成，完成後不會退回：後面的步驟把前面的條件改掉（例如把剛複製的檔案改名）不影響已完成的步驟。
 
-`initialState.files` 的路徑要以 `~/` 或 `/` 開頭。`initialState.cloud` 可以預先放 bucket，形狀與上表相同；也可以用 `cloud.gcp` 預設專案 ID 和既有的 IAM 授權（`{ "project": "…", "bindings": { 角色: [成員] } }`）。
+`initialState.files` 的路徑要以 `~/` 或 `/` 開頭。`initialState.cloud` 可以預先放 bucket，形狀與上表相同；也可以用 `cloud.gcp` 預設專案 ID 和既有的 IAM 授權（`{ "project": "…", "bindings": { 角色: [成員] } }`），用 `cloud.aws.vpcs` 預先建立 VPC 與子網路（`{ VPC ID: { "cidr": "…", "subnets": { 子網路 ID: { "cidr": "…", "availabilityZone": "…" } } } }`，每個 VPC 會自動有只含本地路由的主路由表）。
+
+模擬環境的起始狀態：AWS 帳戶裡沒有預設 VPC；Google Cloud 專案裡有 auto 模式的 `default` 網路（不另外列出它在各區域的子網路），沒有指定網路的執行個體和防火牆規則都放在 `default`。
 
 ### Lab 引擎
 
 程式在 `src/lib/lab-engine/`，是不依賴瀏覽器的純函式：`execute(state, line)` 回傳新的狀態與輸出，不修改傳入的狀態。
 
-- **支援的指令**：`pwd ls cd mkdir touch cat echo cp mv rm rmdir clear help whoami`；`aws s3 mb|rb|ls|cp|mv|rm`；`gcloud storage buckets create|delete|list|describe` 與 `gcloud storage ls|cp|mv|rm|cat`；`gsutil mb|rb|ls|cp|mv|rm|cat`；`aws iam`（使用者、群組、受管政策）；`aws ec2`（安全群組與執行個體）；`gcloud iam service-accounts`；`gcloud projects`（IAM 授權）；`gcloud compute instances|firewall-rules`；`gcloud config`；`git init|status|add|commit|log|branch|switch|checkout|merge`（只有本機操作，沒有遠端；合併衝突會取消合併）。
+- **支援的指令**：`pwd ls cd mkdir touch cat echo cp mv rm rmdir clear help whoami`；`aws s3 mb|rb|ls|cp|mv|rm`；`gcloud storage buckets create|delete|list|describe` 與 `gcloud storage ls|cp|mv|rm|cat`；`gsutil mb|rb|ls|cp|mv|rm|cat`；`aws iam`（使用者、群組、受管政策）；`aws ec2`（安全群組、執行個體、VPC、子網路、網際網路閘道、路由表）；`aws rds`（DB 子網路群組、執行個體、唯讀複本、快照；不含 Aurora 叢集）；`gcloud iam service-accounts`；`gcloud projects`（IAM 授權）；`gcloud compute instances|firewall-rules|networks|networks subnets|routers|routers nats`；`gcloud sql instances|databases|users|backups`；`gcloud config`；`git init|status|add|commit|log|branch|switch|checkout|merge`（只有本機操作，沒有遠端；合併衝突會取消合併）。
 - **支援的語法**：引號、反斜線跳脫、註解、`>` 與 `>>`、`&&` 與 `;`。不支援管線、變數與萬用字元，會明確告知。
 - **新增指令**：在 `engine.ts` 的 `commands` 註冊一個 `Command`（收到可修改的草稿狀態與輸出函式，回傳結束碼），並補上測試。
 - **輸出訊息是近似值**：格式盡量貼近真實 CLI，但不保證逐字相同。
-- 每個 Lab 都必須在 `engine.test.ts` 有一條能從頭做到完成的指令腳本。
+- 每個 Lab 都必須在測試裡（`engine.test.ts`、`cloud.test.ts` 或 `network-db.test.ts`）有一條能從頭做到完成的指令腳本。
 
 所有格式的權威定義在 `src/lib/content/schema.ts`，本節與它不一致時以程式為準。
 
@@ -306,8 +317,8 @@ interface Progress {
 | 階段 | 單元 | 狀態 |
 |---|---|---|
 | 0 基礎 | Linux 指令基礎、網路基礎、Git 基礎 | 完成（網路基礎沒有 Lab） |
-| 1 雲端核心 | 身分與權限、虛擬機、物件儲存 | 完成 |
-| 1 雲端核心 | 無伺服器運算、區塊與檔案儲存、虛擬網路、關聯式資料庫、NoSQL 資料庫 | 待寫 |
+| 1 雲端核心 | 身分與權限、虛擬機、物件儲存、虛擬網路、關聯式資料庫 | 完成 |
+| 1 雲端核心 | 無伺服器運算、區塊與檔案儲存、NoSQL 資料庫 | 待寫 |
 | 2 維運 | 全部 5 個單元 | 待寫 |
 | 3 自動化 | 全部 5 個單元 | 待寫 |
 | 4 實戰 | 架構設計案例、面試題 | 待寫 |

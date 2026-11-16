@@ -1,12 +1,14 @@
 import { parseArgs, type Command, type Ctx } from "./context";
 import { compute } from "./gcloud-compute";
 import { projects, serviceAccounts } from "./gcloud-iam";
+import { sql } from "./gcloud-sql";
 import { byteLength, listPrefix, parseLocation, transfer, type TransferStyle } from "./object-store";
 import { DEFAULT_GCS_LOCATION, displayPath, type Bucket } from "./state";
 
 const SUPPORTED =
   "這個模擬終端機目前支援 gcloud storage 的 buckets create／delete／list／describe，以及 ls、cp、mv、rm、cat。";
-const GROUPS = "這個模擬終端機支援的 gcloud 指令群組：storage、iam service-accounts、projects、compute instances、compute firewall-rules、config。";
+const GROUPS =
+  "這個模擬終端機支援的 gcloud 指令群組：storage、iam service-accounts、projects、compute instances、compute firewall-rules、compute networks、compute routers、sql、config。";
 
 const style = (command: string): TransferStyle => ({
   scheme: "gs",
@@ -246,6 +248,7 @@ export const gcloud: Command = (ctx, args) => {
   }
   if (args[0] === "storage") return storage(ctx, args.slice(1));
   if (args[0] === "compute") return compute(ctx, args.slice(1));
+  if (args[0] === "sql") return sql(ctx, args.slice(1));
   if (args[0] === "projects") return projects(ctx, args.slice(1));
   if (args[0] === "iam") {
     if (args[1] === "service-accounts") return serviceAccounts(ctx, args.slice(2));

@@ -1,0 +1,45 @@
+{
+  "id": "aws-vpc-public-subnet",
+  "title": "建立 VPC 與公有、私有子網路",
+  "description": "從零開始建立一個 VPC，切出一個公有子網路和一個私有子網路，並用網際網路閘道與路由表讓公有子網路連上網際網路。這個練習帳戶裡沒有預設 VPC，所有 ID 都要從上一步的輸出複製。",
+  "provider": "aws",
+  "estimatedMinutes": 20,
+  "initialState": { "files": {}, "cloud": {} },
+  "steps": [
+    {
+      "instruction": "建立一個 IPv4 範圍是 10.0.0.0/16 的 VPC。記下輸出裡的 VpcId，後面每一步都會用到。",
+      "hint": "aws ec2 create-vpc --cidr-block 10.0.0.0/16",
+      "check": { "type": "state", "path": ["cloud", "aws", "vpcs", "10.0.0.0/16"], "exists": true }
+    },
+    {
+      "instruction": "在可用區 us-east-1a 建立 10.0.1.0/24 子網路，之後要把它設成公有子網路。看看輸出的 AvailableIpAddressCount 為什麼是 251。",
+      "hint": "aws ec2 create-subnet --vpc-id 你的VpcId --cidr-block 10.0.1.0/24 --availability-zone us-east-1a",
+      "check": { "type": "state", "path": ["cloud", "aws", "vpcs", "10.0.0.0/16", "subnets", "10.0.1.0/24", "availabilityZone"], "equals": "us-east-1a" }
+    },
+    {
+      "instruction": "在另一個可用區 us-east-1b 建立 10.0.2.0/24 子網路，這個要保持私有。",
+      "hint": "aws ec2 create-subnet --vpc-id 你的VpcId --cidr-block 10.0.2.0/24 --availability-zone us-east-1b",
+      "check": { "type": "state", "path": ["cloud", "aws", "vpcs", "10.0.0.0/16", "subnets", "10.0.2.0/24", "availabilityZone"], "equals": "us-east-1b" }
+    },
+    {
+      "instruction": "建立一個網際網路閘道，並把它連接到這個 VPC。",
+      "hint": "先執行 aws ec2 create-internet-gateway 記下 InternetGatewayId，再執行 aws ec2 attach-internet-gateway --internet-gateway-id 你的閘道ID --vpc-id 你的VpcId",
+      "check": { "type": "state", "path": ["cloud", "aws", "vpcs", "10.0.0.0/16", "internetGateway"], "equals": true }
+    },
+    {
+      "instruction": "建立一個新的路由表（不要改主路由表），並加上一條路由：目的地 0.0.0.0/0，下一站是剛才的網際網路閘道。",
+      "hint": "aws ec2 create-route-table --vpc-id 你的VpcId，記下 RouteTableId，再執行 aws ec2 create-route --route-table-id 你的路由表ID --destination-cidr-block 0.0.0.0/0 --gateway-id 你的閘道ID",
+      "check": { "type": "state", "path": ["cloud", "aws", "vpcs", "10.0.0.0/16", "internetRoute"], "equals": true }
+    },
+    {
+      "instruction": "把這個路由表關聯到 10.0.1.0/24 子網路，讓它成為公有子網路；10.0.2.0/24 必須維持私有。子網路 ID 可以用 aws ec2 describe-subnets 查詢。",
+      "hint": "aws ec2 associate-route-table --route-table-id 你的路由表ID --subnet-id 10.0.1.0/24的子網路ID。如果兩個子網路都變成公有，代表路由加到了主路由表，用 aws ec2 delete-route 從主路由表刪掉那條路由。",
+      "check": { "type": "state", "path": ["cloud", "aws", "vpcs", "10.0.0.0/16", "publicSubnets"], "equals": { "10.0.1.0/24": true } }
+    },
+    {
+      "instruction": "自己建立的子網路預設不會分配公有 IP。設定 10.0.1.0/24，讓之後在裡面啟動的執行個體自動拿到公有 IPv4 位址。",
+      "hint": "aws ec2 modify-subnet-attribute --subnet-id 10.0.1.0/24的子網路ID --map-public-ip-on-launch",
+      "check": { "type": "state", "path": ["cloud", "aws", "vpcs", "10.0.0.0/16", "subnets", "10.0.1.0/24", "mapPublicIpOnLaunch"], "equals": true }
+    }
+  ]
+}

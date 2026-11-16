@@ -1,0 +1,44 @@
+{
+  "id": "gcp-vpc-custom-network",
+  "title": "建立自訂模式網路與 Cloud NAT",
+  "description": "建立一個橫跨兩個區域的自訂模式網路、為它加上防火牆規則，再建立一台沒有外部 IP 的 VM，並用 Cloud NAT 讓它可以連出去。",
+  "provider": "gcp",
+  "estimatedMinutes": 20,
+  "initialState": { "files": {}, "cloud": {} },
+  "steps": [
+    {
+      "instruction": "專案裡已經有一個 auto 模式的 default 網路（可以用 gcloud compute networks list 看看）。建立一個名為 lab-net 的自訂模式網路。",
+      "hint": "gcloud compute networks create lab-net --subnet-mode=custom",
+      "check": { "type": "state", "path": ["cloud", "gcp", "networks", "lab-net", "mode"], "equals": "custom" }
+    },
+    {
+      "instruction": "在 lab-net 建立子網路 web-subnet，區域 asia-east1，範圍 10.10.1.0/24。",
+      "hint": "gcloud compute networks subnets create web-subnet --network=lab-net --region=asia-east1 --range=10.10.1.0/24",
+      "check": { "type": "state", "path": ["cloud", "gcp", "networks", "lab-net", "subnets", "web-subnet", "range"], "equals": "10.10.1.0/24" }
+    },
+    {
+      "instruction": "同一個網路可以有不同區域的子網路。在 lab-net 建立子網路 db-subnet，區域 us-central1，範圍 10.20.1.0/24。",
+      "hint": "gcloud compute networks subnets create db-subnet --network=lab-net --region=us-central1 --range=10.20.1.0/24",
+      "check": { "type": "state", "path": ["cloud", "gcp", "networks", "lab-net", "subnets", "db-subnet", "region"], "equals": "us-central1" }
+    },
+    {
+      "instruction": "自訂網路沒有任何允許輸入的規則。在 lab-net 建立防火牆規則 lab-net-allow-ssh，只允許公司的 203.0.113.0/24 連到 TCP 22。",
+      "hint": "gcloud compute firewall-rules create lab-net-allow-ssh --network=lab-net --allow=tcp:22 --source-ranges=203.0.113.0/24（沒有加 --network 的話，規則會建在 default 網路，要刪掉重建）",
+      "check": { "type": "state", "path": ["cloud", "gcp", "firewallRules", "lab-net-allow-ssh", "network"], "equals": "lab-net" }
+    },
+    {
+      "instruction": "在可用區 asia-east1-b 建立 VM app-1，放在 web-subnet，而且不要有外部 IP。",
+      "hint": "gcloud compute instances create app-1 --zone=asia-east1-b --subnet=web-subnet --no-address",
+      "check": {
+        "type": "state",
+        "path": ["cloud", "gcp", "instances", "app-1", "networkInterface"],
+        "equals": { "network": "lab-net", "subnet": "web-subnet", "externalIp": false }
+      }
+    },
+    {
+      "instruction": "app-1 沒有外部 IP，無法下載更新。在 asia-east1 為 lab-net 建立 Cloud Router，再在上面建立 Cloud NAT，服務這個區域的所有子網路。",
+      "hint": "gcloud compute routers create nat-router --network=lab-net --region=asia-east1，然後 gcloud compute routers nats create nat-config --router=nat-router --region=asia-east1 --auto-allocate-nat-external-ips --nat-all-subnet-ip-ranges",
+      "check": { "type": "state", "path": ["cloud", "gcp", "networks", "lab-net", "natRegions", "asia-east1"], "exists": true }
+    }
+  ]
+}
