@@ -1,4 +1,5 @@
 import { EBS_COMMANDS, ebs } from "./aws-ebs";
+import { LAUNCH_TEMPLATE_COMMANDS, launchTemplates, reconcileGroups } from "./aws-elb";
 import { VPC_COMMANDS, newId, vpc } from "./aws-vpc";
 import { parseCidr } from "./cidr";
 import { parseArgs, type Ctx } from "./context";
@@ -12,7 +13,7 @@ function fail(ctx: Ctx, code: string, operation: string, message: string): numbe
 
 const INSTANCE_COMMANDS =
   "create-security-group、authorize-security-group-ingress、describe-security-groups、delete-security-group、run-instances、describe-instances、stop-instances、start-instances、terminate-instances";
-export const EC2_COMMANDS = `${INSTANCE_COMMANDS}、${VPC_COMMANDS.join("、")}、${EBS_COMMANDS.join("、")}`;
+export const EC2_COMMANDS = `${INSTANCE_COMMANDS}、${VPC_COMMANDS.join("、")}、${EBS_COMMANDS.join("、")}、${LAUNCH_TEMPLATE_COMMANDS.join("、")}`;
 
 export function ec2(ctx: Ctx, args: string[]): number {
   const [sub, ...rest] = args;
@@ -23,6 +24,7 @@ export function ec2(ctx: Ctx, args: string[]): number {
   }
   if (VPC_COMMANDS.includes(sub)) return vpc(ctx, sub, rest);
   if (EBS_COMMANDS.includes(sub)) return ebs(ctx, sub, rest);
+  if (LAUNCH_TEMPLATE_COMMANDS.includes(sub)) return launchTemplates(ctx, sub, rest);
   const parsed = parseArgs(rest, {
     options: [
       "--group-name", "--group-id", "--description", "--protocol", "--port", "--cidr", "--vpc-id",
@@ -187,6 +189,8 @@ export function ec2(ctx: Ctx, args: string[]): number {
       });
       const key = sub === "stop-instances" ? "StoppingInstances" : sub === "start-instances" ? "StartingInstances" : "TerminatingInstances";
       json(ctx, { [key]: changes });
+      // Auto Scaling groups replace instances that are no longer running.
+      reconcileGroups(ctx.state);
       return 0;
     }
     default:

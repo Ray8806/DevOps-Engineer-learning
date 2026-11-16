@@ -1,0 +1,130 @@
+{
+  "questions": [
+    {
+      "id": "load-balancing-001",
+      "type": "single",
+      "provider": "general",
+      "certs": [{ "id": "clf-c02", "domain": 3 }],
+      "unitId": "load-balancing",
+      "difficulty": 1,
+      "question": "一個網站在三台網頁伺服器前面放了負載平衡器。其中一台伺服器的程式當掉了，使用者會遇到什麼情況？",
+      "options": [
+        { "id": "a", "text": "所有使用者都連不上網站", "explanation": "負載平衡器的目的就是避免單一機器故障造成全面停擺。" },
+        { "id": "b", "text": "健康檢查發現它不健康後，負載平衡器停止把流量送給它，使用者由另外兩台服務", "explanation": "正確。負載平衡器持續做健康檢查，只把流量送給健康的機器。" },
+        { "id": "c", "text": "負載平衡器會自動修好那台伺服器的程式", "explanation": "負載平衡器只負責分配流量。替換故障機器是自動擴展群組的功能。" },
+        { "id": "d", "text": "三分之一的請求一定會失敗，直到有人手動處理", "explanation": "健康檢查判定不健康後，流量就不會再送到那台機器。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "load-balancing-002",
+      "type": "single",
+      "provider": "general",
+      "unitId": "load-balancing",
+      "difficulty": 2,
+      "question": "團隊想讓 /api 開頭的請求送到 API 伺服器群組，其他請求送到網頁伺服器群組。應該使用哪一種負載平衡？",
+      "options": [
+        { "id": "a", "text": "第 4 層負載平衡，依 TCP 連接埠分配", "explanation": "第 4 層只看得到 IP 和連接埠，看不到 HTTP 的網址路徑。" },
+        { "id": "b", "text": "第 7 層負載平衡，依網址路徑設定轉送規則", "explanation": "正確。第 7 層（應用層）的負載平衡器看得懂 HTTP，可以依路徑或主機名稱把請求送到不同的後端。" },
+        { "id": "c", "text": "DNS 輪詢", "explanation": "DNS 只能把網域名稱解析成 IP，無法依網址路徑分流。" },
+        { "id": "d", "text": "把兩種伺服器放在同一台機器上", "explanation": "這失去了負載平衡和分開擴展的好處。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "load-balancing-003",
+      "type": "single",
+      "provider": "general",
+      "unitId": "load-balancing",
+      "difficulty": 2,
+      "question": "一個網站啟用了自動擴展，但使用者抱怨每次被分到不同的機器時，購物車就會清空。根本的問題是什麼？",
+      "options": [
+        { "id": "a", "text": "自動擴展的最大值設得太小", "explanation": "機器數量和購物車消失無關。" },
+        { "id": "b", "text": "購物車只存在個別機器的記憶體裡，應用程式不是無狀態的", "explanation": "正確。水平擴展要求任何一台機器都能處理任何請求，工作階段和購物車要存在資料庫或快取等共用的地方。" },
+        { "id": "c", "text": "負載平衡器沒有做健康檢查", "explanation": "健康檢查決定哪些機器接收流量，不影響資料存在哪裡。" },
+        { "id": "d", "text": "應該改用垂直擴展", "explanation": "換大機器可以暫時避開問題，但失去了多台機器的可用性；正確做法是讓應用程式無狀態。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "load-balancing-004",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 2 }],
+      "unitId": "load-balancing",
+      "difficulty": 2,
+      "question": "一個 Auto Scaling 群組設定最小 2、最大 6、期望 2，執行個體都註冊在 ALB 的目標群組。某台執行個體的作業系統還在執行，但網站程式已經沒有回應，群組卻一直沒有替換它。最可能的原因是？",
+      "options": [
+        { "id": "a", "text": "群組只用預設的 EC2 健康檢查，沒有加上 ELB 健康檢查", "explanation": "正確。預設的 EC2 狀態檢查只看執行個體本身；加上 --health-check-type ELB 後，目標群組健康檢查失敗的執行個體也會被替換。" },
+        { "id": "b", "text": "最大值 6 太小", "explanation": "最大值限制擴展的上限，和替換不健康的執行個體無關。" },
+        { "id": "c", "text": "ALB 只啟用了兩個可用區", "explanation": "ALB 本來就至少要兩個可用區，這不會阻止替換。" },
+        { "id": "d", "text": "Auto Scaling 群組不會替換任何執行個體", "explanation": "Auto Scaling 群組會自動替換不健康的執行個體，維持期望容量。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "load-balancing-005",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 3 }],
+      "unitId": "load-balancing",
+      "difficulty": 2,
+      "question": "一款線上遊戲使用 UDP 協定，需要每秒處理數百萬個封包，而且希望每個可用區有固定的 IP 位址。應該選哪種負載平衡器？",
+      "options": [
+        { "id": "a", "text": "Application Load Balancer", "explanation": "ALB 是第 7 層、處理 HTTP(S)，不支援 UDP。" },
+        { "id": "b", "text": "Network Load Balancer", "explanation": "正確。NLB 在第 4 層運作，支援 TCP、UDP 等協定，可以處理每秒數百萬個請求，每個可用區有固定 IP。" },
+        { "id": "c", "text": "Gateway Load Balancer", "explanation": "GWLB 用來部署防火牆、入侵偵測等虛擬設備。" },
+        { "id": "d", "text": "Classic Load Balancer", "explanation": "這是上一代的負載平衡器，AWS 建議遷移到新的類型。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "load-balancing-006",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 2 }],
+      "unitId": "load-balancing",
+      "difficulty": 3,
+      "question": "關於 AWS 的 Application Load Balancer 和 Auto Scaling，哪些敘述正確？（選兩個）",
+      "options": [
+        { "id": "a", "text": "ALB 至少要啟用兩個可用區", "explanation": "正確。這確保一個可用區出問題時，負載平衡器仍能繼續轉送流量。" },
+        { "id": "b", "text": "目標追蹤政策會自動建立並管理需要的 CloudWatch 警示", "explanation": "正確。你只要選指標和目標值，例如平均 CPU 50%。" },
+        { "id": "c", "text": "期望容量可以設得比最大值還大，群組會自動調整最大值", "explanation": "期望容量必須介於最小值和最大值之間。" },
+        { "id": "d", "text": "AWS 建議新的 Auto Scaling 群組使用啟動組態，而不是啟動範本", "explanation": "相反，AWS 建議使用啟動範本，以取得最新的功能。" }
+      ],
+      "answer": ["a", "b"]
+    },
+    {
+      "id": "load-balancing-007",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 3 }],
+      "unitId": "load-balancing",
+      "difficulty": 3,
+      "question": "你在 GCP 建好了外部 HTTP 負載平衡器，後端是一個 MIG。執行 gcloud compute backend-services get-health 後，所有 VM 都是 UNHEALTHY，但直接登入 VM 用 curl localhost 是正常的。最可能缺了什麼？",
+      "options": [
+        { "id": "a", "text": "允許健康檢查來源範圍（35.191.0.0/16）連到服務連接埠的防火牆規則", "explanation": "正確。VPC 防火牆預設拒絕輸入連線，Google 健康檢查的探測請求被擋住，所以 VM 都被判定為不健康。" },
+        { "id": "b", "text": "Cloud NAT", "explanation": "Cloud NAT 處理 VM 主動連出的流量，和健康檢查的輸入請求無關。" },
+        { "id": "c", "text": "把 MIG 改成區域 MIG", "explanation": "可用區或區域 MIG 都需要防火牆允許健康檢查。" },
+        { "id": "d", "text": "提高自動調度的最多副本數", "explanation": "增加 VM 數量不會讓被防火牆擋住的健康檢查通過。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "load-balancing-008",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-cdl", "domain": 4 }],
+      "unitId": "load-balancing",
+      "difficulty": 2,
+      "question": "一個全球性的網站在台灣和美國各有一組後端，想讓使用者都連到同一個 IP，並自動被送到較近、健康的後端。Google Cloud 上最適合的是？",
+      "options": [
+        { "id": "a", "text": "在兩個區域各建一個區域負載平衡器，讓使用者自己選", "explanation": "這樣會有兩個 IP，也無法自動把使用者送到較近或健康的區域。" },
+        { "id": "b", "text": "全域外部 Application Load Balancer", "explanation": "正確。全域負載平衡器用一個 anycast IP 服務多個區域的後端，某個區域的後端不健康時會自動轉送到其他區域。" },
+        { "id": "c", "text": "passthrough Network Load Balancer", "explanation": "passthrough Network Load Balancer 適合需要保留用戶端來源 IP，或使用 UDP 等非 HTTP 協定的情境；這裡是 HTTP 網站要依位置和健康狀態分流，用 Application Load Balancer。" },
+        { "id": "d", "text": "只在台灣放後端，加大機器規格", "explanation": "美國的使用者延遲會比較高，而且只有一個區域就沒有區域層級的備援。" }
+      ],
+      "answer": ["b"]
+    }
+  ]
+}

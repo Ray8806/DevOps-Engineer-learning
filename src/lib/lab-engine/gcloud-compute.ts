@@ -1,6 +1,7 @@
 import { parseArgs, type Ctx } from "./context";
 import { NAME, NAME_RULE, error, list, networkUrl, subnetUrl, table, zoneRegion } from "./gcloud-common";
 import { attachDetach, disks, snapshots } from "./gcloud-disks";
+import { loadBalancing, reconcileMigs } from "./gcloud-lb";
 import { networks, routers } from "./gcloud-network";
 
 const ZONE = /^[a-z]+-[a-z]+\d+-[a-z]$/;
@@ -112,6 +113,7 @@ function instances(ctx: Ctx, args: string[]): number {
       case "stop":
         instance.status = "TERMINATED";
         ctx.out(`Stopping instance(s) ${name}...done.\nUpdated [${url(name, instance.zone)}].\n`);
+        reconcileMigs(ctx.state);
         break;
       case "start":
         instance.status = "RUNNING";
@@ -121,6 +123,8 @@ function instances(ctx: Ctx, args: string[]): number {
         gcp.instances.delete(name);
         // Attached data disks stay; they are only detached.
         for (const disk of gcp.disks.values()) disk.users.delete(name);
+        // A managed instance group recreates instances deleted from outside the group.
+        reconcileMigs(ctx.state);
         ctx.out(`Deleted [${url(name, instance.zone)}].\n`);
         break;
       case "add-tags": {
@@ -209,9 +213,11 @@ export function compute(ctx: Ctx, args: string[]): number {
   if (args[0] === "routers") return routers(ctx, args.slice(1));
   if (args[0] === "disks") return disks(ctx, args.slice(1));
   if (args[0] === "snapshots") return snapshots(ctx, args.slice(1));
+  const lb = loadBalancing(ctx, args);
+  if (lb !== null) return lb;
   return error(
     ctx,
     "gcloud.compute",
-    `不支援 '${args[0] ?? ""}'。這個模擬終端機支援 gcloud compute instances、firewall-rules、networks（含 networks subnets）、routers（含 routers nats）、disks 和 snapshots。`,
+    `不支援 '${args[0] ?? ""}'。這個模擬終端機支援 gcloud compute instances、firewall-rules、networks（含 networks subnets）、routers（含 routers nats）、disks、snapshots、instance-templates、instance-groups、health-checks、backend-services、url-maps、target-http-proxies、forwarding-rules。`,
   );
 }

@@ -2,6 +2,8 @@
  * Virtual machine + cloud account a lab runs against. Maps and Sets are used
  * for anything keyed by learner input, so names like "__proto__" are safe.
  */
+import { healthyBackends, ruleServing } from "./gcloud-lb";
+
 export const HOME = "/home/learner";
 
 export interface Bucket {
@@ -49,6 +51,8 @@ export interface AwsState {
     >;
     /** EBS snapshots, keyed by snapshot id. */
     snapshots: Map<string, { volumeId: string; size: number; description: string }>;
+    /** Launch templates by name. */
+    launchTemplates: Map<string, { id: string; imageId: string; instanceType: string; securityGroups: string[] }>;
     /** Keyed by security group id. Ingress entries look like "tcp:443:0.0.0.0/0". */
     securityGroups: Map<string, { name: string; description: string; ingress: Set<string> }>;
     /** Number of ids handed out so far (instances, groups, VPC resources), so new ids are deterministic. */
@@ -57,6 +61,15 @@ export interface AwsState {
   vpc: AwsVpcState;
   lambda: { functions: Map<string, LambdaFunction> };
   dynamodb: { tables: Map<string, DynamoTable> };
+  elbv2: {
+    /** Target groups by name; targets are instance ids. */
+    targetGroups: Map<string, { arn: string; protocol: string; port: number; vpcId: string; healthCheckPath: string; targets: Set<string> }>;
+    /** Load balancers by name. */
+    loadBalancers: Map<string, { arn: string; type: "application"; scheme: string; vpcId: string; subnets: string[]; dnsName: string }>;
+    /** Listeners by ARN. */
+    listeners: Map<string, { loadBalancer: string; protocol: string; port: number; targetGroup: string }>;
+  };
+  autoscaling: { groups: Map<string, AutoScalingGroup> };
   rds: {
     subnetGroups: Map<string, { description: string; subnetIds: string[] }>;
     instances: Map<string, RdsInstance>;
@@ -81,6 +94,36 @@ export interface AwsVpcState {
       associations: Map<string, string>;
     }
   >;
+}
+
+export interface AutoScalingGroup {
+  launchTemplate: string;
+  min: number;
+  max: number;
+  desired: number;
+  subnets: string[];
+  targetGroups: string[];
+  healthCheckType: "EC2" | "ELB";
+  gracePeriod: number;
+  /** Instance ids the group manages, oldest first. */
+  instances: string[];
+  /** Target tracking policies by name. */
+  policies: Map<string, { metric: string; target: number }>;
+  /** Unhealthy instances the group has replaced. */
+  replaced: number;
+}
+
+export interface ManagedInstanceGroup {
+  zone: string;
+  template: string;
+  targetSize: number;
+  instances: string[];
+  namedPorts: Map<string, number>;
+  autoscaler: { min: number; max: number; cpu: number } | null;
+  /** Instances the group recreated after they were deleted. */
+  recreated: number;
+  /** Running counter for instance name suffixes. */
+  created: number;
 }
 
 export interface LambdaFunction {
@@ -206,6 +249,13 @@ export interface GcpState {
   snapshots: Map<string, { sourceDisk: string; sizeGb: number }>;
   run: { services: Map<string, CloudRunService>; revisionsCreated: number };
   firestore: { databases: Map<string, FirestoreDatabase> };
+  instanceTemplates: Map<string, { machineType: string; tags: Set<string>; network: string }>;
+  migs: Map<string, ManagedInstanceGroup>;
+  healthChecks: Map<string, { port: number; path: string }>;
+  backendServices: Map<string, { protocol: string; portName: string; healthCheck: string; scheme: string; backends: Set<string> }>;
+  urlMaps: Map<string, { defaultService: string }>;
+  httpProxies: Map<string, { urlMap: string }>;
+  forwardingRules: Map<string, { target: string; port: number; ipAddress: string }>;
 }
 
 export interface LabState {
@@ -344,9 +394,11 @@ export function createLabState(initial: InitialState = {}): LabState {
 function awsFrom(cloud: Record<string, unknown>): AwsState {
   const aws: AwsState = {
     iam: { users: new Map(), groups: new Map(), roles: new Map() },
-    ec2: { instances: new Map(), securityGroups: new Map(), volumes: new Map(), snapshots: new Map(), created: 0 },
+    ec2: { instances: new Map(), securityGroups: new Map(), volumes: new Map(), snapshots: new Map(), launchTemplates: new Map(), created: 0 },
     lambda: { functions: new Map() },
     dynamodb: { tables: new Map() },
+    elbv2: { targetGroups: new Map(), loadBalancers: new Map(), listeners: new Map() },
+    autoscaling: { groups: new Map() },
     vpc: { vpcs: new Map(), subnets: new Map(), internetGateways: new Map(), routeTables: new Map() },
     rds: { subnetGroups: new Map(), instances: new Map(), snapshots: new Map() },
   };
@@ -354,10 +406,17 @@ function awsFrom(cloud: Record<string, unknown>): AwsState {
   for (const [vpcId, raw] of Object.entries(seed)) {
     if (!isRecord(raw) || typeof raw.cidr !== "string") continue;
     aws.vpc.vpcs.set(vpcId, { cidr: raw.cidr });
+    const routes = new Map([[raw.cidr, "local"]]);
+    // { internetGateway: true } attaches a gateway and routes the main table to it, making every subnet public.
+    if (raw.internetGateway === true) {
+      const igw = `igw-0seed${String(aws.vpc.internetGateways.size).padStart(12, "0")}`;
+      aws.vpc.internetGateways.set(igw, { vpcId });
+      routes.set("0.0.0.0/0", igw);
+    }
     aws.vpc.routeTables.set(`rtb-0seed${String(aws.vpc.routeTables.size).padStart(12, "0")}`, {
       vpcId,
       main: true,
-      routes: new Map([[raw.cidr, "local"]]),
+      routes,
       associations: new Map(),
     });
     for (const [subnetId, sub] of Object.entries(isRecord(raw.subnets) ? raw.subnets : {})) {
@@ -399,6 +458,13 @@ function gcpFrom(cloud: Record<string, unknown>): GcpState {
     snapshots: new Map(),
     run: { services: new Map(), revisionsCreated: 0 },
     firestore: { databases: new Map() },
+    instanceTemplates: new Map(),
+    migs: new Map(),
+    healthChecks: new Map(),
+    backendServices: new Map(),
+    urlMaps: new Map(),
+    httpProxies: new Map(),
+    forwardingRules: new Map(),
   };
 }
 
@@ -480,6 +546,68 @@ function plain(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(plain);
   if (typeof value === "object" && value !== null) return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, plain(v)]));
   return value;
+}
+
+/**
+ * Health of a target in a target group: "unused" until a listener forwards to
+ * the group, then "healthy" while the instance is running.
+ */
+export function targetHealth(state: LabState, targetGroup: string, instanceId: string): "healthy" | "unhealthy" | "unused" {
+  const used = [...state.aws.elbv2.listeners.values()].some((l) => l.targetGroup === targetGroup);
+  if (!used) return "unused";
+  return state.aws.ec2.instances.get(instanceId)?.state === "running" ? "healthy" : "unhealthy";
+}
+
+function elbView(state: LabState) {
+  const { targetGroups, loadBalancers, listeners } = state.aws.elbv2;
+  return {
+    targetGroups: Object.fromEntries(
+      [...targetGroups].map(([name, t]) => {
+        const health = Object.fromEntries([...t.targets].map((id) => [id, targetHealth(state, name, id)]));
+        return [
+          name,
+          {
+            protocol: t.protocol,
+            port: t.port,
+            healthCheckPath: t.healthCheckPath,
+            targets: health,
+            healthyTargets: Object.values(health).filter((h) => h === "healthy").length,
+          },
+        ];
+      }),
+    ),
+    loadBalancers: Object.fromEntries(
+      [...loadBalancers].map(([name, lb]) => [
+        name,
+        {
+          scheme: lb.scheme,
+          availabilityZones: keysTrue(lb.subnets.map((sub) => state.aws.vpc.subnets.get(sub)?.availabilityZone ?? "")),
+          listeners: Object.fromEntries([...listeners.values()].filter((l) => l.loadBalancer === name).map((l) => [`${l.protocol}:${l.port}`, l.targetGroup])),
+        },
+      ]),
+    ),
+  };
+}
+
+function autoscalingView(state: LabState) {
+  return {
+    groups: Object.fromEntries(
+      [...state.aws.autoscaling.groups].map(([name, g]) => [
+        name,
+        {
+          launchTemplate: g.launchTemplate,
+          min: g.min,
+          max: g.max,
+          desired: g.desired,
+          inService: g.instances.length,
+          healthCheckType: g.healthCheckType,
+          targetGroups: keysTrue(g.targetGroups),
+          policies: Object.fromEntries([...g.policies].map(([p, v]) => [p, { metric: v.metric, target: v.target }])),
+          replacedInstances: g.replaced,
+        },
+      ]),
+    ),
+  };
 }
 
 /** The route table a subnet uses: its explicit association, or else the VPC's main table. */
@@ -594,6 +722,7 @@ function awsView(aws: AwsState) {
       volumes: plain(aws.ec2.volumes),
       volumeSpecs: volumeSpecs(aws),
       snapshotCount: aws.ec2.snapshots.size,
+      launchTemplates: Object.fromEntries([...aws.ec2.launchTemplates].map(([n, t]) => [n, { imageId: t.imageId, instanceType: t.instanceType }])),
       // By name, because ids are generated and a lab cannot know them in advance.
       securityGroups: Object.fromEntries(
         [...aws.ec2.securityGroups].map(([id, g]) => [
@@ -622,7 +751,8 @@ function awsView(aws: AwsState) {
   };
 }
 
-function gcpView(gcp: GcpState) {
+function gcpView(state: LabState) {
+  const gcp = state.gcp;
   const subnets = [...gcp.subnets.values()];
   const routers = [...gcp.routers.values()];
   return {
@@ -679,6 +809,23 @@ function gcpView(gcp: GcpState) {
         ]),
       ),
     },
+    instanceTemplates: Object.fromEntries([...gcp.instanceTemplates].map(([n, t]) => [n, { machineType: t.machineType, tags: keysTrue(t.tags) }])),
+    migs: Object.fromEntries(
+      [...gcp.migs].map(([n, g]) => [
+        n,
+        { zone: g.zone, template: g.template, targetSize: g.targetSize, size: g.instances.length, namedPorts: Object.fromEntries(g.namedPorts), autoscaler: g.autoscaler, recreated: g.recreated },
+      ]),
+    ),
+    healthChecks: plain(gcp.healthChecks),
+    backendServices: Object.fromEntries(
+      [...gcp.backendServices].map(([n, b]) => [
+        n,
+        { portName: b.portName, healthCheck: b.healthCheck, scheme: b.scheme, backends: keysTrue(b.backends), healthyInstances: healthyBackends(state, n).length },
+      ]),
+    ),
+    forwardingRules: Object.fromEntries(
+      [...gcp.forwardingRules].map(([n, r]) => [n, { ipAddress: r.ipAddress, port: r.port, ...ruleServing(state, n) }]),
+    ),
     firestore: {
       databases: Object.fromEntries(
         [...gcp.firestore.databases].map(([id, d]) => [
@@ -763,6 +910,13 @@ function repoView(state: LabState, root: string, repo: GitRepo) {
  *   cloud.gcp.run.services[name].{region, image, public, concurrency, memory, timeout, minInstances, maxInstances, env[key], revisionCount},
  *   cloud.aws.dynamodb.tables[name].{definition, itemCount, items["pk|sk"], ttlAttribute, queriedPartitions[pk]},
  *   cloud.gcp.firestore.databases[id].{location, type, edition, deleteProtection, indexes[spec], ttlFields["group.field"], exportCount},
+ *   cloud.aws.ec2.launchTemplates[name].{imageId, instanceType},
+ *   cloud.aws.elbv2.targetGroups[name].{protocol, port, healthCheckPath, targets[id], healthyTargets},
+ *   cloud.aws.elbv2.loadBalancers[name].{scheme, availabilityZones[az], listeners["HTTP:80"]},
+ *   cloud.aws.autoscaling.groups[name].{launchTemplate, min, max, desired, inService, healthCheckType, targetGroups[name], policies[name], replacedInstances},
+ *   cloud.gcp.instanceTemplates[name], cloud.gcp.migs[name].{zone, template, targetSize, size, namedPorts[name], autoscaler, recreated},
+ *   cloud.gcp.backendServices[name].{portName, healthCheck, backends[mig], healthyInstances},
+ *   cloud.gcp.forwardingRules[name].{ipAddress, port, backendService, serving},
  *   cloud.gcp.sql.instances[name].{databaseVersion, edition, tier, region, availabilityType, backupsEnabled,
  *     deletionProtection, masterInstanceName, databases[name], users[name], backupCount},
  *   git["~/project"].{branch, branches[name], commitCount, lastMessage,
@@ -776,8 +930,8 @@ export function checkView(state: LabState): Record<string, unknown> {
     cloud: {
       s3: bucketsView(state.s3, "region"),
       gcs: bucketsView(state.gcs, "location"),
-      aws: awsView(state.aws),
-      gcp: gcpView(state.gcp),
+      aws: { ...awsView(state.aws), elbv2: elbView(state), autoscaling: autoscalingView(state) },
+      gcp: gcpView(state),
     },
     git: Object.fromEntries([...state.git].map(([root, repo]) => [displayPath(root), repoView(state, root, repo)])),
   };

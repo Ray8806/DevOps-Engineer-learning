@@ -1,0 +1,26 @@
+{
+  "id": "load-balancing",
+  "title": "負載平衡與自動擴展",
+  "summary": "用一個入口把流量分給多台機器、只送給健康的機器，並依負載自動增減機器數量，讓服務撐得住流量也撐得過故障。",
+  "stage": 2,
+  "prerequisites": ["virtual-machines", "virtual-networks"],
+  "providers": {
+    "aws": { "services": ["ELB", "Auto Scaling"] },
+    "gcp": { "services": ["Cloud Load Balancing", "MIG"] }
+  },
+  "compare": [
+    { "aspect": "負載平衡服務", "aws": "Elastic Load Balancing", "gcp": "Cloud Load Balancing" },
+    { "aspect": "HTTP(S)（第 7 層）", "aws": "Application Load Balancer", "gcp": "Application Load Balancer（外部或內部，全域或區域）" },
+    { "aspect": "TCP、UDP（第 4 層）", "aws": "Network Load Balancer", "gcp": "proxy Network Load Balancer、passthrough Network Load Balancer" },
+    { "aspect": "範圍", "aws": "一個負載平衡器屬於一個 Region；ALB 至少要啟用兩個可用區", "gcp": "全域負載平衡器用一個 anycast IP 服務多個區域的後端；也有區域負載平衡器" },
+    { "aspect": "後端怎麼組織", "aws": "目標群組（target group）", "gcp": "後端服務（backend service），後端是執行個體群組或網路端點群組" },
+    { "aspect": "健康檢查", "aws": "設定在目標群組上", "gcp": "獨立的健康檢查資源，掛到後端服務上；防火牆要允許探測的來源範圍" },
+    { "aspect": "一群設定相同的機器", "aws": "Auto Scaling 群組 + 啟動範本", "gcp": "代管執行個體群組（MIG）+ 執行個體範本" },
+    { "aspect": "數量設定", "aws": "最小、最大、期望容量", "gcp": "目標大小；開啟自動調度後由最少、最多副本數決定範圍" },
+    { "aspect": "自動擴展的方式", "aws": "目標追蹤、步驟、簡單、排程、預測擴展", "gcp": "自動調度器依 CPU 使用率、負載平衡使用率等指標調整" },
+    { "aspect": "替換故障的機器", "aws": "群組依 EC2（可加上 ELB）健康檢查替換", "gcp": "MIG 會用相同名稱重建停止或被刪除的 VM；搭配健康檢查做自動修復（autohealing）" },
+    { "aspect": "命令列工具", "aws": "aws elbv2、aws autoscaling", "gcp": "gcloud compute instance-groups managed、backend-services、forwarding-rules 等" }
+  ],
+  "certDomains": ["clf-c02:3", "saa-c03:2", "saa-c03:3", "gcp-cdl:4", "gcp-ace:2", "gcp-ace:3"],
+  "estimatedMinutes": 45
+}
