@@ -18,6 +18,7 @@ import {
   type UnitStatus,
 } from "@/lib/progress/progress";
 import { useProgress } from "@/lib/progress/use-progress";
+import { PROVIDER_LABEL } from "@/lib/providers";
 import { ProviderBadge } from "./ProviderBadge";
 
 export interface RoadmapUnit extends UnitRef {
@@ -116,11 +117,14 @@ export function Roadmap({ stages }: { stages: RoadmapStage[] }) {
     return parts.join(" · ");
   }
 
+  const choose = (value: PreferredProvider) => update((p) => setPreferredProvider(p, value));
+
   const visibleStages = stages.map((stage) => ({
     ...stage,
     hidden: stage.units.filter((u) => !matchesProvider(u, preferred)).length,
     units: stage.units.filter((u) => matchesProvider(u, preferred)),
   }));
+  const hiddenCount = visibleStages.reduce((sum, stage) => sum + stage.hidden, 0);
   const overall = countDone(progress, visibleStages.flatMap((s) => s.units));
 
   return (
@@ -141,14 +145,24 @@ export function Roadmap({ stages }: { stages: RoadmapStage[] }) {
                   name="preferred-provider"
                   value={f.value}
                   checked={preferred === f.value}
-                  onChange={() => update((p) => setPreferredProvider(p, f.value))}
+                  // onClick as well as onChange: a radio the browser checked before the page
+                  // became interactive never fires "change" again, so a later click must still count.
+                  onChange={() => choose(f.value)}
+                  onClick={() => choose(f.value)}
                   className="sr-only"
                 />
                 {f.label}
               </label>
             ))}
           </div>
-          <p className="mt-2 text-xs text-muted">決定路線圖顯示哪些單元，以及課文預設開啟哪個平台的分頁。</p>
+          {/* Says what the choice did, since the unit list often looks the same afterwards. */}
+          <p className="mt-2 max-w-md text-xs text-muted" role="status" data-testid="platform-effect">
+            {preferred === "both"
+              ? "顯示兩個平台的內容，測驗和 Lab 兩邊都要完成。"
+              : `只看 ${PROVIDER_LABEL[preferred]}：課文預設開啟 ${PROVIDER_LABEL[preferred]} 分頁，測驗和 Lab 只計入 ${PROVIDER_LABEL[preferred]} 與不分平台的部分。${
+                  hiddenCount > 0 ? `已隱藏 ${hiddenCount} 個沒有 ${PROVIDER_LABEL[preferred]} 內容的單元。` : ""
+                }`}
+          </p>
         </fieldset>
         <div className="w-full sm:w-64">
           <p className="flex items-baseline justify-between text-sm">
@@ -217,11 +231,13 @@ export function Roadmap({ stages }: { stages: RoadmapStage[] }) {
                             <h3 className="font-bold">{unit.title}</h3>
                             <p className="mt-1 text-sm text-muted">{unit.summary}</p>
                             <div className="mt-3 flex flex-wrap items-center gap-2">
-                              {unit.providers.map((p) => (
-                                <ProviderBadge key={p} provider={p}>
-                                  {unit.services[p]?.join("、")}
-                                </ProviderBadge>
-                              ))}
+                              {unit.providers
+                                .filter((p) => preferred === "both" || p === preferred)
+                                .map((p) => (
+                                  <ProviderBadge key={p} provider={p}>
+                                    {unit.services[p]?.join("、")}
+                                  </ProviderBadge>
+                                ))}
                               <span className="text-xs text-muted">約 {unit.estimatedMinutes} 分鐘</span>
                             </div>
                             <p className="mt-2 text-xs font-semibold text-muted">

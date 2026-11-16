@@ -41,7 +41,9 @@ export function CertPractice({ certId, domains }: { certId: string; domains: Pra
                 className="sr-only"
                 checked={domain === c.id}
                 disabled={c.count === 0}
+                // onClick too: see the note on the roadmap's platform radios.
                 onChange={() => setDomain(c.id)}
+                onClick={() => setDomain(c.id)}
               />
               {c.label}
               <span className="ml-1.5 text-muted">{c.count} 題</span>

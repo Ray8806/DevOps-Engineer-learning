@@ -68,6 +68,34 @@ describe("progress updates", () => {
   });
 });
 
+describe("main platform", () => {
+  it("changes the preference, and returns the same object when nothing changes", () => {
+    const gcp = setPreferredProvider(EMPTY_PROGRESS, "gcp");
+    expect(gcp.preferredProvider).toBe("gcp");
+    expect(setPreferredProvider(gcp, "gcp")).toBe(gcp);
+    expect(EMPTY_PROGRESS.preferredProvider).toBe("both");
+  });
+
+  it("the store neither writes nor notifies for a change that changes nothing", () => {
+    const storage = fakeStorage();
+    let writes = 0;
+    const store = createLocalProgressStore(() => ({
+      getItem: storage.getItem,
+      setItem: (k, v) => {
+        writes++;
+        storage.setItem(k, v);
+      },
+    }));
+    let calls = 0;
+    store.subscribe(() => calls++);
+    store.update((p) => setPreferredProvider(p, "aws"));
+    store.update((p) => setPreferredProvider(p, "aws"));
+    store.update((p) => p);
+    expect([writes, calls]).toEqual([1, 1]);
+    expect(store.get().preferredProvider).toBe("aws");
+  });
+});
+
 describe("unit status", () => {
   it("is available with no prerequisites, locked until prerequisites are done", () => {
     expect(unitStatus(EMPTY_PROGRESS, iam, find)).toBe("available");
