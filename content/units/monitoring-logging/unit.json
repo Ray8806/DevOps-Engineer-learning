@@ -1,0 +1,25 @@
+{
+  "id": "monitoring-logging",
+  "title": "監控與日誌",
+  "summary": "用指標看系統的健康、用警示在出事時通知你、用日誌找出問題原因，再用稽核記錄查出「誰在什麼時候做了什麼」。",
+  "stage": 2,
+  "prerequisites": ["virtual-machines", "iam-basics"],
+  "providers": {
+    "aws": { "services": ["CloudWatch", "CloudTrail", "SNS"] },
+    "gcp": { "services": ["Cloud Monitoring", "Cloud Logging"] }
+  },
+  "compare": [
+    { "aspect": "指標與警示", "aws": "Amazon CloudWatch（指標、警示、儀表板）", "gcp": "Cloud Monitoring（指標、快訊政策、資訊主頁）" },
+    { "aspect": "日誌", "aws": "CloudWatch Logs：記錄群組 → 記錄串流 → 記錄事件", "gcp": "Cloud Logging：記錄項目經由記錄路由器存進記錄 bucket" },
+    { "aspect": "日誌的預設保留期限", "aws": "記錄群組預設永久保留，可以設定保留天數", "gcp": "_Default bucket 預設 30 天，可設 1 到 3650 天；_Required bucket 固定 400 天" },
+    { "aspect": "從日誌算出指標", "aws": "指標篩選器（metric filter）", "gcp": "記錄型指標（log-based metric）" },
+    { "aspect": "把日誌送到別處", "aws": "訂閱篩選器（即時送到 Kinesis、Data Firehose 或 Lambda）；也可以匯出到 S3", "gcp": "接收器（sink）送到 Cloud Storage、BigQuery、Pub/Sub 或其他記錄 bucket" },
+    { "aspect": "警示通知", "aws": "警示動作通常送到 SNS 主題，再由主題寄信或觸發其他服務", "gcp": "快訊政策送到通知管道（電子郵件、Pub/Sub 等）" },
+    { "aspect": "VM 內部的指標與日誌", "aws": "CloudWatch agent（記憶體、磁碟使用率等）", "gcp": "Ops Agent" },
+    { "aspect": "從外部檢查網站是否正常", "aws": "CloudWatch Synthetics canary", "gcp": "正常運作時間檢查（uptime check）" },
+    { "aspect": "稽核記錄（誰做了什麼）", "aws": "AWS CloudTrail：事件歷史記錄保留最近 90 天的管理事件", "gcp": "Cloud Audit Logs：管理員活動記錄一律寫入；資料存取記錄預設關閉（BigQuery 除外）" },
+    { "aspect": "命令列工具", "aws": "aws cloudwatch、aws logs、aws cloudtrail、aws sns", "gcp": "gcloud logging、gcloud monitoring" }
+  ],
+  "certDomains": ["clf-c02:2", "clf-c02:3", "saa-c03:1", "saa-c03:2", "gcp-cdl:6", "gcp-ace:3"],
+  "estimatedMinutes": 45
+}

@@ -1,0 +1,64 @@
+{
+  "id": "gcp-logging-monitoring",
+  "title": "Cloud Logging 與 Cloud Monitoring",
+  "description": "查詢錯誤記錄、把錯誤算成記錄型指標、調整記錄的保留期限、把記錄封存到 Cloud Storage，再建立正常運作時間檢查和快訊政策。",
+  "provider": "gcp",
+  "estimatedMinutes": 25,
+  "initialState": {
+    "files": {},
+    "cloud": {
+      "gcp": {
+        "logs": [
+          { "severity": "INFO", "resourceType": "gce_instance", "logName": "syslog", "text": "Started nginx.service", "timestamp": "2025-11-15T08:00:00Z" },
+          { "severity": "INFO", "resourceType": "cloud_run_revision", "logName": "run.googleapis.com%2Frequests", "text": "GET /products 200", "timestamp": "2025-11-15T08:05:00Z" },
+          { "severity": "WARNING", "resourceType": "cloud_run_revision", "logName": "run.googleapis.com%2Fstdout", "text": "slow query took 2300ms", "timestamp": "2025-11-15T08:12:00Z" },
+          { "severity": "ERROR", "resourceType": "cloud_run_revision", "logName": "run.googleapis.com%2Fstderr", "text": "payment gateway timeout order=1042", "timestamp": "2025-11-15T08:20:00Z" },
+          { "severity": "INFO", "resourceType": "gce_instance", "logName": "syslog", "text": "CRON job finished", "timestamp": "2025-11-15T08:30:00Z" },
+          { "severity": "CRITICAL", "resourceType": "gce_instance", "logName": "syslog", "text": "disk /data is full", "timestamp": "2025-11-15T08:41:00Z" },
+          { "severity": "ERROR", "resourceType": "cloud_run_revision", "logName": "run.googleapis.com%2Fstderr", "text": "database connection refused", "timestamp": "2025-11-15T08:47:00Z" },
+          { "severity": "DEBUG", "resourceType": "cloud_run_revision", "logName": "run.googleapis.com%2Fstdout", "text": "cache hit key=home", "timestamp": "2025-11-15T08:50:00Z" }
+        ]
+      }
+    }
+  },
+  "steps": [
+    {
+      "instruction": "查詢嚴重程度在 ERROR 以上的記錄。CRITICAL 的記錄也會出現嗎？",
+      "hint": "gcloud logging read 'severity>=ERROR'",
+      "check": { "type": "state", "path": ["cloud", "gcp", "logging", "queries", "severity>=ERROR"], "exists": true }
+    },
+    {
+      "instruction": "建立記錄型指標 error_count，計算 ERROR 以上的記錄數量。",
+      "hint": "gcloud logging metrics create error_count --description=\"Number of error logs\" --log-filter='severity>=ERROR'",
+      "check": { "type": "state", "path": ["cloud", "gcp", "logging", "metrics", "error_count", "filter"], "equals": "severity>=ERROR" }
+    },
+    {
+      "instruction": "用 gcloud logging buckets list 看兩個預設的記錄 bucket。試著改 _Required 的保留期限，再把 _Default 改成保留 60 天。",
+      "hint": "gcloud logging buckets update _Default --location=global --retention-days=60",
+      "check": { "type": "state", "path": ["cloud", "gcp", "logging", "buckets", "_Default", "retentionDays"], "equals": 60 }
+    },
+    {
+      "instruction": "建立 Cloud Storage bucket lab-log-archive，再建立接收器 archive-sink，把 WARNING 以上的記錄送到這個 bucket 封存。注意輸出裡的提醒。",
+      "hint": "gcloud storage buckets create gs://lab-log-archive，然後 gcloud logging sinks create archive-sink storage.googleapis.com/lab-log-archive --log-filter='severity>=WARNING'",
+      "check": {
+        "type": "state",
+        "path": ["cloud", "gcp", "logging", "sinks", "archive-sink"],
+        "equals": { "destination": "storage.googleapis.com/lab-log-archive", "filter": "severity>=WARNING" }
+      }
+    },
+    {
+      "instruction": "建立正常運作時間檢查 web-uptime，檢查網站 example.com。",
+      "hint": "gcloud monitoring uptime create web-uptime --resource-type=uptime-url --resource-labels=host=example.com",
+      "check": { "type": "state", "path": ["cloud", "gcp", "monitoring", "uptimeChecks", "web-uptime", "host"], "equals": "example.com" }
+    },
+    {
+      "instruction": "建立快訊政策「Too many errors」：error_count 指標大於 5，並且持續 60 秒。記錄型指標的類型是 logging.googleapis.com/user/指標名稱。",
+      "hint": "gcloud monitoring policies create --display-name=\"Too many errors\" --condition-display-name=\"error_count > 5\" --condition-filter='metric.type=\"logging.googleapis.com/user/error_count\"' --if='> 5' --duration=60s",
+      "check": {
+        "type": "state",
+        "path": ["cloud", "gcp", "monitoring", "policies", "Too many errors"],
+        "equals": { "conditionFilter": "metric.type=\"logging.googleapis.com/user/error_count\"", "condition": "> 5 for 60s" }
+      }
+    }
+  ]
+}

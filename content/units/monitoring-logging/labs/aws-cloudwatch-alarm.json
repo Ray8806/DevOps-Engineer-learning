@@ -1,0 +1,78 @@
+{
+  "id": "aws-cloudwatch-alarm",
+  "title": "CloudWatch 警示、日誌與 CloudTrail",
+  "description": "建立 SNS 主題和 CPU 警示，在網站的記錄群組裡找出錯誤並設定保留期限，最後用 CloudTrail 查出是誰刪除了一個 bucket。",
+  "provider": "aws",
+  "estimatedMinutes": 25,
+  "initialState": {
+    "files": {},
+    "cloud": {
+      "aws": {
+        "logs": {
+          "/app/web": [
+            { "stream": "web-1", "message": "INFO GET / 200 12ms" },
+            { "stream": "web-2", "message": "INFO GET /products 200 35ms" },
+            { "stream": "web-1", "message": "WARN slow response GET /checkout 2300ms" },
+            { "stream": "web-2", "message": "ERROR payment gateway timeout order=1042" },
+            { "stream": "web-1", "message": "INFO GET /cart 200 18ms" },
+            { "stream": "web-2", "message": "error retrying cache connection" },
+            { "stream": "web-1", "message": "ERROR database connection refused" },
+            { "stream": "web-2", "message": "INFO GET / 200 10ms" }
+          ]
+        },
+        "cloudtrail": [
+          { "eventName": "CreateBucket", "username": "alice", "eventSource": "s3.amazonaws.com", "resourceName": "lab-reports", "eventTime": "2025-11-14T02:10:00Z" },
+          { "eventName": "RunInstances", "username": "bob", "eventSource": "ec2.amazonaws.com", "resourceName": "i-0a1b2c3d4e5f60718", "eventTime": "2025-11-14T03:22:00Z" },
+          { "eventName": "PutBucketPolicy", "username": "alice", "eventSource": "s3.amazonaws.com", "resourceName": "lab-reports", "eventTime": "2025-11-14T05:41:00Z" },
+          { "eventName": "DeleteBucket", "username": "intern-kevin", "eventSource": "s3.amazonaws.com", "resourceName": "lab-reports", "eventTime": "2025-11-15T09:03:00Z" },
+          { "eventName": "CreateUser", "username": "admin", "eventSource": "iam.amazonaws.com", "resourceName": "intern-kevin", "eventTime": "2025-11-01T01:00:00Z" },
+          { "eventName": "StopInstances", "username": "bob", "eventSource": "ec2.amazonaws.com", "resourceName": "i-0a1b2c3d4e5f60718", "eventTime": "2025-11-15T11:30:00Z" }
+        ]
+      }
+    }
+  },
+  "steps": [
+    {
+      "instruction": "建立 SNS 主題 ops-alerts，等一下警示會通知這個主題。",
+      "hint": "aws sns create-topic --name ops-alerts",
+      "check": { "type": "state", "path": ["cloud", "aws", "sns", "topics", "ops-alerts"], "exists": true }
+    },
+    {
+      "instruction": "用電子郵件 ops@example.com 訂閱 ops-alerts，再用 list-subscriptions-by-topic 看訂閱的狀態。為什麼還收不到通知？",
+      "hint": "aws sns subscribe --topic-arn arn:aws:sns:us-east-1:123456789012:ops-alerts --protocol email --notification-endpoint ops@example.com",
+      "check": { "type": "state", "path": ["cloud", "aws", "sns", "topics", "ops-alerts", "subscriptions", "email:ops@example.com"], "equals": "PendingConfirmation" }
+    },
+    {
+      "instruction": "替執行個體 i-0123456789abcdef0 建立警示 high-cpu：AWS/EC2 的 CPUUtilization 平均值，每 300 秒一個期間，連續 2 個期間大於 80 就通知 ops-alerts。用 describe-alarms 看看它一開始是什麼狀態。",
+      "hint": "aws cloudwatch put-metric-alarm --alarm-name high-cpu --namespace AWS/EC2 --metric-name CPUUtilization --statistic Average --period 300 --evaluation-periods 2 --threshold 80 --comparison-operator GreaterThanThreshold --dimensions Name=InstanceId,Value=i-0123456789abcdef0 --alarm-actions arn:aws:sns:us-east-1:123456789012:ops-alerts",
+      "check": {
+        "type": "state",
+        "path": ["cloud", "aws", "cloudwatch", "alarms", "high-cpu"],
+        "equals": {
+          "namespace": "AWS/EC2",
+          "metricName": "CPUUtilization",
+          "statistic": "Average",
+          "condition": "CPUUtilization > 80 for 2 x 300s",
+          "dimensions": { "InstanceId": "i-0123456789abcdef0" },
+          "notifies": { "ops-alerts": true },
+          "state": "INSUFFICIENT_DATA"
+        }
+      }
+    },
+    {
+      "instruction": "網站的記錄在記錄群組 /app/web。用篩選模式 ERROR 找出錯誤記錄。有一筆小寫的 error 沒有出現，想想為什麼。",
+      "hint": "aws logs filter-log-events --log-group-name /app/web --filter-pattern ERROR",
+      "check": { "type": "state", "path": ["cloud", "aws", "logs", "groups", "/app/web", "searches", "ERROR"], "exists": true }
+    },
+    {
+      "instruction": "用 describe-log-groups 看 /app/web 的保留期限，它預設永久保留。把它設成保留 30 天。",
+      "hint": "aws logs put-retention-policy --log-group-name /app/web --retention-in-days 30",
+      "check": { "type": "state", "path": ["cloud", "aws", "logs", "groups", "/app/web", "retentionInDays"], "equals": 30 }
+    },
+    {
+      "instruction": "昨天有人刪除了 bucket lab-reports。用 CloudTrail 查出是哪個使用者做的，把使用者名稱寫進 ~/answer.txt。",
+      "hint": "aws cloudtrail lookup-events --lookup-attributes AttributeKey=EventName,AttributeValue=DeleteBucket，找到 Username 後用 echo 使用者名稱 > ~/answer.txt",
+      "check": { "type": "state", "path": ["files", "~/answer.txt"], "equals": "intern-kevin\n" }
+    }
+  ]
+}

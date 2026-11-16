@@ -1,0 +1,193 @@
+{
+  "questions": [
+    {
+      "id": "monitoring-logging-001",
+      "type": "single",
+      "provider": "general",
+      "unitId": "monitoring-logging",
+      "difficulty": 1,
+      "question": "團隊想在網站錯誤率突然升高時立刻收到通知，而不是等使用者來抱怨。應該設定什麼？",
+      "options": [
+        { "id": "a", "text": "把日誌保留期限設長一點", "explanation": "保留期限決定能查多久以前的記錄，不會主動通知任何人。" },
+        { "id": "b", "text": "對錯誤率指標設定警示，超過門檻時發通知", "explanation": "正確。警示持續看著指標，超過門檻就通知值班人員。" },
+        { "id": "c", "text": "每天早上手動看一次儀表板", "explanation": "這樣出事後可能要好幾個小時才會發現。" },
+        { "id": "d", "text": "開啟稽核記錄", "explanation": "稽核記錄記錄誰對資源做了什麼操作，不會監看錯誤率。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "monitoring-logging-002",
+      "type": "single",
+      "provider": "general",
+      "unitId": "monitoring-logging",
+      "difficulty": 2,
+      "question": "一個 CPU 警示設成「只要有一個 1 分鐘的資料點超過 70% 就通知」，結果值班人員一天收到幾十封通知，大多是短暫的尖峰。比較好的調整是？",
+      "options": [
+        { "id": "a", "text": "刪掉這個警示", "explanation": "沒有警示，真正的問題發生時就沒人知道。" },
+        { "id": "b", "text": "要求連續多個期間都超過門檻才觸發，並重新評估門檻值", "explanation": "正確。要求持續一段時間才觸發，可以過濾掉短暫的尖峰，避免值班人員對警示麻木。" },
+        { "id": "c", "text": "把通知改寄到沒人看的信箱", "explanation": "這等於沒有警示。" },
+        { "id": "d", "text": "把期間改成 1 秒", "explanation": "期間越短，越容易被短暫的尖峰觸發。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "monitoring-logging-003",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 2 }],
+      "unitId": "monitoring-logging",
+      "difficulty": 2,
+      "question": "團隊想在 EC2 執行個體的記憶體使用率超過 90% 時收到 CloudWatch 警示，卻在 AWS/EC2 命名空間找不到記憶體的指標。應該怎麼做？",
+      "options": [
+        { "id": "a", "text": "開啟 EC2 詳細監控", "explanation": "詳細監控只是把資料改成每 1 分鐘送一次，不會增加作業系統裡面的指標。" },
+        { "id": "b", "text": "在執行個體上安裝並設定 CloudWatch agent，收集記憶體指標", "explanation": "正確。記憶體使用率在作業系統裡面，要靠 CloudWatch agent 收集。" },
+        { "id": "c", "text": "改用比較大的執行個體類型", "explanation": "執行個體類型和看不看得到記憶體指標無關。" },
+        { "id": "d", "text": "在 CloudTrail 建立追蹤", "explanation": "CloudTrail 記錄 API 操作，不收集效能指標。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "monitoring-logging-004",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "clf-c02", "domain": 2 }],
+      "unitId": "monitoring-logging",
+      "difficulty": 1,
+      "question": "公司的 S3 bucket 前天被刪除了，主管想知道是哪個使用者做的。應該查哪個服務？",
+      "options": [
+        { "id": "a", "text": "Amazon CloudWatch 指標", "explanation": "指標是數字隨時間的變化，不會記錄是誰呼叫了哪個 API。" },
+        { "id": "b", "text": "AWS CloudTrail", "explanation": "正確。CloudTrail 記錄帳戶裡的 API 操作，包含是誰、在什麼時間做的；事件歷史記錄可以查最近 90 天的管理事件。" },
+        { "id": "c", "text": "Amazon SNS", "explanation": "SNS 用來傳送通知，不記錄操作。" },
+        { "id": "d", "text": "AWS Auto Scaling", "explanation": "Auto Scaling 調整執行個體數量，和稽核無關。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "monitoring-logging-005",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 1 }],
+      "unitId": "monitoring-logging",
+      "difficulty": 3,
+      "question": "關於 AWS CloudTrail，哪些敘述正確？（選兩個）",
+      "options": [
+        { "id": "a", "text": "事件歷史記錄預設就開啟，可以查詢最近 90 天的管理事件", "explanation": "正確。不需要額外設定就能查。" },
+        { "id": "b", "text": "要長期保存事件超過 90 天，可以建立追蹤，把事件送到 S3 bucket", "explanation": "正確。追蹤會把事件持續送到你指定的 S3 bucket。" },
+        { "id": "c", "text": "讀寫 S3 物件這類資料事件預設就會記錄", "explanation": "資料事件量很大，預設不記錄，要另外設定。" },
+        { "id": "d", "text": "CloudTrail 只記錄從 AWS 主控台發出的操作", "explanation": "從主控台、CLI、SDK 發出的操作都會記錄。" }
+      ],
+      "answer": ["a", "b"]
+    },
+    {
+      "id": "monitoring-logging-006",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "clf-c02", "domain": 3 }],
+      "unitId": "monitoring-logging",
+      "difficulty": 2,
+      "question": "你建立了 CloudWatch 警示，動作是通知 SNS 主題，並用電子郵件訂閱了這個主題。警示已經進入 ALARM 狀態，信箱卻沒收到通知。最可能的原因是？",
+      "options": [
+        { "id": "a", "text": "電子郵件訂閱還沒確認，狀態仍是 PendingConfirmation", "explanation": "正確。收件人要先點確認信中的連結，訂閱才會生效。" },
+        { "id": "b", "text": "CloudWatch 警示不能通知 SNS", "explanation": "通知 SNS 主題正是 CloudWatch 警示最常見的動作。" },
+        { "id": "c", "text": "SNS 主題必須和 EC2 執行個體在同一個子網路", "explanation": "SNS 是區域性的代管服務，沒有子網路的概念。" },
+        { "id": "d", "text": "警示要先回到 OK 狀態才會發通知", "explanation": "警示進入 ALARM 狀態時就會執行 ALARM 的動作。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "monitoring-logging-007",
+      "type": "single",
+      "provider": "aws",
+      "unitId": "monitoring-logging",
+      "difficulty": 2,
+      "question": "應用程式把錯誤寫成小寫的 error，你在 CloudWatch Logs 用篩選模式 ERROR 搜尋，什麼都沒找到。原因是？",
+      "options": [
+        { "id": "a", "text": "CloudWatch Logs 的篩選模式區分大小寫", "explanation": "正確。ERROR 只會符合大寫的 ERROR，要找小寫就要用 error。" },
+        { "id": "b", "text": "記錄群組的保留期限太短", "explanation": "如果記錄已經過期，大寫小寫都找不到；這裡的差別在於大小寫。" },
+        { "id": "c", "text": "篩選模式只能搜尋數字", "explanation": "篩選模式可以搜尋文字詞語。" },
+        { "id": "d", "text": "要先建立指標篩選器才能搜尋", "explanation": "指標篩選器用來把記錄算成指標，搜尋記錄不需要它。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "monitoring-logging-008",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 4 }],
+      "unitId": "monitoring-logging",
+      "difficulty": 2,
+      "question": "公司發現 CloudWatch Logs 的儲存費用逐月增加。檢查後發現記錄群組都沒設定保留期限，但公司政策只要求保留 90 天。應該怎麼做？",
+      "options": [
+        { "id": "a", "text": "什麼都不用做，CloudWatch Logs 預設 30 天後就會刪除", "explanation": "CloudWatch Logs 的記錄群組預設永久保留。" },
+        { "id": "b", "text": "替記錄群組設定 90 天的保留政策", "explanation": "正確。超過保留期限的記錄會自動刪除，不用再為它們付儲存費用。" },
+        { "id": "c", "text": "刪除所有記錄群組", "explanation": "這會刪掉政策要求保留的記錄。" },
+        { "id": "d", "text": "改用 EC2 詳細監控", "explanation": "詳細監控和日誌的儲存費用無關。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "monitoring-logging-009",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 3 }],
+      "unitId": "monitoring-logging",
+      "difficulty": 2,
+      "question": "Google Cloud 專案的記錄預設存在 _Default 記錄 bucket。團隊需要能查到 90 天內的應用程式記錄，最簡單的做法是？",
+      "options": [
+        { "id": "a", "text": "把 _Required bucket 的保留期限改成 90 天", "explanation": "_Required bucket 的保留期限固定 400 天，不能更改，而且一般的應用程式記錄不存在那裡。" },
+        { "id": "b", "text": "把 _Default bucket 的保留期限從預設的 30 天改成 90 天", "explanation": "正確。_Default bucket 的保留期限可以設定在 1 到 3650 天之間。" },
+        { "id": "c", "text": "安裝 Ops Agent", "explanation": "Ops Agent 用來收集 VM 的指標和記錄，不影響保留期限。" },
+        { "id": "d", "text": "記錄一律永久保留，不需要設定", "explanation": "_Default bucket 預設只保留 30 天。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "monitoring-logging-010",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 3 }],
+      "unitId": "monitoring-logging",
+      "difficulty": 3,
+      "question": "你建立了接收器，把記錄送到 Cloud Storage bucket 封存，但 bucket 裡一直沒有任何記錄檔。最可能缺了什麼？",
+      "options": [
+        { "id": "a", "text": "接收器的寫入者身分沒有目的地 bucket 的寫入權限", "explanation": "正確。接收器用自己的服務帳戶寫入目的地，要授予它寫入 bucket 的角色。" },
+        { "id": "b", "text": "Cloud Storage 不能當作接收器的目的地", "explanation": "Cloud Storage 是接收器支援的目的地之一，常用來長期封存。" },
+        { "id": "c", "text": "要先把 _Default bucket 刪除", "explanation": "接收器和 _Default bucket 可以同時存在。" },
+        { "id": "d", "text": "要先建立正常運作時間檢查", "explanation": "正常運作時間檢查和記錄的轉送無關。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "monitoring-logging-011",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 3 }],
+      "unitId": "monitoring-logging",
+      "difficulty": 2,
+      "question": "應用程式出現 ERROR 記錄時沒有任何指標可以看。你想在每分鐘的 ERROR 記錄超過 5 筆時收到通知，應該怎麼做？",
+      "options": [
+        { "id": "a", "text": "建立記錄型指標計算 ERROR 記錄，再對這個指標建立快訊政策", "explanation": "正確。記錄型指標把符合篩選條件的記錄算成指標，Cloud Monitoring 就能對它發快訊。" },
+        { "id": "b", "text": "建立正常運作時間檢查", "explanation": "正常運作時間檢查確認網站能不能回應，不會計算記錄的數量。" },
+        { "id": "c", "text": "開啟資料存取稽核記錄", "explanation": "資料存取記錄記錄的是誰讀取了資源，和應用程式的錯誤無關。" },
+        { "id": "d", "text": "把 _Default bucket 的保留期限調長", "explanation": "保留期限不會產生通知。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "monitoring-logging-012",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-cdl", "domain": 5 }],
+      "unitId": "monitoring-logging",
+      "difficulty": 2,
+      "question": "資安團隊想確認 Google Cloud 專案裡誰改了防火牆規則，但擔心沒有開啟任何稽核記錄。以下哪個敘述正確？",
+      "options": [
+        { "id": "a", "text": "修改資源設定屬於管理員活動，管理員活動稽核記錄一律寫入，不能關閉", "explanation": "正確。所以修改防火牆規則的紀錄一定查得到。" },
+        { "id": "b", "text": "所有稽核記錄預設都關閉，要先手動開啟", "explanation": "管理員活動記錄一律寫入；預設關閉的是資料存取記錄（BigQuery 除外）。" },
+        { "id": "c", "text": "稽核記錄只存在 VM 的本機磁碟上", "explanation": "稽核記錄存在 Cloud Logging 裡。" },
+        { "id": "d", "text": "要安裝 Ops Agent 才有稽核記錄", "explanation": "Ops Agent 收集 VM 內部的指標和記錄，和稽核記錄無關。" }
+      ],
+      "answer": ["a"]
+    }
+  ]
+}
