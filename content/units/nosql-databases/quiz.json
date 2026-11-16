@@ -1,0 +1,128 @@
+{
+  "questions": [
+    {
+      "id": "nosql-databases-001",
+      "type": "single",
+      "provider": "general",
+      "unitId": "nosql-databases",
+      "difficulty": 1,
+      "question": "設計 NoSQL 資料庫和設計關聯式資料庫，最大的思考順序差異是什麼？",
+      "options": [
+        { "id": "a", "text": "NoSQL 要先把資料正規化，之後再想查詢", "explanation": "正規化後任意查詢是關聯式資料庫的思考方式。" },
+        { "id": "b", "text": "NoSQL 要先列出應用程式需要的查詢，再依查詢設計鍵和結構", "explanation": "正確。NoSQL 用鍵快速找到資料，鍵沒設計好，常用的查詢就得掃描整張表。" },
+        { "id": "c", "text": "NoSQL 不需要任何設計，資料丟進去就能任意查詢", "explanation": "NoSQL 雖然不需要固定結構，但用鍵以外的欄位查詢需要索引，甚至要整張表掃描。" },
+        { "id": "d", "text": "NoSQL 一定要把所有資料放在同一個鍵下", "explanation": "所有資料集中在同一個鍵會造成熱點。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "nosql-databases-002",
+      "type": "single",
+      "provider": "general",
+      "unitId": "nosql-databases",
+      "difficulty": 2,
+      "question": "一個物聯網系統把所有感測器的資料都用「今天的日期」當作分割的鍵寫入 NoSQL 資料庫，結果寫入很快就變慢。最可能的原因是？",
+      "options": [
+        { "id": "a", "text": "熱點：同一天的寫入全部集中在同一個鍵，負擔落在少數幾台機器上", "explanation": "正確。好的鍵要讓讀寫平均分散，例如在鍵的前面放上感測器編號。" },
+        { "id": "b", "text": "NoSQL 資料庫不能儲存數字", "explanation": "NoSQL 資料庫可以儲存數字。" },
+        { "id": "c", "text": "日期格式太長", "explanation": "鍵的長度不是問題，問題是所有寫入集中在同一個鍵。" },
+        { "id": "d", "text": "沒有使用 JOIN", "explanation": "NoSQL 通常不支援 JOIN，這和寫入變慢無關。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "nosql-databases-003",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 3 }],
+      "unitId": "nosql-databases",
+      "difficulty": 2,
+      "question": "DynamoDB 資料表 Orders 的主鍵是 CustomerId（分割區索引鍵）加 OrderId（排序索引鍵）。現在需要依「訂單狀態 Status」查詢所有待出貨的訂單，而且要有效率。應該怎麼做？",
+      "options": [
+        { "id": "a", "text": "用 Query，把 key condition 寫成 Status = :s", "explanation": "Query 的 key condition 只能使用主鍵的屬性，Status 不是主鍵。" },
+        { "id": "b", "text": "建立以 Status 為分割區索引鍵的全域次要索引，再查詢這個索引", "explanation": "正確。全域次要索引的分割區索引鍵可以和資料表不同，讓你用其他屬性有效率地查詢。" },
+        { "id": "c", "text": "每次都用 Scan 讀整個資料表再篩選", "explanation": "可以得到結果，但 Scan 會讀取每一個項目，資料量大時又慢又貴。" },
+        { "id": "d", "text": "建立以 Status 為分割區索引鍵的本機次要索引", "explanation": "本機次要索引的分割區索引鍵必須和資料表相同，只有排序索引鍵可以不同。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "nosql-databases-004",
+      "type": "single",
+      "provider": "aws",
+      "unitId": "nosql-databases",
+      "difficulty": 2,
+      "question": "應用程式寫入一個 DynamoDB 項目後，立刻用 GetItem 讀取，偶爾讀到的是舊的資料。最直接的解決方式是？",
+      "options": [
+        { "id": "a", "text": "讀取時加上 ConsistentRead（--consistent-read），使用強一致讀取", "explanation": "正確。DynamoDB 預設是最終一致讀取；強一致讀取會反映之前所有成功的寫入，但費用是最終一致的兩倍。" },
+        { "id": "b", "text": "改成佈建容量模式", "explanation": "容量模式影響的是計費和擴展，不影響讀取一致性。" },
+        { "id": "c", "text": "改從全域次要索引讀取", "explanation": "全域次要索引只支援最終一致讀取。" },
+        { "id": "d", "text": "啟用 TTL", "explanation": "TTL 是自動刪除過期項目，和一致性無關。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "nosql-databases-005",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [{ "id": "clf-c02", "domain": 3 }],
+      "unitId": "nosql-databases",
+      "difficulty": 2,
+      "question": "關於 Amazon DynamoDB，哪些敘述正確？（選兩個）",
+      "options": [
+        { "id": "a", "text": "隨需容量模式不必規劃容量，依實際讀寫次數付費，是 AWS 預設與建議的選擇", "explanation": "正確。流量穩定、可以預測時，才考慮佈建模式。" },
+        { "id": "b", "text": "每個項目最大 400 KB", "explanation": "正確。較大的檔案通常放在 S3，DynamoDB 裡只存它的位置。" },
+        { "id": "c", "text": "建立資料表時必須定義所有屬性的名稱和型別", "explanation": "只有主鍵（以及索引的鍵）需要定義，其他屬性每個項目都可以不同。" },
+        { "id": "d", "text": "可以用 SQL 的 JOIN 合併兩個資料表", "explanation": "DynamoDB 不支援跨資料表的 JOIN。" }
+      ],
+      "answer": ["a", "b"]
+    },
+    {
+      "id": "nosql-databases-006",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 2 }],
+      "unitId": "nosql-databases",
+      "difficulty": 2,
+      "question": "一個 Firestore（Standard 版本）的查詢同時用 customerId 篩選、又依 createdAt 排序，執行時出現需要索引的錯誤。該怎麼處理？",
+      "options": [
+        { "id": "a", "text": "建立一個包含 customerId 和 createdAt 的手動（複合）索引", "explanation": "正確。Standard 版本只會自動替每個欄位建立單一欄位的索引，多欄位的查詢要手動建立索引。" },
+        { "id": "b", "text": "把資料庫改成 Datastore mode", "explanation": "Datastore mode 是為了相容舊的 Datastore API，不能解決索引問題。" },
+        { "id": "c", "text": "把資料庫搬到多區域位置", "explanation": "位置建立後不能更改，而且和索引無關。" },
+        { "id": "d", "text": "Firestore 不支援排序", "explanation": "Firestore 支援排序，只是多欄位的查詢需要對應的索引。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "nosql-databases-007",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-cdl", "domain": 2 }],
+      "unitId": "nosql-databases",
+      "difficulty": 2,
+      "question": "一家公司要儲存數萬台電表每分鐘回傳的用電量，資料量會達到數百 TB，需要高吞吐、低延遲的寫入與依時間範圍讀取。Google Cloud 上最適合的是？",
+      "options": [
+        { "id": "a", "text": "Cloud SQL", "explanation": "單一關聯式資料庫執行個體難以承受這種規模的寫入量。" },
+        { "id": "b", "text": "Bigtable", "explanation": "正確。Bigtable 是寬欄資料庫，適合時間序列和物聯網這類大量的鍵值資料，可以擴展到 PB 等級。" },
+        { "id": "c", "text": "Firestore", "explanation": "Firestore 適合應用程式的文件資料、需要交易和彈性查詢的情境，這種大量時間序列寫入更適合 Bigtable。" },
+        { "id": "d", "text": "Filestore", "explanation": "Filestore 是檔案儲存，不是資料庫。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "nosql-databases-008",
+      "type": "single",
+      "provider": "gcp",
+      "unitId": "nosql-databases",
+      "difficulty": 2,
+      "question": "團隊在 asia-east1 建立了 Firestore 資料庫，後來發現大部分使用者在美國，想把資料庫的位置改到 nam5。下列哪個敘述正確？",
+      "options": [
+        { "id": "a", "text": "用 gcloud firestore databases update --location=nam5 就能更改", "explanation": "資料庫建立後就不能更改位置，update 指令也沒有 --location 選項。" },
+        { "id": "b", "text": "資料庫建立後不能更改位置；要換位置，只能在新位置建立資料庫並搬移資料（例如匯出再匯入）", "explanation": "正確。所以建立資料庫前要先決定好位置。" },
+        { "id": "c", "text": "Firestore 會自動依使用者的位置搬移資料", "explanation": "Firestore 不會自動搬移資料庫的位置。" },
+        { "id": "d", "text": "只要開啟刪除保護就可以更改位置", "explanation": "刪除保護是防止誤刪，和位置無關。" }
+      ],
+      "answer": ["b"]
+    }
+  ]
+}

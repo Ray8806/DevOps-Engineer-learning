@@ -1,0 +1,218 @@
+## 什麼是 NoSQL 資料庫
+
+「關聯式資料庫」單元裡的資料庫，資料存在結構固定的資料表裡，用 SQL 把多張表 JOIN 起來查詢。這很有彈性，但資料量和流量大到一台機器撐不住時，很難再往上擴展。
+
+**NoSQL 資料庫**泛指不採用這種關聯式模型的資料庫。它們各有不同的設計，但常見的共同點是：
+
+- **不需要事先定義完整的結構**：每筆資料可以有不同的欄位。
+- **為水平擴展而設計**：資料依「鍵」分散到很多台機器，容量和流量幾乎可以無限增加。
+- **讀寫一筆資料非常快**：只要知道鍵，就能在個位數毫秒內拿到資料。
+- **代價是查詢比較不自由**：通常不支援 JOIN，用鍵以外的欄位查詢需要事先建立索引，甚至要整張表掃過一遍。
+
+## 幾種常見的類型
+
+| 類型 | 資料的樣子 | 適合 | 例子 |
+|---|---|---|---|
+| 鍵值 | 一個鍵對應一個值 | 工作階段、購物車、快取 | DynamoDB |
+| 文件 | 一份份類似 JSON 的文件，可以有巢狀結構 | 使用者資料、商品目錄、行動 App 的資料 | Firestore、DynamoDB |
+| 寬欄 | 每列可以有非常多欄位，依列鍵排序 | 時間序列、物聯網資料、大量寫入的分析資料 | Bigtable |
+
+## 先想好怎麼查詢，再設計鍵
+
+這是 NoSQL 和關聯式資料庫最大的思考差異。
+
+設計關聯式資料庫時，先把資料**正規化**，之後想怎麼查就怎麼查。設計 NoSQL 資料庫時，要**先列出應用程式需要的查詢**，再決定鍵怎麼設計，讓每個常用的查詢都能直接用鍵找到資料。
+
+以「訂單」為例，如果最常見的查詢是「列出某位顧客的所有訂單」：
+
+- 用**顧客編號**當分割的鍵，同一位顧客的訂單就會放在一起。
+- 再用**訂單編號或下單時間**排序，就能直接取出「某位顧客最近 10 筆訂單」。
+
+如果之後才想用「訂單狀態」查詢，就要另外建立索引；沒有索引的話，只能把整張表掃過一遍，又慢又貴。
+
+<Callout title="避免熱點">
+資料依鍵分散到不同的機器。如果大部分的讀寫都集中在少數幾個鍵上（例如所有資料都用同一個日期當鍵），那幾台機器就會變成瓶頸，這叫做**熱點**。好的鍵要讓讀寫平均分散。
+</Callout>
+
+## 一致性
+
+分散在很多台機器上的資料，寫入後不一定會**立刻**出現在每一份副本上：
+
+- **強一致**：讀取一定看得到最新寫入的資料。
+- **最終一致**：剛寫入的資料可能要過一下子才讀得到，但成本較低、效能較好。
+
+不同的資料庫、甚至同一個資料庫的不同操作，提供的一致性不一樣，選擇時要確認。
+
+## 自動清除過期資料
+
+很多資料只需要保存一段時間，例如登入的工作階段、暫存的驗證碼。兩個平台的 NoSQL 資料庫都提供 **TTL**（time to live）：在每筆資料上存一個「到期時間」欄位，到期後資料庫會在背景自動刪除，不必自己寫排程清理。刪除不是到期當下立刻發生，而是會延遲一段時間。
+
+## 什麼時候不要用 NoSQL
+
+- 需要大量跨資料表的 JOIN、複雜的報表查詢：用關聯式資料庫，或資料倉儲。
+- 查詢的方式還不確定、經常變動：關聯式資料庫的彈性比較好。
+- 資料量不大、流量不高：關聯式資料庫通常就夠用，也比較好上手。
+
+## 在兩個平台上怎麼做
+
+<ProviderTabs>
+<Provider name="aws">
+
+### Amazon DynamoDB
+
+DynamoDB 是無伺服器、全代管的 NoSQL 資料庫，不論資料量多大，都提供穩定的個位數毫秒效能。
+
+**基本元素**：**資料表**裡有很多**項目**（item），每個項目是一組**屬性**（attribute）。除了主鍵之外，資料表不需要事先定義其他屬性，每個項目可以有不同的屬性，屬性也可以是巢狀的。
+
+**主鍵**有兩種：
+
+| 主鍵 | 組成 | 說明 |
+|---|---|---|
+| 簡單主鍵 | 分割區索引鍵（partition key） | 每個項目的分割區索引鍵都不能重複 |
+| 複合主鍵 | 分割區索引鍵 + 排序索引鍵（sort key） | 分割區索引鍵相同的項目放在一起，依排序索引鍵排序；兩者合起來不能重複 |
+
+DynamoDB 用分割區索引鍵的雜湊值決定項目存在哪個分割區。主鍵的屬性只能是字串（S）、數字（N）或二進位（B）。
+
+**讀取資料的方式**
+
+| 操作 | 說明 |
+|---|---|
+| `GetItem` | 用完整的主鍵取得一個項目 |
+| `Query` | 指定分割區索引鍵（一定要用 `=`），可以再加上排序索引鍵的條件（`=`、`<`、`<=`、`>`、`>=`、`BETWEEN`、`begins_with`） |
+| `Scan` | 讀取整個資料表的每一個項目，資料量大時又慢又貴；每次最多讀 1 MB |
+
+**次要索引**：想用主鍵以外的屬性查詢時建立索引。
+
+- **全域次要索引**（GSI）：分割區索引鍵和排序索引鍵都可以和資料表不同，預設每個資料表最多 20 個。
+- **本機次要索引**（LSI）：分割區索引鍵和資料表相同，排序索引鍵不同，每個資料表最多 5 個。
+
+**讀取一致性**：預設是**最終一致**，費用是強一致讀取的一半。`GetItem`、`Query`、`Scan` 可以加上 `--consistent-read` 要求**強一致**；但全域次要索引只支援最終一致。
+
+**容量模式**
+
+| 模式 | 說明 |
+|---|---|
+| 隨需（on-demand，`PAY_PER_REQUEST`） | AWS 預設與建議的選擇。不必規劃容量，依實際的讀寫次數付費，自動擴展 |
+| 佈建（provisioned） | 自己指定每秒的讀取與寫入容量單位，適合流量穩定、可以預測的工作 |
+
+**其他限制與功能**
+
+- 每個項目最大 **400 KB**。
+- **TTL**：在項目上用一個數字屬性存放到期時間（Unix 時間，以秒為單位），通常會在到期後**幾天內**自動刪除，刪除不消耗寫入容量。
+- **時間點復原**（PITR）：持續備份，最多可以還原到 35 天內任一秒。
+- **全域資料表**：自動把資料表複寫到多個 Region，每個 Region 都可以讀寫。
+
+**常用指令**
+
+```bash
+# 建立隨需模式的資料表：分割區索引鍵 CustomerId、排序索引鍵 OrderId
+aws dynamodb create-table --table-name Orders \
+  --attribute-definitions AttributeName=CustomerId,AttributeType=S AttributeName=OrderId,AttributeType=S \
+  --key-schema AttributeName=CustomerId,KeyType=HASH AttributeName=OrderId,KeyType=RANGE \
+  --billing-mode PAY_PER_REQUEST
+
+# 寫入項目：每個值都要標明型別，例如 {"S": "文字"}、{"N": "數字"}
+aws dynamodb put-item --table-name Orders --item '{"CustomerId": {"S": "c001"}, "OrderId": {"S": "o001"}, "Total": {"N": "350"}}'
+
+# 用主鍵取得一個項目
+aws dynamodb get-item --table-name Orders --key '{"CustomerId": {"S": "c001"}, "OrderId": {"S": "o001"}}'
+
+# 查詢某位顧客的所有訂單
+aws dynamodb query --table-name Orders --key-condition-expression "CustomerId = :c" --expression-attribute-values '{":c": {"S": "c001"}}'
+
+# 啟用 TTL，用 ExpiresAt 屬性當到期時間
+aws dynamodb update-time-to-live --table-name Orders --time-to-live-specification Enabled=true,AttributeName=ExpiresAt
+```
+
+</Provider>
+<Provider name="gcp">
+
+### Firestore
+
+Firestore 是全代管的**文件資料庫**，不必預先配置容量，依用量計費並自動擴展。它支援 ACID 交易、強一致的查詢，也提供相容 MongoDB 的 API；寫行動或網頁 App 時，可以搭配 Firebase 的 SDK 做即時同步和離線使用。
+
+**資料模型**
+
+- 資料存在**文件**（document）裡，每份文件是一組欄位和值，欄位可以是巢狀的物件（map）或陣列。
+- 文件放在**集合**（collection）裡；文件底下還可以有**子集合**。
+- 集合和文件不需要事先建立，寫入第一份文件時就會自動產生。
+
+**版本**：Firestore 分成 **Standard** 和 **Enterprise** 兩種版本。
+
+| | Standard | Enterprise |
+|---|---|---|
+| 查詢引擎 | 標準查詢，**每個查詢都需要索引** | 進階查詢引擎，可以不建索引就查詢 |
+| 文件大小上限 | 1 MiB | 用 Native mode 是 1 MiB，MongoDB 相容 API 是 16 MiB |
+| 計費 | 依讀寫的文件數、儲存空間、網路傳輸 | 依讀寫的資料量、儲存空間、網路傳輸 |
+
+用 gcloud 建立資料庫時，預設是 Standard 版本。
+
+**索引**（Standard 版本）
+
+- **自動索引**（以前稱為單一欄位索引）：Firestore 預設會替每個欄位建立索引，簡單的查詢直接就能用。
+- **手動索引**（以前稱為複合索引）：同時用多個欄位篩選或排序的查詢，需要自己建立索引。
+
+因為每個查詢都有索引，查詢速度取決於**結果有多少筆**，而不是資料庫有多大。
+
+**位置**：建立資料庫時選擇**單一區域**（例如 `asia-east1`）或**多區域**（例如 `nam5`、`eur3`）。單一區域的可用性 SLA 是 99.99%，多區域是 99.999%。**位置建立後就不能更改。**
+
+**Datastore mode**：Firestore 也可以建立成相容舊版 Datastore API 的資料庫。Google 建議只有相依於 Datastore API 的舊應用程式才這樣做。
+
+**其他功能**
+
+- **TTL**：指定某個集合群組的某個欄位當到期時間，到期的文件通常會在 **24 小時內**被刪除。
+- **匯出與匯入**：把資料匯出到 Cloud Storage bucket，建議 bucket 放在靠近資料庫的位置。
+- **刪除保護**：開啟後必須先關閉才能刪除資料庫。
+
+**常用指令**
+
+```bash
+# 在 asia-east1 建立預設資料庫（Native mode、Standard 版本）
+gcloud firestore databases create --location=asia-east1
+
+# 建立手動索引：依 customerId 篩選、依 createdAt 由新到舊排序
+gcloud firestore indexes composite create --collection-group=orders \
+  --field-config=field-path=customerId,order=ascending \
+  --field-config=field-path=createdAt,order=descending
+
+# 讓 sessions 集合依 expiresAt 欄位自動刪除過期文件
+gcloud firestore fields ttls update expiresAt --collection-group=sessions --enable-ttl
+
+# 匯出到 Cloud Storage，並開啟刪除保護
+gcloud firestore export gs://my-firestore-backup
+gcloud firestore databases update --database='(default)' --delete-protection
+```
+
+讀寫文件通常是在程式裡用用戶端程式庫完成；gcloud 負責的是建立資料庫、索引、TTL、匯出這類管理工作。
+
+### Bigtable
+
+Bigtable 是**寬欄**（wide-column）資料庫：一張稀疏的大表，可以有數十億列、數千個欄位，儲存 TB 甚至 PB 等級的資料，提供高吞吐、低延遲的讀寫。它支援 Apache HBase 的 API，可以接上 Hadoop 等開源的大數據工具。
+
+- 每一列只有一個索引：**列索引鍵**（row key），資料依列索引鍵的字典順序排序。
+- 相關的欄位放在同一個**資料欄系列**（column family）裡。
+- 列索引鍵的設計決定效能：要讓寫入平均分散（避免熱點），也要讓會一起讀的資料排在一起。例如天氣資料可以用「地點#時間」當列索引鍵。
+- 增加叢集的節點數就能提高效能，調整節點數不需要停機，也可以設定自動調整。
+- 適合時間序列、物聯網、金融交易紀錄、行銷資料這類大量的鍵值資料。
+
+需要文件結構、交易和類似 SQL 的查詢時，Google 建議改用 Firestore；需要互動式的分析查詢時，用 BigQuery。
+
+</Provider>
+</ProviderTabs>
+
+## 兩個平台的差異
+
+<Compare />
+
+最重要的差別在**查詢方式**：DynamoDB 用主鍵和次要索引查詢，其他屬性只能 Scan；Firestore Standard 版本替每個欄位自動建立索引，多欄位的查詢要手動建立索引。兩邊都一樣的原則是：先想清楚要怎麼查詢，再設計資料的結構。
+
+## 重點整理
+
+- NoSQL 資料庫為水平擴展和大量讀寫而設計，代價是查詢比較不自由、通常不支援 JOIN。
+- 先列出應用程式需要的查詢，再設計鍵；鍵要讓讀寫平均分散，避免熱點。
+- 強一致讀取看得到最新的寫入；最終一致比較便宜，但可能讀到舊資料。
+- DynamoDB 的主鍵是分割區索引鍵（加上排序索引鍵）；Query 一定要用 `=` 指定分割區索引鍵，用其他屬性查詢要建立次要索引。
+- DynamoDB 預設最終一致讀取，隨需容量模式是預設也是建議的選擇，每個項目最大 400 KB。
+- Firestore 是文件資料庫，資料放在集合裡的文件；Standard 版本的查詢都需要索引，位置建立後不能更改。
+- Bigtable 是寬欄資料庫，只有列索引鍵一個索引，適合大量的時間序列和物聯網資料。
+- 兩個平台都有 TTL，可以自動刪除過期的資料。

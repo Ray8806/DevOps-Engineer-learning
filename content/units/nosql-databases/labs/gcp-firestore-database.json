@@ -1,0 +1,95 @@
+{
+  "id": "gcp-firestore-database",
+  "title": "建立與管理 Firestore 資料庫",
+  "description": "建立 Firestore 資料庫，替多欄位查詢建立手動索引、設定 TTL，再把資料匯出到 Cloud Storage 並開啟刪除保護。",
+  "provider": "gcp",
+  "estimatedMinutes": 15,
+  "initialState": {
+    "files": {},
+    "cloud": {}
+  },
+  "steps": [
+    {
+      "instruction": "在 asia-east1 建立預設的 Firestore 資料庫（Native mode）。位置建立後就不能更改。",
+      "hint": "gcloud firestore databases create --location=asia-east1",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "firestore",
+          "databases",
+          "(default)",
+          "location"
+        ],
+        "equals": "asia-east1"
+      }
+    },
+    {
+      "instruction": "應用程式要在 orders 集合依 customerId 篩選、再依 createdAt 由新到舊排序。替這個查詢建立手動索引。",
+      "hint": "gcloud firestore indexes composite create --collection-group=orders --field-config=field-path=customerId,order=ascending --field-config=field-path=createdAt,order=descending",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "firestore",
+          "databases",
+          "(default)",
+          "indexes",
+          "orders(customerId ASCENDING, createdAt DESCENDING)"
+        ],
+        "exists": true
+      }
+    },
+    {
+      "instruction": "登入工作階段存在 sessions 集合，到期時間在 expiresAt 欄位。替它啟用 TTL。",
+      "hint": "gcloud firestore fields ttls update expiresAt --collection-group=sessions --enable-ttl",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "firestore",
+          "databases",
+          "(default)",
+          "ttlFields",
+          "sessions.expiresAt"
+        ],
+        "exists": true
+      }
+    },
+    {
+      "instruction": "在 asia-east1 建立 bucket gs://lab-firestore-backup，然後把資料庫匯出到這個 bucket。",
+      "hint": "gcloud storage buckets create gs://lab-firestore-backup --location=asia-east1，再執行 gcloud firestore export gs://lab-firestore-backup",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "firestore",
+          "databases",
+          "(default)",
+          "exportCount"
+        ],
+        "equals": 1
+      }
+    },
+    {
+      "instruction": "為了避免誤刪，替資料庫開啟刪除保護。",
+      "hint": "gcloud firestore databases update --database='(default)' --delete-protection",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "firestore",
+          "databases",
+          "(default)",
+          "deleteProtection"
+        ],
+        "equals": true
+      }
+    }
+  ]
+}

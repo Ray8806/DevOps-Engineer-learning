@@ -1,0 +1,26 @@
+{
+  "id": "nosql-databases",
+  "title": "NoSQL 資料庫",
+  "summary": "不用固定資料表結構、為大量讀寫而設計的資料庫：先想清楚怎麼查詢，再設計鍵；了解它們和關聯式資料庫的取捨。",
+  "stage": 1,
+  "prerequisites": ["relational-databases"],
+  "providers": {
+    "aws": { "services": ["DynamoDB"] },
+    "gcp": { "services": ["Firestore", "Bigtable"] }
+  },
+  "compare": [
+    { "aspect": "代表服務", "aws": "Amazon DynamoDB（鍵值與文件）", "gcp": "Firestore（文件）、Bigtable（寬欄）" },
+    { "aspect": "資料的樣子", "aws": "資料表裡的項目，每個項目是一組屬性", "gcp": "Firestore：集合裡的文件，文件可以有子集合；Bigtable：依列索引鍵排序的大型稀疏資料表" },
+    { "aspect": "要事先定義的結構", "aws": "只有主鍵；其他屬性每個項目可以不同", "gcp": "Firestore 不需要；Bigtable 要在資料表上定義資料欄系列，個別資料欄由寫入的資料決定" },
+    { "aspect": "怎麼找到一筆資料", "aws": "分割區索引鍵，或分割區索引鍵加排序索引鍵", "gcp": "Firestore 用集合加文件 ID；Bigtable 用列索引鍵（每列唯一的索引）" },
+    { "aspect": "用其他欄位查詢", "aws": "建立全域或本機次要索引；否則只能 Scan 整個資料表", "gcp": "Firestore Standard 版本每個查詢都要有索引：單一欄位自動建立，多欄位要手動建立" },
+    { "aspect": "讀取一致性", "aws": "預設最終一致，可以要求強一致（全域次要索引只有最終一致）", "gcp": "Firestore 的查詢是強一致的" },
+    { "aspect": "容量與計費", "aws": "隨需模式（預設、建議）或佈建模式", "gcp": "Firestore 依用量計費、自動擴展；Bigtable 依叢集節點數" },
+    { "aspect": "單筆資料上限", "aws": "每個項目 400 KB", "gcp": "Firestore 每份文件 1 MiB（Standard 版本）" },
+    { "aspect": "自動刪除過期資料", "aws": "TTL：通常在到期後幾天內刪除", "gcp": "Firestore TTL：通常在到期後 24 小時內刪除" },
+    { "aspect": "跨區域", "aws": "全域資料表：多個 Region 都能讀寫", "gcp": "Firestore 選多區域位置（例如 nam5）；Bigtable 加入其他叢集自動複寫" },
+    { "aspect": "命令列工具", "aws": "aws dynamodb", "gcp": "gcloud firestore（管理資料庫、索引、TTL、匯出）" }
+  ],
+  "certDomains": ["clf-c02:3", "saa-c03:2", "saa-c03:3", "gcp-cdl:2", "gcp-ace:2"],
+  "estimatedMinutes": 40
+}
