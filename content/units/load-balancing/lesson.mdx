@@ -1,0 +1,221 @@
+## 為什麼需要負載平衡
+
+只有一台伺服器的網站有兩個問題：
+
+1. **撐不住流量**：使用者一多，一台機器的 CPU 和記憶體就不夠用。
+2. **一壞就全停**：那台機器、甚至它所在的可用區出問題，整個網站就停擺。
+
+解法是**準備多台一樣的伺服器**，前面放一個**負載平衡器**：
+
+- 使用者只連到負載平衡器的**單一入口**（一個網址或 IP），不必知道後面有幾台機器。
+- 負載平衡器把請求**分散**給後面的機器。
+- 它會持續做**健康檢查**，只把流量送給健康的機器；有機器壞掉，流量自動避開它。
+- 機器分散在**多個可用區**，一個可用區故障，其他可用區的機器繼續服務。
+
+## 健康檢查
+
+負載平衡器定期對每台後端機器發出檢查請求，例如對 `/health` 發 HTTP 請求：
+
+- 連續成功達到一定次數，標記為**健康**，開始分配流量。
+- 連續失敗達到一定次數，標記為**不健康**，停止分配流量。
+
+健康檢查的路徑最好是應用程式專門提供的端點，能確認程式真的能處理請求，而不只是機器有開機。
+
+## 第 4 層和第 7 層
+
+依照負載平衡器看得懂多少內容，分成兩類：
+
+| | 第 4 層（傳輸層） | 第 7 層（應用層） |
+|---|---|---|
+| 看得到的資訊 | IP 位址、連接埠、TCP／UDP | HTTP 的網址路徑、主機名稱、標頭 |
+| 能做的事 | 依連線分配，速度快，可以處理任何 TCP／UDP 協定 | 依路徑或網域分到不同的後端，例如 `/api` 和 `/images` 分開處理；在負載平衡器上處理 HTTPS 憑證 |
+| 適合 | 遊戲伺服器、非 HTTP 的服務、需要極高效能 | 網站、API |
+
+一般的網站和 API 用第 7 層就對了。
+
+## 自動擴展
+
+流量不是固定的：白天多、半夜少，促銷活動時暴增。固定開 10 台機器，半夜會浪費錢，促銷時又可能不夠。
+
+**自動擴展**依照負載自動調整機器數量。你要設定三個數字：
+
+| 設定 | 說明 |
+|---|---|
+| 最小值 | 再怎麼閒也至少保持幾台，確保可用性 |
+| 最大值 | 再怎麼忙也最多開幾台，控制成本上限 |
+| 期望值（目前的目標數量） | 群組現在要維持的數量，介於最小值和最大值之間 |
+
+最常用的方式是**目標追蹤**：設定一個目標，例如「平均 CPU 使用率維持在 50%」，系統就像恆溫器一樣自動增減機器。CPU 高於目標就加機器（**向外擴展**，scale out），低於目標就減機器（**向內縮減**，scale in）。
+
+<Callout title="水平擴展與垂直擴展">
+**垂直擴展**是把機器換大一點（scale up）；**水平擴展**是加更多台機器（scale out）。自動擴展做的是水平擴展，所以應用程式要設計成**無狀態**：工作階段、上傳的檔案不能只存在某一台機器上，要放到資料庫、快取或物件儲存，任何一台機器都能處理任何請求。
+</Callout>
+
+## 自動替換故障的機器
+
+自動擴展群組的另一個重要功能是**自我修復**：群組會一直維持目標數量。某台機器故障、被終止或健康檢查失敗，群組會自動用範本建立一台新的補上。
+
+所以群組裡的機器都要從同一個**範本**建立：範本記錄映像檔、機器規格、網路設定、開機時執行的腳本。任何一台機器都可以隨時被替換，這是雲端上「把伺服器當成牲畜，而不是寵物」的思維。
+
+## 在兩個平台上怎麼做
+
+<ProviderTabs>
+<Provider name="aws">
+
+### Elastic Load Balancing
+
+Elastic Load Balancing（ELB）把流量分散到多個可用區的目標（EC2 執行個體、容器、IP 位址），並且只送給健康的目標。
+
+**負載平衡器的類型**
+
+| 類型 | 層級 | 適合 |
+|---|---|---|
+| Application Load Balancer（ALB） | 第 7 層 | HTTP、HTTPS；可以依路徑、主機名稱設定轉送規則 |
+| Network Load Balancer（NLB） | 第 4 層 | TCP、UDP 等；每秒可處理數百萬個請求；每個可用區有固定 IP |
+| Gateway Load Balancer | 第 3 層 | 部署防火牆、入侵偵測等第三方虛擬設備 |
+| Classic Load Balancer | | 上一代，AWS 建議遷移到新的類型 |
+
+**ALB 的組成**
+
+- **接聽程式**（listener）：用設定的協定和連接埠（例如 HTTP 80）接收連線，再依**規則**決定轉給哪個目標群組。每個接聽程式都有一條預設規則。
+- **目標群組**（target group）：一組目標，以及它們的健康檢查設定。一個目標可以同時在多個目標群組裡。
+- ALB **至少要啟用兩個可用區**。在某個可用區註冊了目標、卻沒有在負載平衡器上啟用那個可用區，那些目標就收不到流量。
+- ALB 在負載平衡器層級一律啟用**跨可用區負載平衡**：每個可用區的負載平衡器節點都會把流量分給所有可用區的目標（可以在目標群組層級關閉）。NLB 預設則是關閉的。
+
+**目標群組健康檢查的預設值**（目標類型是 instance 時）
+
+| 設定 | 預設值 |
+|---|---|
+| 路徑 | `/` |
+| 間隔 | 30 秒 |
+| 逾時 | 5 秒 |
+| 連續成功幾次算健康 | 5 |
+| 連續失敗幾次算不健康 | 2 |
+| 成功的 HTTP 狀態碼 | 200 |
+
+### Amazon EC2 Auto Scaling
+
+**Auto Scaling 群組**是一組 EC2 執行個體，設定**最小**、**最大**和**期望容量**。群組會啟動期望容量數量的執行個體並維持這個數量，自動替換不健康的執行個體。
+
+- **啟動範本**（launch template）：記錄 AMI、執行個體類型、安全群組等設定。AWS 建議使用啟動範本，而不是舊的啟動組態（launch configuration）。
+- **跨可用區**：群組設定多個子網路，執行個體會平均分散在這些可用區。
+- **健康檢查**：預設只用 EC2 的狀態檢查。連接負載平衡器時，可以加上 **ELB 健康檢查**（`--health-check-type ELB`），讓應用程式沒有回應的執行個體也會被替換；再設定**健康檢查寬限期**，避免還在開機的執行個體被誤判。
+- **擴展政策**：
+  - **目標追蹤**：維持某個指標在目標值，例如 `ASGAverageCPUUtilization` 維持 50%。AWS 會自動建立需要的 CloudWatch 警示。
+  - **步驟擴展**、**簡單擴展**：依警示的程度加減固定數量。
+  - **排程擴展**：在固定時間調整容量，例如每天早上 9 點增加。
+  - **預測擴展**：依歷史流量預先擴展。
+
+**常用指令**
+
+```bash
+# 啟動範本
+aws ec2 create-launch-template --launch-template-name web-template \
+  --launch-template-data '{"ImageId": "ami-0abcdef1234567890", "InstanceType": "t3.micro"}'
+
+# 目標群組、ALB、接聽程式
+aws elbv2 create-target-group --name web-tg --protocol HTTP --port 80 --vpc-id vpc-0123456789abcdef0 --health-check-path /health
+aws elbv2 create-load-balancer --name web-alb --subnets subnet-0aaa1111bbbb2222c subnet-0ddd3333eeee4444f
+aws elbv2 create-listener --load-balancer-arn 負載平衡器的ARN --protocol HTTP --port 80 \
+  --default-actions Type=forward,TargetGroupArn=目標群組的ARN
+
+# Auto Scaling 群組：最少 2 台、最多 4 台，執行個體自動註冊到目標群組
+aws autoscaling create-auto-scaling-group --auto-scaling-group-name web-asg \
+  --launch-template LaunchTemplateName=web-template --min-size 2 --max-size 4 --desired-capacity 2 \
+  --vpc-zone-identifier "subnet-0aaa1111bbbb2222c,subnet-0ddd3333eeee4444f" \
+  --target-group-arns 目標群組的ARN --health-check-type ELB --health-check-grace-period 300
+
+# 目標追蹤：平均 CPU 維持 50%
+aws autoscaling put-scaling-policy --auto-scaling-group-name web-asg --policy-name cpu50 \
+  --policy-type TargetTrackingScaling \
+  --target-tracking-configuration '{"PredefinedMetricSpecification": {"PredefinedMetricType": "ASGAverageCPUUtilization"}, "TargetValue": 50.0}'
+
+# 查看目標的健康狀態
+aws elbv2 describe-target-health --target-group-arn 目標群組的ARN
+```
+
+</Provider>
+<Provider name="gcp">
+
+### Cloud Load Balancing
+
+Cloud Load Balancing 是全分散式、軟體定義的代管服務，不是跑在某幾台機器上的設備。**全域**的負載平衡器用**一個 anycast IP 位址**，就能服務分布在世界各地多個區域的後端，某個區域的後端不健康時，流量會自動轉到其他區域。
+
+**怎麼選**
+
+| 類型 | 用途 |
+|---|---|
+| Application Load Balancer | HTTP(S) 流量，功能最完整 |
+| proxy Network Load Balancer | TCP proxy，後端可以在一個或多個區域 |
+| passthrough Network Load Balancer | 保留用戶端的來源 IP、不經過 proxy，支援 UDP、ESP、ICMP 等協定 |
+
+每一類又分成**外部**（給網際網路上的使用者）和**內部**（給 VPC 裡的用戶端），以及**全域**和**區域**。
+
+**外部 HTTP 負載平衡器的組成**（由外往內）
+
+1. **轉送規則**（forwarding rule）：對外的 IP 位址和連接埠。
+2. **目標 HTTP proxy**：接收請求，交給 URL 對應。
+3. **URL 對應**（URL map）：依路徑或主機名稱決定送到哪個後端服務。
+4. **後端服務**（backend service）：一組後端（例如代管執行個體群組），以及健康檢查、負載平衡的設定。
+5. **健康檢查**：獨立的資源，掛在後端服務上。HTTP 健康檢查預設檢查連接埠 80、路徑 `/`。
+
+建立後端服務時，`--load-balancing-scheme=EXTERNAL_MANAGED` 是目前的全域外部 Application Load Balancer；預設的 `EXTERNAL` 是傳統（classic）版本。
+
+**具名連接埠**：後端服務透過**具名連接埠**（named port）找到執行個體群組上的服務，例如名稱 `http` 對應連接埠 80。後端服務沒有指定 `--port-name` 時，預設使用名為 `http` 的具名連接埠，所以執行個體群組要設定 `http:80`。
+
+<Callout title="別忘了防火牆">
+健康檢查的請求來自 Google 的特定 IP 範圍（IPv4 是 `35.191.0.0/16`）。VPC 的防火牆預設拒絕所有輸入連線，所以要建立一條防火牆規則，允許這個範圍連到後端的服務連接埠；否則所有後端都會被判定為不健康。
+</Callout>
+
+### 代管執行個體群組（MIG）
+
+**代管執行個體群組**是一組從同一個**執行個體範本**建立的 VM，適合無狀態的網站前端或批次工作。
+
+- **自動調度**（autoscaling）：開啟後，自動調度器預設依 **CPU 使用率**增減 VM，例如目標 0.6 代表維持平均 60%。另外要設定最少和最多副本數。
+- **自動修復**（autohealing）：群組裡的 VM 停止、當機或被群組以外的操作刪除時，MIG 會用**相同的名稱和範本**自動重建它；再設定**應用程式的健康檢查**，應用程式沒有回應的 VM 也會被重建。
+- **區域 MIG**：把 VM 分散在一個區域的多個可用區，一個可用區故障時其他可用區繼續服務。
+- 另外也有**非代管執行個體群組**，可以把一批設定不同的 VM 放進負載平衡器，但沒有自動調度和自動修復。
+
+**常用指令**
+
+```bash
+# 執行個體範本與 MIG
+gcloud compute instance-templates create web-template --machine-type=e2-small --tags=http-server
+gcloud compute instance-groups managed create web-mig --template=web-template --size=2 --zone=asia-east1-b
+gcloud compute instance-groups managed set-autoscaling web-mig --zone=asia-east1-b \
+  --min-num-replicas=2 --max-num-replicas=5 --target-cpu-utilization=0.6
+gcloud compute instance-groups managed set-named-ports web-mig --named-ports=http:80 --zone=asia-east1-b
+
+# 允許健康檢查的探測
+gcloud compute firewall-rules create allow-health-check --allow=tcp:80 --source-ranges=35.191.0.0/16 --target-tags=http-server
+
+# 健康檢查、後端服務、URL 對應、proxy、轉送規則
+gcloud compute health-checks create http web-hc --port=80
+gcloud compute backend-services create web-backend --protocol=HTTP --port-name=http --health-checks=web-hc --load-balancing-scheme=EXTERNAL_MANAGED --global
+gcloud compute backend-services add-backend web-backend --instance-group=web-mig --instance-group-zone=asia-east1-b --global
+gcloud compute url-maps create web-map --default-service=web-backend
+gcloud compute target-http-proxies create web-proxy --url-map=web-map
+gcloud compute forwarding-rules create web-rule --load-balancing-scheme=EXTERNAL_MANAGED --global --target-http-proxy=web-proxy --ports=80
+
+# 查看後端的健康狀態
+gcloud compute backend-services get-health web-backend --global
+```
+
+</Provider>
+</ProviderTabs>
+
+## 兩個平台的差異
+
+<Compare />
+
+組成的名稱不同，但概念是對應的：AWS 的**目標群組**加上健康檢查，約等於 GCP 的**後端服務**加上**健康檢查**；AWS 的**接聽程式**和規則，約等於 GCP 的**轉送規則、proxy 和 URL 對應**。最大的差別是**範圍**：AWS 的負載平衡器屬於一個 Region，GCP 的全域負載平衡器可以用一個 IP 服務多個區域。
+
+## 重點整理
+
+- 負載平衡器提供單一入口，把流量分給多台機器，只送給健康檢查通過的機器。
+- 機器分散在多個可用區，才能撐過一個可用區故障。
+- 網站和 API 用第 7 層（HTTP）負載平衡；非 HTTP 或需要極高效能時用第 4 層。
+- 自動擴展用最小、最大、期望值控制數量；目標追蹤像恆溫器一樣維持指標在目標值。
+- 自動擴展的群組會替換故障的機器，所以應用程式要無狀態，機器都從同一個範本建立。
+- AWS：ALB + 目標群組 + 接聽程式，搭配 Auto Scaling 群組與啟動範本；ALB 至少要兩個可用區。
+- GCP：轉送規則 → proxy → URL 對應 → 後端服務 → MIG；別忘了防火牆要允許 `35.191.0.0/16` 的健康檢查。

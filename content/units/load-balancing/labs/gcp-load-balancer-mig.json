@@ -1,0 +1,109 @@
+{
+  "id": "gcp-load-balancer-mig",
+  "title": "建立 MIG 與外部 HTTP 負載平衡器",
+  "description": "用執行個體範本建立代管執行個體群組並開啟自動調度，開放健康檢查的防火牆，再一層層組出外部 HTTP 負載平衡器，最後刪掉一台 VM，看 MIG 自動重建。",
+  "provider": "gcp",
+  "estimatedMinutes": 25,
+  "initialState": {
+    "files": {},
+    "cloud": {}
+  },
+  "steps": [
+    {
+      "instruction": "建立執行個體範本 web-template：機器類型 e2-small，加上網路標記 http-server。",
+      "hint": "gcloud compute instance-templates create web-template --machine-type=e2-small --tags=http-server",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "instanceTemplates",
+          "web-template",
+          "tags",
+          "http-server"
+        ],
+        "exists": true
+      }
+    },
+    {
+      "instruction": "在 asia-east1-b 用 web-template 建立代管執行個體群組 web-mig，大小 2，並設定具名連接埠 http:80。用 gcloud compute instances list 看看建立了哪些 VM。",
+      "hint": "gcloud compute instance-groups managed create web-mig --template=web-template --size=2 --zone=asia-east1-b，然後 gcloud compute instance-groups managed set-named-ports web-mig --named-ports=http:80 --zone=asia-east1-b",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "migs",
+          "web-mig",
+          "namedPorts",
+          "http"
+        ],
+        "equals": 80
+      }
+    },
+    {
+      "instruction": "開啟自動調度：最少 2 台、最多 5 台，目標 CPU 使用率 60%。",
+      "hint": "gcloud compute instance-groups managed set-autoscaling web-mig --zone=asia-east1-b --min-num-replicas=2 --max-num-replicas=5 --target-cpu-utilization=0.6",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "migs",
+          "web-mig",
+          "autoscaler"
+        ],
+        "equals": {
+          "min": 2,
+          "max": 5,
+          "cpu": 0.6
+        }
+      }
+    },
+    {
+      "instruction": "建立 HTTP 健康檢查 web-hc（連接埠 80），以及後端服務 web-backend（全域、EXTERNAL_MANAGED），把 web-mig 加進去。用 get-health 看看後端是否健康；如果都是 UNHEALTHY，想想健康檢查的請求從哪裡來，建立防火牆規則 allow-health-check 解決它。",
+      "hint": "gcloud compute health-checks create http web-hc --port=80；gcloud compute backend-services create web-backend --protocol=HTTP --port-name=http --health-checks=web-hc --load-balancing-scheme=EXTERNAL_MANAGED --global；gcloud compute backend-services add-backend web-backend --instance-group=web-mig --instance-group-zone=asia-east1-b --global；gcloud compute firewall-rules create allow-health-check --allow=tcp:80 --source-ranges=35.191.0.0/16 --target-tags=http-server",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "backendServices",
+          "web-backend",
+          "healthyInstances"
+        ],
+        "equals": 2
+      }
+    },
+    {
+      "instruction": "完成負載平衡器的前端：URL 對應 web-map（預設送到 web-backend）、目標 HTTP proxy web-proxy、全域轉送規則 web-rule（連接埠 80）。用 gcloud compute forwarding-rules describe web-rule --global 看看對外的 IP。",
+      "hint": "gcloud compute url-maps create web-map --default-service=web-backend；gcloud compute target-http-proxies create web-proxy --url-map=web-map；gcloud compute forwarding-rules create web-rule --load-balancing-scheme=EXTERNAL_MANAGED --global --target-http-proxy=web-proxy --ports=80",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "forwardingRules",
+          "web-rule",
+          "serving"
+        ],
+        "equals": true
+      }
+    },
+    {
+      "instruction": "模擬故障：用 gcloud compute instance-groups managed list-instances web-mig --zone=asia-east1-b 找一台 VM，直接刪除它，再列一次看看。",
+      "hint": "gcloud compute instances delete 某台VM的名稱 --zone=asia-east1-b",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "migs",
+          "web-mig",
+          "recreated"
+        ],
+        "equals": 1
+      }
+    }
+  ]
+}

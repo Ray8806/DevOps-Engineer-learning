@@ -24,7 +24,9 @@ const HELP = `可用的指令：
   Git         git init | status | add | commit | log | branch | switch | checkout | merge
   AWS         aws s3 mb | rb | ls | cp | mv | rm
               aws iam  使用者、群組、角色與政策（輸入 aws iam 看完整清單）
-              aws ec2  安全群組、執行個體、EBS 磁碟區與快照、VPC、子網路、閘道與路由表（輸入 aws ec2 看完整清單）
+              aws ec2  安全群組、執行個體、啟動範本、EBS 磁碟區與快照、VPC、子網路、閘道與路由表（輸入 aws ec2 看完整清單）
+              aws elbv2  目標群組、Application Load Balancer、接聽程式（輸入 aws elbv2 看完整清單）
+              aws autoscaling  Auto Scaling 群組與目標追蹤政策（輸入 aws autoscaling 看完整清單）
               aws lambda create-function | invoke | get-function | list-functions | update-function-configuration | update-function-code | delete-function
               aws rds  資料庫子網路群組、執行個體、唯讀複本與快照（輸入 aws rds 看完整清單）
               aws dynamodb create-table | describe-table | list-tables | put-item | get-item | query | scan | delete-item | update-time-to-live | delete-table
@@ -35,6 +37,8 @@ const HELP = `可用的指令：
               gcloud compute instances create | list | describe | stop | start | delete | add-tags | attach-disk | detach-disk
               gcloud compute disks create | list | describe | resize | snapshot | delete，snapshots create | list | describe | delete
               gcloud compute firewall-rules create | list | delete
+              gcloud compute instance-templates，instance-groups managed create | list | describe | list-instances | resize | set-autoscaling | set-named-ports | delete
+              gcloud compute health-checks create http，backend-services create | add-backend | get-health，url-maps，target-http-proxies，forwarding-rules
               gcloud compute networks create | list | describe | delete
               gcloud compute networks subnets create | list | describe | delete
               gcloud compute routers create | list | describe | delete，routers nats create | list | delete

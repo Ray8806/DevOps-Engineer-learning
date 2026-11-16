@@ -1,0 +1,152 @@
+{
+  "id": "aws-alb-auto-scaling",
+  "title": "建立 ALB 與 Auto Scaling 群組",
+  "description": "在已經準備好的 VPC（兩個可用區各一個公有子網路）裡，建立啟動範本、目標群組、Application Load Balancer 與 Auto Scaling 群組，設定目標追蹤，最後故意終止一台執行個體，看群組自動補上。ARN 很長，可以用滑鼠選取複製。",
+  "provider": "aws",
+  "estimatedMinutes": 25,
+  "initialState": {
+    "files": {},
+    "cloud": {
+      "aws": {
+        "vpcs": {
+          "vpc-0f3c2a1b9d8e7c6b5": {
+            "cidr": "10.0.0.0/16",
+            "internetGateway": true,
+            "subnets": {
+              "subnet-0a1b2c3d4e5f60718": {
+                "cidr": "10.0.1.0/24",
+                "availabilityZone": "us-east-1a"
+              },
+              "subnet-0b2c3d4e5f6071829": {
+                "cidr": "10.0.2.0/24",
+                "availabilityZone": "us-east-1b"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "steps": [
+    {
+      "instruction": "建立啟動範本 web-template：AMI 用 ami-0abcdef1234567890，執行個體類型 t3.micro。",
+      "hint": "aws ec2 create-launch-template --launch-template-name web-template --launch-template-data '{\"ImageId\": \"ami-0abcdef1234567890\", \"InstanceType\": \"t3.micro\"}'",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "ec2",
+          "launchTemplates",
+          "web-template",
+          "instanceType"
+        ],
+        "equals": "t3.micro"
+      }
+    },
+    {
+      "instruction": "在 VPC vpc-0f3c2a1b9d8e7c6b5 建立目標群組 web-tg：HTTP、連接埠 80，健康檢查路徑 /health。",
+      "hint": "aws elbv2 create-target-group --name web-tg --protocol HTTP --port 80 --vpc-id vpc-0f3c2a1b9d8e7c6b5 --health-check-path /health",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "elbv2",
+          "targetGroups",
+          "web-tg",
+          "healthCheckPath"
+        ],
+        "equals": "/health"
+      }
+    },
+    {
+      "instruction": "用兩個可用區的子網路建立 Application Load Balancer web-alb。子網路 ID 可以用 aws ec2 describe-subnets 查詢。（試試看只給一個子網路會怎樣。）",
+      "hint": "aws elbv2 create-load-balancer --name web-alb --subnets subnet-0a1b2c3d4e5f60718 subnet-0b2c3d4e5f6071829",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "elbv2",
+          "loadBalancers",
+          "web-alb",
+          "availabilityZones"
+        ],
+        "equals": {
+          "us-east-1a": true,
+          "us-east-1b": true
+        }
+      }
+    },
+    {
+      "instruction": "替 web-alb 建立 HTTP 80 的接聽程式，把流量轉給 web-tg。",
+      "hint": "aws elbv2 create-listener --load-balancer-arn web-alb的ARN --protocol HTTP --port 80 --default-actions Type=forward,TargetGroupArn=web-tg的ARN",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "elbv2",
+          "loadBalancers",
+          "web-alb",
+          "listeners",
+          "HTTP:80"
+        ],
+        "equals": "web-tg"
+      }
+    },
+    {
+      "instruction": "建立 Auto Scaling 群組 web-asg：用 web-template，最少 2、最多 4、期望 2，放在兩個子網路，執行個體註冊到 web-tg，並使用 ELB 健康檢查（寬限期 300 秒）。建立後用 aws elbv2 describe-target-health 看看目標是否健康。",
+      "hint": "aws autoscaling create-auto-scaling-group --auto-scaling-group-name web-asg --launch-template LaunchTemplateName=web-template --min-size 2 --max-size 4 --desired-capacity 2 --vpc-zone-identifier \"subnet-0a1b2c3d4e5f60718,subnet-0b2c3d4e5f6071829\" --target-group-arns web-tg的ARN --health-check-type ELB --health-check-grace-period 300",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "elbv2",
+          "targetGroups",
+          "web-tg",
+          "healthyTargets"
+        ],
+        "equals": 2
+      }
+    },
+    {
+      "instruction": "加上目標追蹤政策 cpu50，讓群組的平均 CPU 使用率維持在 50%。",
+      "hint": "aws autoscaling put-scaling-policy --auto-scaling-group-name web-asg --policy-name cpu50 --policy-type TargetTrackingScaling --target-tracking-configuration '{\"PredefinedMetricSpecification\": {\"PredefinedMetricType\": \"ASGAverageCPUUtilization\"}, \"TargetValue\": 50.0}'",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "autoscaling",
+          "groups",
+          "web-asg",
+          "policies",
+          "cpu50"
+        ],
+        "equals": {
+          "metric": "ASGAverageCPUUtilization",
+          "target": 50
+        }
+      }
+    },
+    {
+      "instruction": "模擬故障：從 aws autoscaling describe-auto-scaling-groups 的輸出找一個 InstanceId，把它終止。再查一次群組，看看執行個體 ID 有什麼變化。",
+      "hint": "aws ec2 terminate-instances --instance-ids 群組裡的某個執行個體ID，然後 aws autoscaling describe-auto-scaling-groups",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "autoscaling",
+          "groups",
+          "web-asg",
+          "replacedInstances"
+        ],
+        "equals": 1
+      }
+    }
+  ]
+}
