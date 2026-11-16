@@ -1,0 +1,185 @@
+## 為什麼需要監控
+
+服務上線之後，你需要回答三個問題：
+
+1. **現在正常嗎？** CPU 是不是快滿了、錯誤是不是變多了、網站還連得上嗎？
+2. **出事了，誰會知道？** 總不能等使用者來抱怨才發現。
+3. **為什麼會出事？是誰改了什麼？** 要有記錄才能找出原因。
+
+雲端平台用幾種工具回答這些問題：
+
+| 工具 | 回答的問題 | 例子 |
+|---|---|---|
+| **指標**（metric） | 數字隨時間怎麼變化 | CPU 使用率、每分鐘的請求數、錯誤率 |
+| **警示**（alarm／alert） | 指標超過門檻時通知誰 | CPU 連續 10 分鐘超過 80% 就寄信給值班人員 |
+| **日誌**（log） | 程式在什麼時間輸出了什麼訊息 | `ERROR payment gateway timeout` |
+| **稽核記錄**（audit log） | 誰在什麼時間對雲端資源做了什麼操作 | 某位使用者刪除了一個 bucket |
+
+## 指標
+
+指標是**一連串帶時間的數字**，每個數字叫做一個資料點。雲端服務會自動送出很多指標，例如虛擬機的 CPU 使用率、網路流量、負載平衡器的請求數。
+
+看指標時通常會做**統計**：在一段**期間**（period）內取平均、總和、最大值等。例如「每 5 分鐘的平均 CPU 使用率」。
+
+<Callout title="虛擬機裡面的指標要裝代理程式">
+雲端平台從虛擬機外面看得到 CPU、網路、磁碟讀寫，但看不到**作業系統裡面**的資訊，例如記憶體用了多少、磁碟空間還剩多少。要收集這些，得在虛擬機上安裝代理程式：AWS 是 **CloudWatch agent**，GCP 是 **Ops Agent**。
+</Callout>
+
+## 警示
+
+警示持續看著一個指標，在指標超過門檻時採取動作，最常見的是**發通知**。設定警示要決定：
+
+- 看哪個指標、用什麼統計方式，例如平均 CPU 使用率。
+- 門檻和比較方式，例如大於 80。
+- 要持續多久才算數，例如**連續 2 個 5 分鐘的期間**都超過。只超過一下下就叫醒值班人員，很快就沒人想理警示了。
+- 觸發後通知誰。
+
+## 日誌
+
+日誌是程式、作業系統或雲端服務輸出的**文字記錄**，每一筆都有時間。出事時，你會用關鍵字（例如 `ERROR`）或嚴重程度篩選日誌，找出發生了什麼事。
+
+日誌集中存到雲端的好處：
+
+- 虛擬機被自動擴展刪掉之後，它的日誌還在。
+- 可以一次搜尋很多台機器的日誌。
+- 可以從日誌**算出指標**，例如「每分鐘出現幾次 ERROR」，再對它設警示。
+
+日誌也要花錢儲存，所以要決定**保留多久**：太短，出事時找不到證據；太長，付了不必要的儲存費用。法規或公司政策常常規定最少要保留多久。
+
+## 稽核記錄
+
+應用程式的日誌記錄**程式做了什麼**，稽核記錄則記錄**人或程式對雲端資源做了什麼**：誰、在什麼時間、從哪裡、呼叫了哪個 API、對哪個資源。資源被誤刪、設定被改掉、懷疑帳號被盜用時，第一個要查的就是稽核記錄。
+
+## 在兩個平台上怎麼做
+
+<ProviderTabs>
+<Provider name="aws">
+
+### Amazon CloudWatch
+
+CloudWatch 收集 AWS 資源和應用程式的指標，並提供警示和儀表板。
+
+- 指標依**命名空間**分類，例如 EC2 的指標在 `AWS/EC2`；用**維度**區分是哪個資源，例如 `InstanceId`。
+- 指標資料保留 15 個月。
+- EC2 預設是**基本監控**，每 5 分鐘送一次資料；開啟**詳細監控**（要另外付費）可以每 1 分鐘送一次。
+
+**警示的狀態**
+
+| 狀態 | 意思 |
+|---|---|
+| `OK` | 指標在門檻內 |
+| `ALARM` | 指標超出門檻 |
+| `INSUFFICIENT_DATA` | 剛建立、資料不夠，還無法判斷 |
+
+警示的動作通常是通知一個 **Amazon SNS 主題**，訂閱這個主題的電子郵件、簡訊或其他服務就會收到通知。用電子郵件訂閱時，收件人要先點信中的連結**確認訂閱**，在那之前訂閱的狀態是 `PendingConfirmation`，收不到通知。
+
+### CloudWatch Logs
+
+- **記錄事件**（log event）：一筆記錄，有時間和訊息。
+- **記錄串流**（log stream）：來自同一個來源（例如同一台機器）的一連串事件。
+- **記錄群組**（log group）：一組設定相同的串流，保留期限、權限都設定在群組上。
+
+記錄群組**預設永久保留**。用保留政策設定保留天數，只能選固定的值，例如 1、3、5、7、14、30、60、90、180、365 天等。
+
+**篩選模式**（filter pattern）用來搜尋記錄，也用在**指標篩選器**（metric filter）上，把符合的記錄算成 CloudWatch 指標。篩選模式**區分大小寫**：`ERROR` 找不到 `error`。
+
+### AWS CloudTrail
+
+CloudTrail 記錄 AWS 帳戶裡的操作，不論是從主控台、CLI 還是 SDK 發出的。
+
+- **事件歷史記錄**（Event history）預設就開啟、不用額外付費，可以查詢最近 **90 天**的**管理事件**（建立、修改、刪除資源這類操作）。
+- 要保留超過 90 天，或要記錄**資料事件**（例如讀寫 S3 物件，預設不記錄），要建立**追蹤**（trail），把事件送到 S3 bucket。
+
+```bash
+# 建立 SNS 主題，用電子郵件訂閱（收件人要點信中的連結確認）
+aws sns create-topic --name ops-alerts
+aws sns subscribe --topic-arn arn:aws:sns:us-east-1:123456789012:ops-alerts \
+  --protocol email --notification-endpoint ops@example.com
+
+# CPU 連續 2 個 5 分鐘的平均都超過 80% 就通知 ops-alerts
+aws cloudwatch put-metric-alarm --alarm-name high-cpu \
+  --namespace AWS/EC2 --metric-name CPUUtilization --statistic Average \
+  --period 300 --evaluation-periods 2 --threshold 80 \
+  --comparison-operator GreaterThanThreshold \
+  --dimensions Name=InstanceId,Value=i-0123456789abcdef0 \
+  --alarm-actions arn:aws:sns:us-east-1:123456789012:ops-alerts
+
+# 搜尋記錄、設定保留 30 天
+aws logs filter-log-events --log-group-name /app/web --filter-pattern ERROR
+aws logs put-retention-policy --log-group-name /app/web --retention-in-days 30
+
+# 誰刪除了 bucket？
+aws cloudtrail lookup-events --lookup-attributes AttributeKey=EventName,AttributeValue=DeleteBucket
+```
+
+</Provider>
+<Provider name="gcp">
+
+### Cloud Monitoring
+
+Cloud Monitoring 自動收集大部分 Google Cloud 服務的指標，在 VM 上安裝 **Ops Agent** 可以再收集作業系統裡的指標和日誌。
+
+- **快訊政策**（alerting policy）：指標符合條件、並且持續一段時間，就送通知到**通知管道**（notification channel），例如電子郵件。
+- **正常運作時間檢查**（uptime check）：Google 從世界各地定期連到你的網站或服務，確認它還能回應。預設每 1 分鐘檢查一次。
+
+### Cloud Logging
+
+記錄項目（log entry）進入 Cloud Logging 後，由**記錄路由器**（Log Router）依照**接收器**（sink）的規則決定存到哪裡。每個專案預設有兩個記錄 bucket：
+
+| 記錄 bucket | 存什麼 | 保留期限 |
+|---|---|---|
+| `_Required` | 管理員活動稽核記錄等必要的記錄 | 固定 400 天，不能更改 |
+| `_Default` | 其他大部分記錄 | 預設 30 天，可以設定 1 到 3650 天 |
+
+- 用**記錄查詢語言**篩選，例如 `severity>=ERROR`、`resource.type="gce_instance"`。
+- **記錄型指標**（log-based metric）把符合篩選條件的記錄算成指標，就能在 Cloud Monitoring 對它設快訊。
+- **接收器**可以把記錄另外送到 Cloud Storage（長期封存）、BigQuery（分析）、Pub/Sub（給其他程式處理）。接收器有自己的**寫入者身分**（服務帳戶），要給它目的地的寫入權限。
+
+### Cloud Audit Logs
+
+稽核記錄也存在 Cloud Logging 裡：
+
+- **管理員活動**（Admin Activity）記錄：建立、修改資源設定這類操作，**一律寫入**，不能關閉。
+- **資料存取**（Data Access）記錄：讀取資源設定或資料的操作，**預設關閉**（BigQuery 除外），因為量可能非常大。
+
+```bash
+# 查詢錯誤以上的記錄
+gcloud logging read 'severity>=ERROR' --limit=10
+
+# 把 ERROR 記錄算成指標
+gcloud logging metrics create error_count \
+  --description="Number of error logs" --log-filter='severity>=ERROR'
+
+# _Default bucket 改成保留 60 天
+gcloud logging buckets update _Default --location=global --retention-days=60
+
+# 把 WARNING 以上的記錄封存到 Cloud Storage
+gcloud logging sinks create archive-sink storage.googleapis.com/my-log-archive \
+  --log-filter='severity>=WARNING'
+
+# 正常運作時間檢查與快訊政策
+gcloud monitoring uptime create web-uptime \
+  --resource-type=uptime-url --resource-labels=host=example.com
+gcloud monitoring policies create --display-name="Too many errors" \
+  --condition-display-name="error_count > 5" \
+  --condition-filter='metric.type="logging.googleapis.com/user/error_count"' \
+  --if='> 5' --duration=60s
+```
+
+</Provider>
+</ProviderTabs>
+
+## 兩個平台的差異
+
+<Compare />
+
+兩個平台都把「指標 + 警示」和「日誌」分開，但組織方式不同：AWS 的日誌依**記錄群組**管理，每個群組各自設定保留期限，預設永久保留；GCP 的日誌由**記錄路由器**送進**記錄 bucket**，保留期限設定在 bucket 上，預設 30 天。稽核記錄也一樣：AWS 用獨立的 CloudTrail 服務，GCP 的稽核記錄則直接是 Cloud Logging 裡的一種記錄。
+
+## 重點整理
+
+- 指標是帶時間的數字；警示在指標持續超過門檻時發通知。門檻和持續時間要設得合理，避免一直誤報。
+- 虛擬機裡面的記憶體、磁碟空間等資訊，要安裝代理程式才收得到（CloudWatch agent、Ops Agent）。
+- 日誌集中存放，機器刪掉也找得到；可以從日誌算出指標，再對它設警示。
+- 依需求設定日誌的保留期限：AWS 記錄群組預設永久保留；GCP `_Default` 預設 30 天、`_Required` 固定 400 天。
+- AWS：CloudWatch 警示 → SNS 主題 → 電子郵件（要先確認訂閱）；CloudWatch Logs 的篩選模式區分大小寫。
+- 稽核記錄回答「誰做了什麼」：CloudTrail 事件歷史記錄可查最近 90 天的管理事件；GCP 管理員活動記錄一律寫入，資料存取記錄預設關閉。

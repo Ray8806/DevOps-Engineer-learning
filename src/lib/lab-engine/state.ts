@@ -70,6 +70,12 @@ export interface AwsState {
     listeners: Map<string, { loadBalancer: string; protocol: string; port: number; targetGroup: string }>;
   };
   autoscaling: { groups: Map<string, AutoScalingGroup> };
+  /** SNS topics by name; subscriptions keyed "protocol:endpoint" -> status. */
+  sns: { topics: Map<string, { subscriptions: Map<string, string> }> };
+  cloudwatch: { alarms: Map<string, CloudWatchAlarm> };
+  logs: { groups: Map<string, LogGroup> };
+  /** CloudTrail event history (seeded by the lab). */
+  cloudtrail: { events: TrailEvent[] };
   rds: {
     subnetGroups: Map<string, { description: string; subnetIds: string[] }>;
     instances: Map<string, RdsInstance>;
@@ -111,6 +117,45 @@ export interface AutoScalingGroup {
   policies: Map<string, { metric: string; target: number }>;
   /** Unhealthy instances the group has replaced. */
   replaced: number;
+}
+
+export interface CloudWatchAlarm {
+  namespace: string;
+  metricName: string;
+  statistic: string;
+  period: number;
+  evaluationPeriods: number;
+  threshold: number;
+  comparisonOperator: string;
+  dimensions: Record<string, string>;
+  /** SNS topic names notified when the alarm goes to ALARM. */
+  alarmActions: string[];
+  state: "OK" | "ALARM" | "INSUFFICIENT_DATA";
+}
+
+export interface LogGroup {
+  /** null means never expire (the default). */
+  retentionInDays: number | null;
+  events: { stream: string; timestamp: number; message: string }[];
+  /** Filter patterns used with filter-log-events, so labs can check a search was run. */
+  searches: Set<string>;
+  metricFilters: Map<string, { pattern: string; metricName: string; metricNamespace: string }>;
+}
+
+export interface TrailEvent {
+  eventName: string;
+  username: string;
+  eventSource: string;
+  resourceName: string;
+  eventTime: string;
+}
+
+export interface LogEntry {
+  severity: string;
+  resourceType: string;
+  logName: string;
+  text: string;
+  timestamp: string;
 }
 
 export interface ManagedInstanceGroup {
@@ -256,6 +301,20 @@ export interface GcpState {
   urlMaps: Map<string, { defaultService: string }>;
   httpProxies: Map<string, { urlMap: string }>;
   forwardingRules: Map<string, { target: string; port: number; ipAddress: string }>;
+  logging: {
+    entries: LogEntry[];
+    /** Normalised filters used with `gcloud logging read`. */
+    queries: Set<string>;
+    metrics: Map<string, { filter: string; description: string }>;
+    /** Log buckets: _Required and _Default exist in every project. */
+    buckets: Map<string, { retentionDays: number; locked: boolean }>;
+    sinks: Map<string, { destination: string; filter: string }>;
+  };
+  monitoring: {
+    uptimeChecks: Map<string, { resourceType: string; host: string; path: string; period: number }>;
+    /** Alert policies by display name. */
+    policies: Map<string, { conditionFilter: string; comparison: string; threshold: number | null; duration: string; channels: string[] }>;
+  };
 }
 
 export interface LabState {
@@ -399,9 +458,35 @@ function awsFrom(cloud: Record<string, unknown>): AwsState {
     dynamodb: { tables: new Map() },
     elbv2: { targetGroups: new Map(), loadBalancers: new Map(), listeners: new Map() },
     autoscaling: { groups: new Map() },
+    sns: { topics: new Map() },
+    cloudwatch: { alarms: new Map() },
+    logs: { groups: new Map() },
+    cloudtrail: { events: [] },
     vpc: { vpcs: new Map(), subnets: new Map(), internetGateways: new Map(), routeTables: new Map() },
     rds: { subnetGroups: new Map(), instances: new Map(), snapshots: new Map() },
   };
+  // { logs: { "/app/web": [{ stream, message }] }, cloudtrail: [{ eventName, username, eventSource, resourceName, eventTime }] }
+  const awsSeed = isRecord(cloud.aws) ? cloud.aws : {};
+  if (isRecord(awsSeed.logs)) {
+    for (const [group, events] of Object.entries(awsSeed.logs)) {
+      const list = Array.isArray(events) ? events.filter(isRecord) : [];
+      aws.logs.groups.set(group, {
+        retentionInDays: null,
+        events: list.map((e, i) => ({ stream: String(e.stream ?? "app"), timestamp: 1763251200000 + i * 60000, message: String(e.message ?? "") })),
+        searches: new Set(),
+        metricFilters: new Map(),
+      });
+    }
+  }
+  if (Array.isArray(awsSeed.cloudtrail)) {
+    aws.cloudtrail.events = awsSeed.cloudtrail.filter(isRecord).map((e) => ({
+      eventName: String(e.eventName ?? ""),
+      username: String(e.username ?? ""),
+      eventSource: String(e.eventSource ?? ""),
+      resourceName: String(e.resourceName ?? ""),
+      eventTime: String(e.eventTime ?? "2026-11-15T00:00:00Z"),
+    }));
+  }
   const seed = isRecord(cloud.aws) && isRecord(cloud.aws.vpcs) ? cloud.aws.vpcs : {};
   for (const [vpcId, raw] of Object.entries(seed)) {
     if (!isRecord(raw) || typeof raw.cidr !== "string") continue;
@@ -465,6 +550,25 @@ function gcpFrom(cloud: Record<string, unknown>): GcpState {
     urlMaps: new Map(),
     httpProxies: new Map(),
     forwardingRules: new Map(),
+    logging: {
+      // { gcp: { logs: [{ severity, resourceType, logName, text, timestamp }] } }
+      entries: (Array.isArray(gcp.logs) ? gcp.logs.filter(isRecord) : []).map((e, i) => ({
+        severity: String(e.severity ?? "INFO"),
+        resourceType: String(e.resourceType ?? "gce_instance"),
+        logName: String(e.logName ?? "syslog"),
+        text: String(e.text ?? ""),
+        timestamp: String(e.timestamp ?? `2026-11-16T08:${String(i % 60).padStart(2, "0")}:00Z`),
+      })),
+      queries: new Set(),
+      metrics: new Map(),
+      // Default retention: _Required 400 days (fixed), _Default 30 days.
+      buckets: new Map([
+        ["_Required", { retentionDays: 400, locked: true }],
+        ["_Default", { retentionDays: 30, locked: false }],
+      ]),
+      sinks: new Map(),
+    },
+    monitoring: { uptimeChecks: new Map(), policies: new Map() },
   };
 }
 
@@ -734,6 +838,35 @@ function awsView(aws: AwsState) {
     vpcs: vpcsView(aws.vpc),
     rds: rdsView(aws),
     lambda: lambdaView(aws),
+    sns: { topics: Object.fromEntries([...aws.sns.topics].map(([n, t]) => [n, { subscriptions: Object.fromEntries(t.subscriptions) }])) },
+    cloudwatch: {
+      alarms: Object.fromEntries(
+        [...aws.cloudwatch.alarms].map(([n, a]) => {
+          const ops: Record<string, string> = { GreaterThanThreshold: ">", GreaterThanOrEqualToThreshold: ">=", LessThanThreshold: "<", LessThanOrEqualToThreshold: "<=" };
+          return [
+            n,
+            {
+              namespace: a.namespace,
+              metricName: a.metricName,
+              statistic: a.statistic,
+              // A readable summary, e.g. "CPUUtilization > 80 for 2 x 300s".
+              condition: `${a.metricName} ${ops[a.comparisonOperator]} ${a.threshold} for ${a.evaluationPeriods} x ${a.period}s`,
+              dimensions: a.dimensions,
+              notifies: keysTrue(a.alarmActions),
+              state: a.state,
+            },
+          ];
+        }),
+      ),
+    },
+    logs: {
+      groups: Object.fromEntries(
+        [...aws.logs.groups].map(([n, g]) => [
+          n,
+          { retentionInDays: g.retentionInDays, eventCount: g.events.length, searches: keysTrue(g.searches), metricFilters: plain(g.metricFilters) },
+        ]),
+      ),
+    },
     dynamodb: {
       tables: Object.fromEntries(
         [...aws.dynamodb.tables].map(([name, t]) => [
@@ -842,6 +975,21 @@ function gcpView(state: LabState) {
         ]),
       ),
     },
+    logging: {
+      queries: keysTrue(gcp.logging.queries),
+      metrics: Object.fromEntries([...gcp.logging.metrics].map(([n, m]) => [n, { filter: m.filter }])),
+      buckets: Object.fromEntries([...gcp.logging.buckets].map(([n, b]) => [n, { retentionDays: b.retentionDays }])),
+      sinks: Object.fromEntries([...gcp.logging.sinks].map(([n, x]) => [n, { destination: x.destination, filter: x.filter }])),
+    },
+    monitoring: {
+      uptimeChecks: Object.fromEntries([...gcp.monitoring.uptimeChecks].map(([n, u]) => [n, { host: u.host, path: u.path, period: u.period }])),
+      policies: Object.fromEntries(
+        [...gcp.monitoring.policies].map(([n, p]) => [
+          n,
+          { conditionFilter: p.conditionFilter, condition: `${p.comparison}${p.threshold === null ? "" : ` ${p.threshold}`} for ${p.duration}` },
+        ]),
+      ),
+    },
     sql: {
       instances: Object.fromEntries(
         [...gcp.sql.instances].map(([name, i]) => [
@@ -917,6 +1065,11 @@ function repoView(state: LabState, root: string, repo: GitRepo) {
  *   cloud.gcp.instanceTemplates[name], cloud.gcp.migs[name].{zone, template, targetSize, size, namedPorts[name], autoscaler, recreated},
  *   cloud.gcp.backendServices[name].{portName, healthCheck, backends[mig], healthyInstances},
  *   cloud.gcp.forwardingRules[name].{ipAddress, port, backendService, serving},
+ *   cloud.aws.sns.topics[name].subscriptions["protocol:endpoint"] = status,
+ *   cloud.aws.cloudwatch.alarms[name].{namespace, metricName, statistic, condition, dimensions, notifies[topic], state},
+ *   cloud.aws.logs.groups[name].{retentionInDays, eventCount, searches[pattern], metricFilters[name]},
+ *   cloud.gcp.logging.{queries[filter], metrics[name].filter, buckets[id].retentionDays, sinks[name].{destination, filter}},
+ *   cloud.gcp.monitoring.{uptimeChecks[name].{host, path, period}, policies[displayName].{conditionFilter, condition}},
  *   cloud.gcp.sql.instances[name].{databaseVersion, edition, tier, region, availabilityType, backupsEnabled,
  *     deletionProtection, masterInstanceName, databases[name], users[name], backupCount},
  *   git["~/project"].{branch, branches[name], commitCount, lastMessage,
