@@ -1,0 +1,183 @@
+## DNS：讓名稱找到你的服務
+
+在「網路基礎」學過，DNS 把 `www.example.com` 這樣的名稱轉成 IP 位址，常見的紀錄有 A、AAAA、CNAME、MX、TXT。這一單元要做的是：**自己的網域，紀錄要放在哪裡、怎麼指到雲端上的服務**。
+
+### 網域、名稱伺服器與區域
+
+1. 你向**網域註冊商**買下 `example.com`。
+2. 註冊商要知道：「`example.com` 的紀錄由哪幾台**名稱伺服器**（name server）負責回答？」
+3. 你在雲端的 DNS 服務建立一個**區域**（zone），把紀錄放在裡面。建立區域時，雲端會分配幾台名稱伺服器，並自動產生兩種紀錄：
+   - **NS 紀錄**：列出負責這個區域的名稱伺服器。
+   - **SOA 紀錄**：區域的基本資訊。
+4. 把這幾台名稱伺服器填回註冊商，全世界的 DNS 查詢就會問到你的區域。
+
+<Callout title="最常見的錯誤：建好區域卻沒改註冊商">
+在雲端建好區域、加好紀錄，網站卻還是連不到，常常是因為註冊商那邊的名稱伺服器還是舊的。區域裡的紀錄要等註冊商指過來才會生效。
+</Callout>
+
+### 網域頂點不能用 CNAME
+
+`example.com` 本身叫做**區域頂點**（zone apex）。頂點一定有 NS 和 SOA 紀錄，而 **CNAME 不能和同名的其他紀錄並存**，所以頂點不能放 CNAME。
+
+這造成一個常見的問題：CDN 或負載平衡器給你的是一個**名稱**（例如 `d111111abcdef8.cloudfront.net`），`www.example.com` 可以用 CNAME 指過去，但 `example.com` 不行。兩個平台各有解法，後面會看到。
+
+### TTL 與修改紀錄
+
+每筆紀錄都有 TTL，解析器會把答案快取這麼久。要搬家或切換服務之前，可以先把 TTL 調短，等舊的 TTL 過了再改紀錄，切換就會比較快生效。
+
+### 路由政策
+
+DNS 不一定每次都回一樣的答案。雲端的 DNS 服務可以依規則回應：
+
+| 路由政策 | 做法 | 用途 |
+|---|---|---|
+| 簡單 | 一個名稱一組值 | 一般的網站 |
+| 加權 | 依比例回應不同的值，例如 90% 舊版、10% 新版 | 新版本先給一小部分使用者試用 |
+| 容錯移轉 | 主要的不健康時改回應備援 | 災難備援 |
+| 地理位置／延遲 | 依使用者的位置或延遲回應最近的資源 | 多區域部署 |
+
+## CDN：把內容放到使用者旁邊
+
+一個放在美國的網站，台灣的使用者每次都要跨海拿圖片，又慢、又讓來源伺服器很忙。**CDN**（Content Delivery Network）在世界各地有很多**邊緣節點**，把內容**快取**在離使用者近的地方：
+
+- **快取命中**（cache hit）：邊緣節點已經有這個檔案，直接回給使用者。
+- **快取未命中**（cache miss）：邊緣節點沒有，去**來源**（origin）拿，回給使用者的同時存一份，下一個人就命中了。
+
+來源可以是物件儲存的 bucket、負載平衡器，或你自己的網頁伺服器。
+
+### 快取多久：TTL 與 Cache-Control
+
+快取的檔案會在一段時間後**過期**，過期後邊緣節點會回來源確認有沒有新版本。來源可以用 HTTP 標頭 `Cache-Control: max-age=秒數` 指定每個檔案快取多久。
+
+- 圖片、CSS、JavaScript 這類不常變的**靜態內容**適合快取久一點。
+- 每個使用者都不同的內容（例如購物車頁面）不應該被共用快取。
+
+### 更新了檔案，使用者卻看到舊的？
+
+檔案還在快取期限內，CDN 會繼續送舊版。有兩種做法：
+
+1. **清除快取**（invalidation）：要求 CDN 把某些路徑的快取作廢，例如 `/images/*`。
+2. **在檔名加上版本**：例如 `app.v2.js`。新檔名不會撞到舊快取，也能控制使用者拿到哪個版本。經常更新的檔案，AWS 建議主要用這個方法。
+
+## 在兩個平台上怎麼做
+
+<ProviderTabs>
+<Provider name="aws">
+
+### Amazon Route 53
+
+Route 53 提供網域註冊、DNS 路由和健康檢查。紀錄放在**代管區域**（hosted zone）：
+
+- **公有代管區域**：網際網路上的 DNS。
+- **私有代管區域**：只在指定的 VPC 裡生效。
+
+建立公有代管區域時，Route 53 會自動建立 **SOA 紀錄和 4 筆 NS 紀錄**。
+
+**別名紀錄**（alias record）是 Route 53 對 DNS 的擴充，可以把名稱指到 CloudFront 分配、ELB 負載平衡器、設定成靜態網站的 S3 bucket，或同一個代管區域裡的另一筆紀錄：
+
+| | 別名紀錄 | CNAME |
+|---|---|---|
+| 能不能放在頂點 | 可以 | 不行 |
+| 能指到哪裡 | 特定的 AWS 資源、同區域的紀錄 | 任何 DNS 名稱 |
+| TTL | 指到 AWS 資源時不能自己設，用資源的 TTL | 自己設 |
+| 查詢費用 | 查詢指到 AWS 資源的別名不收費 | 收費 |
+
+資源的 IP 變了（例如負載平衡器換了 IP），別名紀錄會自動跟著回應新的 IP。指到 CloudFront 的別名，`HostedZoneId` 一律填 `Z2FDTNDATAQYW2`。
+
+路由政策有簡單、容錯移轉、地理位置、地理鄰近、延遲、IP 型、多值答案和加權。加權紀錄用 `SetIdentifier` 區分，`Weight` 是 0 到 255。
+
+### Amazon CloudFront
+
+CloudFront 透過全球的**邊緣節點**傳送內容，使用者的請求會被送到延遲最低的節點。
+
+- 建立**分配**（distribution）時指定**來源**：S3 bucket、自己的 HTTP 伺服器等。CloudFront 會給分配一個像 `d111111abcdef8.cloudfront.net` 的網域名稱，也可以加上自己的網域。
+- 來源是 S3 bucket 時，建議用**來源存取控制**（OAC），bucket 本身不用公開，只讓 CloudFront 讀取。
+- 沒有使用快取政策時，**預設 TTL 是 24 小時**；來源可以用 `Cache-Control` 標頭調整個別檔案。
+- **清除快取**：每個月前 1,000 個路徑免費。一個含 `*` 萬用字元的路徑（例如 `/images/*`）只算一個路徑。路徑區分大小寫。
+
+```bash
+# 用 S3 bucket 當來源建立分配
+aws cloudfront create-distribution \
+  --origin-domain-name my-site.s3.amazonaws.com --default-root-object index.html
+
+# 清除 /images/ 底下的快取
+aws cloudfront create-invalidation --distribution-id EDFDVBD6EXAMPLE --paths "/images/*"
+
+# 建立代管區域（caller-reference 每次要不同）
+aws route53 create-hosted-zone --name example.com --caller-reference 2026-11-16-01
+
+# www.example.com 用別名指到 CloudFront
+aws route53 change-resource-record-sets --hosted-zone-id Z0EXAMPLE --change-batch '{
+  "Changes": [{"Action": "CREATE", "ResourceRecordSet": {
+    "Name": "www.example.com", "Type": "A",
+    "AliasTarget": {"HostedZoneId": "Z2FDTNDATAQYW2",
+      "DNSName": "d111111abcdef8.cloudfront.net", "EvaluateTargetHealth": false}}}]}'
+
+# 問 Route 53 會怎麼回答
+aws route53 test-dns-answer --hosted-zone-id Z0EXAMPLE --record-name www.example.com --record-type A
+```
+
+</Provider>
+<Provider name="gcp">
+
+### Cloud DNS
+
+Cloud DNS 是 Google 的代管 DNS 服務，紀錄放在**代管區域**（managed zone）：
+
+- **公開區域**：網際網路上看得到。
+- **私人區域**：只有指定的 VPC 網路看得到。
+
+建立區域時，Cloud DNS 會自動建立 **NS 和 SOA 紀錄**，不要更改 NS 紀錄的名稱和名稱伺服器清單。DNS 名稱在 Cloud DNS 裡以句點結尾，例如 `example.com.`。
+
+頂點不能放 CNAME。Cloud DNS 有自訂的 **ALIAS 紀錄**，行為像 CNAME，但只能放在頂點，也只回應 A／AAAA 查詢；外部看到的是一般的 A／AAAA 紀錄。指到 Google Cloud 的負載平衡器時，因為它有固定的 IP，頂點通常直接用 **A 紀錄**填 IP。
+
+路由政策支援加權輪詢（`WRR`）、地理位置（`GEO`）和容錯移轉（`FAILOVER`）。
+
+### Cloud CDN
+
+Cloud CDN 搭配**全域外部 Application Load Balancer**（或傳統版）使用：在負載平衡器的**後端服務**或 **backend bucket**（後端是 Cloud Storage bucket）上開啟 Cloud CDN 即可。請求先到 Google 網路邊緣的 Google Front End，有快取就直接回應。
+
+**快取模式**：
+
+| 模式 | 行為 |
+|---|---|
+| `CACHE_ALL_STATIC` | 自動快取靜態內容（圖片、影音、CSS、JavaScript）；HTML 等動態內容不快取。用 gcloud 建立的 CDN 後端預設是這個 |
+| `USE_ORIGIN_HEADERS` | 只快取來源有設定有效快取標頭的回應 |
+| `FORCE_CACHE_ALL` | 不管來源的標頭，全部快取。可能把個人化的內容快取起來，只適合公開的靜態內容 |
+
+清除快取用 `gcloud compute url-maps invalidate-cdn-cache`，路徑要以 `/` 開頭，`*` 只能放在最後。
+
+```bash
+# Cloud Storage bucket 當後端並開啟 Cloud CDN
+gcloud compute backend-buckets create static-backend \
+  --gcs-bucket-name=my-site --enable-cdn
+
+# 已有的後端服務也可以開啟
+gcloud compute backend-services update web-backend --enable-cdn --global
+
+# 清除 /images/ 底下的快取
+gcloud compute url-maps invalidate-cdn-cache static-map --path="/images/*"
+
+# 建立區域與紀錄
+gcloud dns managed-zones create lab-zone --dns-name=example.com. --description="My zone"
+gcloud dns record-sets create www.example.com. --zone=lab-zone \
+  --type=A --ttl=300 --rrdatas=34.120.0.2
+```
+
+</Provider>
+</ProviderTabs>
+
+## 兩個平台的差異
+
+<Compare />
+
+DNS 的概念兩邊幾乎一樣：區域、NS／SOA、紀錄、TTL。最大的差別是**網域頂點**：AWS 用別名紀錄直接指到 CloudFront 或負載平衡器的名稱；GCP 的負載平衡器有固定的 IP，頂點直接用 A 紀錄。CDN 的組法也不同：CloudFront 是一個獨立的服務，自己建立分配；Cloud CDN 則是負載平衡器上的一個開關。
+
+## 重點整理
+
+- 在雲端建立 DNS 區域後，要把它的名稱伺服器填回網域註冊商，紀錄才會生效。
+- 區域頂點不能放 CNAME：AWS 用別名紀錄，GCP 通常用 A 紀錄指到負載平衡器的 IP。
+- 路由政策讓 DNS 依權重、位置、健康狀態回應不同的答案。
+- CDN 把內容快取在邊緣節點：命中直接回應，未命中才回來源拿。
+- 用 `Cache-Control` 控制快取多久；要立刻更新就清除快取，或在檔名加上版本。
+- CloudFront 是獨立的分配，預設 TTL 24 小時；Cloud CDN 在負載平衡器的後端上開啟，預設快取模式是 `CACHE_ALL_STATIC`。

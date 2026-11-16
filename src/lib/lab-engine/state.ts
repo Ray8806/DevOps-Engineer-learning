@@ -3,6 +3,7 @@
  * for anything keyed by learner input, so names like "__proto__" are safe.
  */
 import { healthyBackends, ruleServing } from "./gcloud-lb";
+import { aliasTarget } from "./aws-dns-cdn";
 
 export const HOME = "/home/learner";
 
@@ -76,6 +77,10 @@ export interface AwsState {
   logs: { groups: Map<string, LogGroup> };
   /** CloudTrail event history (seeded by the lab). */
   cloudtrail: { events: TrailEvent[] };
+  /** Hosted zones by id. */
+  route53: { zones: Map<string, HostedZone>; created: number };
+  /** Distributions by id. */
+  cloudfront: { distributions: Map<string, Distribution>; created: number };
   rds: {
     subnetGroups: Map<string, { description: string; subnetIds: string[] }>;
     instances: Map<string, RdsInstance>;
@@ -140,6 +145,37 @@ export interface LogGroup {
   /** Filter patterns used with filter-log-events, so labs can check a search was run. */
   searches: Set<string>;
   metricFilters: Map<string, { pattern: string; metricName: string; metricNamespace: string }>;
+}
+
+export interface Route53Record {
+  /** Fully qualified, with the trailing dot. */
+  name: string;
+  type: string;
+  ttl: number | null;
+  values: string[];
+  setIdentifier: string | null;
+  weight: number | null;
+  alias: { hostedZoneId: string; dnsName: string; evaluateTargetHealth: boolean } | null;
+}
+
+export interface HostedZone {
+  /** Fully qualified, with the trailing dot. */
+  name: string;
+  callerReference: string;
+  comment: string;
+  nameServers: string[];
+  /** Keyed "name|type|setIdentifier". */
+  records: Map<string, Route53Record>;
+  /** test-dns-answer calls so far; rotates weighted answers. */
+  queries: number;
+}
+
+export interface Distribution {
+  domainName: string;
+  origin: string;
+  defaultRootObject: string;
+  /** Every path submitted in an invalidation, in order. */
+  invalidations: string[];
 }
 
 export interface TrailEvent {
@@ -297,8 +333,14 @@ export interface GcpState {
   instanceTemplates: Map<string, { machineType: string; tags: Set<string>; network: string }>;
   migs: Map<string, ManagedInstanceGroup>;
   healthChecks: Map<string, { port: number; path: string }>;
-  backendServices: Map<string, { protocol: string; portName: string; healthCheck: string; scheme: string; backends: Set<string> }>;
-  urlMaps: Map<string, { defaultService: string }>;
+  backendServices: Map<
+    string,
+    { protocol: string; portName: string; healthCheck: string; scheme: string; backends: Set<string>; cdn: boolean; cacheMode: string | null }
+  >;
+  /** Backend buckets: a Cloud Storage bucket behind the load balancer, optionally with Cloud CDN. */
+  backendBuckets: Map<string, { gcsBucket: string; cdn: boolean; cacheMode: string | null }>;
+  /** Exactly one of defaultService / defaultBackendBucket is set. */
+  urlMaps: Map<string, { defaultService: string | null; defaultBackendBucket: string | null; invalidations: string[] }>;
   httpProxies: Map<string, { urlMap: string }>;
   forwardingRules: Map<string, { target: string; port: number; ipAddress: string }>;
   logging: {
@@ -310,6 +352,8 @@ export interface GcpState {
     buckets: Map<string, { retentionDays: number; locked: boolean }>;
     sinks: Map<string, { destination: string; filter: string }>;
   };
+  /** Cloud DNS managed zones by name; records keyed "name|type". */
+  dns: { zones: Map<string, { dnsName: string; description: string; visibility: string; nameServers: string[]; records: Map<string, { ttl: number; rrdatas: string[] }> }> };
   monitoring: {
     uptimeChecks: Map<string, { resourceType: string; host: string; path: string; period: number }>;
     /** Alert policies by display name. */
@@ -462,6 +506,8 @@ function awsFrom(cloud: Record<string, unknown>): AwsState {
     cloudwatch: { alarms: new Map() },
     logs: { groups: new Map() },
     cloudtrail: { events: [] },
+    route53: { zones: new Map(), created: 0 },
+    cloudfront: { distributions: new Map(), created: 0 },
     vpc: { vpcs: new Map(), subnets: new Map(), internetGateways: new Map(), routeTables: new Map() },
     rds: { subnetGroups: new Map(), instances: new Map(), snapshots: new Map() },
   };
@@ -547,6 +593,7 @@ function gcpFrom(cloud: Record<string, unknown>): GcpState {
     migs: new Map(),
     healthChecks: new Map(),
     backendServices: new Map(),
+    backendBuckets: new Map(),
     urlMaps: new Map(),
     httpProxies: new Map(),
     forwardingRules: new Map(),
@@ -569,6 +616,7 @@ function gcpFrom(cloud: Record<string, unknown>): GcpState {
       sinks: new Map(),
     },
     monitoring: { uptimeChecks: new Map(), policies: new Map() },
+    dns: { zones: new Map() },
   };
 }
 
@@ -814,7 +862,8 @@ function lambdaView(aws: AwsState) {
   };
 }
 
-function awsView(aws: AwsState) {
+function awsView(state: LabState) {
+  const aws = state.aws;
   const instances = [...aws.ec2.instances.values()];
   const count = (state: string, groupId?: string) =>
     instances.filter((i) => i.state === state && (groupId === undefined || i.securityGroups.includes(groupId))).length;
@@ -857,6 +906,35 @@ function awsView(aws: AwsState) {
             },
           ];
         }),
+      ),
+    },
+    route53: {
+      zones: Object.fromEntries(
+        [...aws.route53.zones.values()].map((z) => {
+          const records = [...z.records.values()];
+          return [
+            z.name,
+            {
+              nameServerCount: z.nameServers.length,
+              records: Object.fromEntries(
+                records
+                  .filter((r) => r.setIdentifier === null)
+                  .map((r) => [`${r.name}/${r.type}`, { ttl: r.ttl, values: r.values, aliasTo: aliasTarget(state, z, r) }]),
+              ),
+              weighted: records
+                .filter((r) => r.setIdentifier !== null)
+                .reduce<Record<string, Record<string, number>>>((acc, r) => {
+                  (acc[`${r.name}/${r.type}`] ??= {})[r.setIdentifier!] = r.weight!;
+                  return acc;
+                }, {}),
+            },
+          ];
+        }),
+      ),
+    },
+    cloudfront: {
+      distributions: Object.fromEntries(
+        [...aws.cloudfront.distributions.values()].map((d) => [d.origin, { defaultRootObject: d.defaultRootObject, invalidations: keysTrue(d.invalidations) }]),
       ),
     },
     logs: {
@@ -953,7 +1031,7 @@ function gcpView(state: LabState) {
     backendServices: Object.fromEntries(
       [...gcp.backendServices].map(([n, b]) => [
         n,
-        { portName: b.portName, healthCheck: b.healthCheck, scheme: b.scheme, backends: keysTrue(b.backends), healthyInstances: healthyBackends(state, n).length },
+        { portName: b.portName, healthCheck: b.healthCheck, scheme: b.scheme, backends: keysTrue(b.backends), healthyInstances: healthyBackends(state, n).length, cdn: b.cdn, cacheMode: b.cacheMode },
       ]),
     ),
     forwardingRules: Object.fromEntries(
@@ -980,6 +1058,28 @@ function gcpView(state: LabState) {
       metrics: Object.fromEntries([...gcp.logging.metrics].map(([n, m]) => [n, { filter: m.filter }])),
       buckets: Object.fromEntries([...gcp.logging.buckets].map(([n, b]) => [n, { retentionDays: b.retentionDays }])),
       sinks: Object.fromEntries([...gcp.logging.sinks].map(([n, x]) => [n, { destination: x.destination, filter: x.filter }])),
+    },
+    backendBuckets: Object.fromEntries([...gcp.backendBuckets].map(([n, b]) => [n, { gcsBucket: b.gcsBucket, cdn: b.cdn, cacheMode: b.cacheMode }])),
+    urlMaps: Object.fromEntries(
+      [...gcp.urlMaps].map(([n, m]) => [n, { defaultService: m.defaultService, defaultBackendBucket: m.defaultBackendBucket, invalidations: keysTrue(m.invalidations) }]),
+    ),
+    dns: {
+      zones: Object.fromEntries(
+        [...gcp.dns.zones].map(([n, z]) => [
+          n,
+          {
+            dnsName: z.dnsName,
+            visibility: z.visibility,
+            records: Object.fromEntries(
+              [...z.records].map(([k, r]) => {
+                const [name, type] = k.split("|");
+                const rule = type === "A" ? [...gcp.forwardingRules].find(([, f]) => r.rrdatas.includes(f.ipAddress))?.[0] ?? null : null;
+                return [`${name}/${type}`, { ttl: r.ttl, rrdatas: r.rrdatas, forwardingRule: rule }];
+              }),
+            ),
+          },
+        ]),
+      ),
     },
     monitoring: {
       uptimeChecks: Object.fromEntries([...gcp.monitoring.uptimeChecks].map(([n, u]) => [n, { host: u.host, path: u.path, period: u.period }])),
@@ -1069,6 +1169,12 @@ function repoView(state: LabState, root: string, repo: GitRepo) {
  *   cloud.aws.cloudwatch.alarms[name].{namespace, metricName, statistic, condition, dimensions, notifies[topic], state},
  *   cloud.aws.logs.groups[name].{retentionInDays, eventCount, searches[pattern], metricFilters[name]},
  *   cloud.gcp.logging.{queries[filter], metrics[name].filter, buckets[id].retentionDays, sinks[name].{destination, filter}},
+ *   cloud.aws.route53.zones["example.com."].{nameServerCount, records["www.example.com./A"].{ttl, values, aliasTo}, weighted["name./A"][setId] = weight},
+ *     aliasTo is "cloudfront:<origin>", "elb:<name>", "record:<name>" or a DNS name,
+ *   cloud.aws.cloudfront.distributions[origin].{defaultRootObject, invalidations[path]},
+ *   cloud.gcp.backendBuckets[name].{gcsBucket, cdn, cacheMode}, cloud.gcp.backendServices[name].{cdn, cacheMode},
+ *   cloud.gcp.urlMaps[name].{defaultService, defaultBackendBucket, invalidations[path]},
+ *   cloud.gcp.dns.zones[name].{dnsName, visibility, records["www.example.com./A"].{ttl, rrdatas, forwardingRule}},
  *   cloud.gcp.monitoring.{uptimeChecks[name].{host, path, period}, policies[displayName].{conditionFilter, condition}},
  *   cloud.gcp.sql.instances[name].{databaseVersion, edition, tier, region, availabilityType, backupsEnabled,
  *     deletionProtection, masterInstanceName, databases[name], users[name], backupCount},
@@ -1083,7 +1189,7 @@ export function checkView(state: LabState): Record<string, unknown> {
     cloud: {
       s3: bucketsView(state.s3, "region"),
       gcs: bucketsView(state.gcs, "location"),
-      aws: { ...awsView(state.aws), elbv2: elbView(state), autoscaling: autoscalingView(state) },
+      aws: { ...awsView(state), elbv2: elbView(state), autoscaling: autoscalingView(state) },
       gcp: gcpView(state),
     },
     git: Object.fromEntries([...state.git].map(([root, repo]) => [displayPath(root), repoView(state, root, repo)])),

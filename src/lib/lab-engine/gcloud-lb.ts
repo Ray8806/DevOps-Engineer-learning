@@ -59,8 +59,13 @@ export function ruleServing(state: LabState, ruleName: string): { backendService
   const rule = state.gcp.forwardingRules.get(ruleName);
   const proxy = rule && state.gcp.httpProxies.get(rule.target);
   const map = proxy && state.gcp.urlMaps.get(proxy.urlMap);
-  const service = map && state.gcp.backendServices.get(map.defaultService);
-  if (!map || !service) return { backendService: null, serving: false };
+  if (map?.defaultBackendBucket) {
+    // A backend bucket serves straight from Cloud Storage: no health checks.
+    const bucket = state.gcp.backendBuckets.get(map.defaultBackendBucket);
+    return { backendService: null, serving: !!bucket && state.gcs.has(bucket.gcsBucket) };
+  }
+  const service = map?.defaultService ? state.gcp.backendServices.get(map.defaultService) : undefined;
+  if (!map?.defaultService || !service) return { backendService: null, serving: false };
   const healthy = new Set(healthyBackends(state, map.defaultService));
   const serving = [...service.backends].some((mig) => {
     const group = state.gcp.migs.get(mig);
@@ -341,7 +346,7 @@ function backendServices(ctx: Ctx, args: string[]): number {
     const scheme = (parsed.options.get("--load-balancing-scheme") ?? "EXTERNAL").toUpperCase();
     if (scheme !== "EXTERNAL" && scheme !== "EXTERNAL_MANAGED") return error(ctx, command, "這個模擬終端機支援 --load-balancing-scheme=EXTERNAL_MANAGED（全域外部 Application Load Balancer）或 EXTERNAL（傳統版）。");
     // Without --port-name the backend service uses the named port "http".
-    services.set(name, { protocol, portName: parsed.options.get("--port-name") ?? "http", healthCheck: hc, scheme, backends: new Set() });
+    services.set(name, { protocol, portName: parsed.options.get("--port-name") ?? "http", healthCheck: hc, scheme, backends: new Set(), cdn: false, cacheMode: null });
     ctx.out(`Created [${url(ctx.state, `global/backendServices/${name}`)}].\n`);
     table(ctx, ["NAME", "BACKENDS", "PROTOCOL"], [[name, "", protocol]]);
     return 0;
@@ -388,14 +393,14 @@ function backendServices(ctx: Ctx, args: string[]): number {
 function link(ctx: Ctx, kind: "url-maps" | "target-http-proxies", args: string[]): number {
   const [action, ...rest] = args;
   const command = `gcloud.compute.${kind}.${action}`;
-  const parsed = parseArgs(rest, { options: ["--default-service", "--url-map", "--project"], flags: ["--global", "--quiet", "-q"] });
+  const parsed = parseArgs(rest, { options: ["--default-service", "--default-backend-bucket", "--url-map", "--project"], flags: ["--global", "--quiet", "-q"] });
   if (parsed.unknown) return error(ctx, command, `unrecognized arguments: ${parsed.unknown}`);
   const gcp = ctx.state.gcp;
   const isMap = kind === "url-maps";
   const store: Map<string, unknown> = isMap ? gcp.urlMaps : gcp.httpProxies;
   const path = isMap ? "urlMaps" : "targetHttpProxies";
   if (action === "list") {
-    table(ctx, isMap ? ["NAME", "DEFAULT_SERVICE"] : ["NAME", "URL_MAP"], isMap ? [...gcp.urlMaps].map(([n, m]) => [n, `backendServices/${m.defaultService}`]) : [...gcp.httpProxies].map(([n, p]) => [n, p.urlMap]));
+    table(ctx, isMap ? ["NAME", "DEFAULT_SERVICE"] : ["NAME", "URL_MAP"], isMap ? [...gcp.urlMaps].map(([n, m]) => [n, m.defaultService ? `backendServices/${m.defaultService}` : `backendBuckets/${m.defaultBackendBucket}`]) : [...gcp.httpProxies].map(([n, p]) => [n, p.urlMap]));
     return 0;
   }
   const name = parsed.positional[0];
@@ -413,9 +418,11 @@ function link(ctx: Ctx, kind: "url-maps" | "target-http-proxies", args: string[]
   if (store.has(name)) return error(ctx, command, `The resource 'projects/${gcp.project}/global/${path}/${name}' already exists`);
   if (isMap) {
     const service = parsed.options.get("--default-service");
-    if (service === undefined) return error(ctx, command, "argument --default-service: Must be specified.");
-    if (!gcp.backendServices.has(service)) return notFound(ctx, command, `global/backendServices/${service}`);
-    gcp.urlMaps.set(name, { defaultService: service });
+    const bucket = parsed.options.get("--default-backend-bucket");
+    if ((service === undefined) === (bucket === undefined)) return error(ctx, command, "Exactly one of (--default-backend-bucket | --default-service) must be specified.");
+    if (service !== undefined && !gcp.backendServices.has(service)) return notFound(ctx, command, `global/backendServices/${service}`);
+    if (bucket !== undefined && !gcp.backendBuckets.has(bucket)) return notFound(ctx, command, `global/backendBuckets/${bucket}`);
+    gcp.urlMaps.set(name, { defaultService: service ?? null, defaultBackendBucket: bucket ?? null, invalidations: [] });
   } else {
     const map = parsed.options.get("--url-map");
     if (map === undefined) return error(ctx, command, "argument --url-map: Must be specified.");

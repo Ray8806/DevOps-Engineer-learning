@@ -1,0 +1,25 @@
+{
+  "id": "dns-cdn",
+  "title": "DNS 與 CDN",
+  "summary": "用代管的 DNS 服務讓網域名稱指到你的服務，再用 CDN 把內容快取在離使用者近的地方，讓網站更快、來源伺服器更輕鬆。",
+  "stage": 2,
+  "prerequisites": ["networking-basics", "object-storage", "load-balancing"],
+  "providers": {
+    "aws": { "services": ["Route 53", "CloudFront"] },
+    "gcp": { "services": ["Cloud DNS", "Cloud CDN"] }
+  },
+  "compare": [
+    { "aspect": "代管的 DNS 服務", "aws": "Amazon Route 53", "gcp": "Cloud DNS" },
+    { "aspect": "一個網域的紀錄放在哪", "aws": "代管區域（hosted zone），分公有和私有", "gcp": "代管區域（managed zone），分公開和私人" },
+    { "aspect": "建立區域時自動產生", "aws": "SOA 紀錄和 4 筆 NS 紀錄", "gcp": "NS 和 SOA 紀錄" },
+    { "aspect": "網域頂點指到別的名稱", "aws": "別名紀錄（alias），可以指到 CloudFront、ELB、S3 網站等 AWS 資源", "gcp": "ALIAS 紀錄（只能放在頂點，只回應 A／AAAA 查詢）；指到負載平衡器通常直接用 A 紀錄填 IP" },
+    { "aspect": "依條件回應不同答案", "aws": "路由政策：簡單、加權、延遲、容錯移轉、地理位置等", "gcp": "路由政策：加權輪詢（WRR）、地理位置（GEO）、容錯移轉（FAILOVER）" },
+    { "aspect": "CDN 服務", "aws": "Amazon CloudFront", "gcp": "Cloud CDN" },
+    { "aspect": "CDN 怎麼接到來源", "aws": "建立分配（distribution），指定來源（S3 bucket、ALB、自己的 HTTP 伺服器）", "gcp": "在外部 Application Load Balancer 的後端服務或 backend bucket 上開啟 Cloud CDN" },
+    { "aspect": "預設的快取時間", "aws": "沒有用快取政策時，預設 TTL 24 小時；來源可以用 Cache-Control 指定", "gcp": "依快取模式決定；CACHE_ALL_STATIC 會自動快取靜態內容，預設 TTL 3600 秒" },
+    { "aspect": "清除快取", "aws": "create-invalidation，每月前 1,000 個路徑免費", "gcp": "url-maps invalidate-cdn-cache" },
+    { "aspect": "命令列工具", "aws": "aws route53、aws cloudfront", "gcp": "gcloud dns、gcloud compute backend-buckets、url-maps invalidate-cdn-cache" }
+  ],
+  "certDomains": ["clf-c02:3", "saa-c03:2", "saa-c03:3", "gcp-cdl:4", "gcp-ace:2"],
+  "estimatedMinutes": 45
+}

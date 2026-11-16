@@ -1,0 +1,193 @@
+{
+  "questions": [
+    {
+      "id": "dns-cdn-001",
+      "type": "single",
+      "provider": "general",
+      "unitId": "dns-cdn",
+      "difficulty": 2,
+      "question": "你在雲端的 DNS 服務替 example.com 建立了區域，也加好了 www 的 A 紀錄，但外面的人還是查不到。最可能漏了哪一步？",
+      "options": [
+        { "id": "a", "text": "在網域註冊商把名稱伺服器改成雲端區域的名稱伺服器", "explanation": "正確。註冊商決定由哪些名稱伺服器回答這個網域，沒改過去，全世界都還在問舊的名稱伺服器。" },
+        { "id": "b", "text": "把 TTL 設成 0", "explanation": "TTL 決定答案快取多久，不會讓沒被委派的區域生效。" },
+        { "id": "c", "text": "刪除區域自動建立的 NS 紀錄", "explanation": "NS 紀錄是區域必要的紀錄，不應該刪除。" },
+        { "id": "d", "text": "把 A 紀錄改成 CNAME", "explanation": "紀錄類型不是問題，問題是查詢根本沒送到這個區域。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "dns-cdn-002",
+      "type": "single",
+      "provider": "general",
+      "unitId": "dns-cdn",
+      "difficulty": 1,
+      "question": "一個網站放在美國，亞洲的使用者抱怨圖片載入很慢。哪一種做法最直接有效？",
+      "options": [
+        { "id": "a", "text": "把網頁伺服器換成更大的機器", "explanation": "機器再大，資料還是要跨海傳送，距離造成的延遲不會消失。" },
+        { "id": "b", "text": "使用 CDN，把圖片快取在離使用者近的邊緣節點", "explanation": "正確。快取命中時，使用者直接從附近的邊緣節點拿到圖片。" },
+        { "id": "c", "text": "把 DNS 紀錄的 TTL 調長", "explanation": "TTL 影響 DNS 查詢的快取，對圖片傳輸的速度幫助很小。" },
+        { "id": "d", "text": "把圖片改存在資料庫", "explanation": "換儲存位置不會縮短使用者和伺服器的距離。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "dns-cdn-003",
+      "type": "single",
+      "provider": "general",
+      "unitId": "dns-cdn",
+      "difficulty": 2,
+      "question": "前端團隊每天都會更新 app.js，常有使用者拿到舊版。哪一種做法能讓使用者馬上拿到新版，而且不需要每次清除 CDN 快取？",
+      "options": [
+        { "id": "a", "text": "每次部署都把檔名加上版本，例如 app.v42.js，並更新 HTML 裡的引用", "explanation": "正確。新檔名不會撞到舊快取；這也是 AWS 建議經常更新的檔案主要使用的方法。" },
+        { "id": "b", "text": "關掉 CDN", "explanation": "這樣所有使用者都要回來源拿檔案，失去 CDN 的好處。" },
+        { "id": "c", "text": "把 app.js 的快取時間設成一年", "explanation": "快取越久，舊版留得越久。" },
+        { "id": "d", "text": "要求使用者按重新整理", "explanation": "CDN 的快取不受使用者重新整理影響，而且不能要求每個使用者這麼做。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "dns-cdn-004",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 3 }],
+      "unitId": "dns-cdn",
+      "difficulty": 2,
+      "question": "公司想讓 example.com（不含 www）直接指到 CloudFront 分配 d111111abcdef8.cloudfront.net。在 Route 53 應該建立哪一種紀錄？",
+      "options": [
+        { "id": "a", "text": "example.com 的 CNAME 紀錄", "explanation": "區域頂點不能建立 CNAME 紀錄。" },
+        { "id": "b", "text": "example.com 的 A 別名紀錄，指到 CloudFront 分配", "explanation": "正確。別名紀錄可以放在頂點，而且查詢指到 AWS 資源的別名不收費。" },
+        { "id": "c", "text": "example.com 的 MX 紀錄", "explanation": "MX 紀錄用來指定郵件伺服器。" },
+        { "id": "d", "text": "查出 CloudFront 的 IP，寫成一般的 A 紀錄", "explanation": "CloudFront 的 IP 會變動，寫死 IP 會在 IP 改變後連不到。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "dns-cdn-005",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 2 }],
+      "unitId": "dns-cdn",
+      "difficulty": 2,
+      "question": "團隊想先把 10% 的使用者送到新版的 API，確認沒問題再逐步增加。在 Route 53 用哪一種路由政策最適合？",
+      "options": [
+        { "id": "a", "text": "簡單路由", "explanation": "簡單路由一個名稱只有一組值，無法依比例分流。" },
+        { "id": "b", "text": "加權路由", "explanation": "正確。兩筆紀錄用 SetIdentifier 區分，權重設成 90 和 10，就會依比例回應。" },
+        { "id": "c", "text": "地理位置路由", "explanation": "地理位置路由依使用者的位置回應，不是依比例。" },
+        { "id": "d", "text": "容錯移轉路由", "explanation": "容錯移轉只有在主要的不健康時才改用備援。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "dns-cdn-006",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 3 }],
+      "unitId": "dns-cdn",
+      "difficulty": 3,
+      "question": "關於 Amazon CloudFront，哪些敘述正確？（選兩個）",
+      "options": [
+        { "id": "a", "text": "沒有使用快取政策時，預設 TTL 是 24 小時", "explanation": "正確。來源也可以用 Cache-Control 的 max-age 調整個別檔案。" },
+        { "id": "b", "text": "清除快取時，/images/* 這樣含萬用字元的路徑只算一個路徑", "explanation": "正確。每月前 1,000 個路徑免費，含 * 的路徑不論影響多少檔案都算一個。" },
+        { "id": "c", "text": "來源只能是 S3 bucket", "explanation": "來源也可以是自己的 HTTP 伺服器，例如 EC2 上的網站或負載平衡器。" },
+        { "id": "d", "text": "清除快取的路徑不區分大小寫", "explanation": "路徑區分大小寫，/images/Logo.png 和 /images/logo.png 是不同的檔案。" }
+      ],
+      "answer": ["a", "b"]
+    },
+    {
+      "id": "dns-cdn-007",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 1 }],
+      "unitId": "dns-cdn",
+      "difficulty": 3,
+      "question": "網站的靜態檔案放在 S3 bucket，透過 CloudFront 提供。資安團隊要求使用者不能繞過 CloudFront 直接讀取 bucket。應該怎麼做？",
+      "options": [
+        { "id": "a", "text": "把 bucket 設成公開讀取", "explanation": "公開讀取讓任何人都能直接讀 bucket，正好相反。" },
+        { "id": "b", "text": "設定來源存取控制（OAC），bucket 政策只允許 CloudFront 讀取", "explanation": "正確。AWS 建議使用 OAC，bucket 保持私有，只有 CloudFront 能讀取物件。" },
+        { "id": "c", "text": "縮短 CloudFront 的 TTL", "explanation": "TTL 影響快取多久，和 bucket 能不能被直接讀取無關。" },
+        { "id": "d", "text": "在 Route 53 建立別名紀錄", "explanation": "DNS 紀錄不會限制誰能讀 bucket。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "dns-cdn-008",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "clf-c02", "domain": 3 }],
+      "unitId": "dns-cdn",
+      "difficulty": 1,
+      "question": "哪個 AWS 服務提供網域註冊、DNS 路由和健康檢查？",
+      "options": [
+        { "id": "a", "text": "Amazon CloudFront", "explanation": "CloudFront 是 CDN，用邊緣節點傳送內容。" },
+        { "id": "b", "text": "Amazon Route 53", "explanation": "正確。Route 53 可以註冊網域、回答 DNS 查詢，並檢查資源的健康狀態。" },
+        { "id": "c", "text": "Elastic Load Balancing", "explanation": "ELB 把流量分給多個目標，不提供 DNS 服務。" },
+        { "id": "d", "text": "Amazon VPC", "explanation": "VPC 是虛擬網路。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "dns-cdn-009",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 2 }],
+      "unitId": "dns-cdn",
+      "difficulty": 2,
+      "question": "網站已經用 Google Cloud 的全域外部 Application Load Balancer 提供服務，現在想加上 CDN 快取。最直接的做法是？",
+      "options": [
+        { "id": "a", "text": "另外建立一個 CDN 服務，再把負載平衡器設成它的來源", "explanation": "Cloud CDN 不是另外建立的服務，而是負載平衡器後端上的設定。" },
+        { "id": "b", "text": "在負載平衡器的後端服務或 backend bucket 上開啟 Cloud CDN", "explanation": "正確。例如 gcloud compute backend-services update web-backend --enable-cdn --global。" },
+        { "id": "c", "text": "在每台 VM 上安裝快取軟體", "explanation": "這不會把內容放到 Google 的邊緣節點。" },
+        { "id": "d", "text": "在 Cloud DNS 把 TTL 調長", "explanation": "DNS 的 TTL 和內容快取無關。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "dns-cdn-010",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 2 }],
+      "unitId": "dns-cdn",
+      "difficulty": 3,
+      "question": "後端服務提供的是登入後的個人化頁面，有人想把 Cloud CDN 的快取模式設成 FORCE_CACHE_ALL 來提高命中率。這樣做的主要風險是？",
+      "options": [
+        { "id": "a", "text": "Cloud CDN 會把個人化的內容快取起來，送給其他使用者", "explanation": "正確。FORCE_CACHE_ALL 不管來源的 private、no-store 等指示，全部快取，只適合公開的靜態內容。" },
+        { "id": "b", "text": "Cloud CDN 會停止快取圖片", "explanation": "FORCE_CACHE_ALL 會快取所有成功的回應，包含圖片。" },
+        { "id": "c", "text": "負載平衡器的健康檢查會失敗", "explanation": "快取模式不影響健康檢查。" },
+        { "id": "d", "text": "沒有風險，命中率越高越好", "explanation": "命中率高但送錯內容給別人，是嚴重的資安問題。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "dns-cdn-011",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 2 }],
+      "unitId": "dns-cdn",
+      "difficulty": 2,
+      "question": "你在 Cloud DNS 想讓 example.com（頂點）指到 www.example.com.，用 CNAME 卻失敗了。原因是？",
+      "options": [
+        { "id": "a", "text": "頂點已經有必要的 NS 和 SOA 紀錄，而 CNAME 不能和同名的其他紀錄並存", "explanation": "正確。指到負載平衡器時，頂點通常直接用 A 紀錄填 IP；Cloud DNS 也有只能放在頂點的 ALIAS 紀錄。" },
+        { "id": "b", "text": "Cloud DNS 不支援 CNAME 紀錄", "explanation": "Cloud DNS 支援 CNAME，只是不能放在頂點。" },
+        { "id": "c", "text": "TTL 沒有設定", "explanation": "TTL 不是失敗的原因。" },
+        { "id": "d", "text": "需要先開啟 Cloud CDN", "explanation": "Cloud CDN 和 DNS 紀錄的規則無關。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "dns-cdn-012",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-cdl", "domain": 4 }],
+      "unitId": "dns-cdn",
+      "difficulty": 1,
+      "question": "一家公司希望全世界的使用者都能快速載入網站的圖片和影片，並減輕來源伺服器的負擔。應該使用哪個 Google Cloud 服務？",
+      "options": [
+        { "id": "a", "text": "Cloud DNS", "explanation": "Cloud DNS 把名稱轉成 IP，不快取內容。" },
+        { "id": "b", "text": "Cloud CDN", "explanation": "正確。Cloud CDN 使用 Google 的全球邊緣網路，把內容快取在靠近使用者的地方。" },
+        { "id": "c", "text": "Cloud SQL", "explanation": "Cloud SQL 是關聯式資料庫。" },
+        { "id": "d", "text": "Cloud Logging", "explanation": "Cloud Logging 用來收集和查詢記錄。" }
+      ],
+      "answer": ["b"]
+    }
+  ]
+}

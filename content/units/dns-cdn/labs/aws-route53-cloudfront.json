@@ -1,0 +1,55 @@
+{
+  "id": "aws-route53-cloudfront",
+  "title": "CloudFront 分配與 Route 53 紀錄",
+  "description": "用 S3 bucket 當來源建立 CloudFront 分配並清除快取，再建立 Route 53 代管區域，用別名紀錄讓網域指到 CloudFront，最後用加權紀錄把一小部分流量送到新版本。",
+  "provider": "aws",
+  "estimatedMinutes": 25,
+  "initialState": {
+    "files": {},
+    "cloud": {
+      "s3": {
+        "buckets": {
+          "lab-static-site": {
+            "objects": {
+              "index.html": "<h1>Welcome</h1>",
+              "images/logo.png": "(logo v2)",
+              "images/banner.png": "(banner)"
+            }
+          }
+        }
+      }
+    }
+  },
+  "steps": [
+    {
+      "instruction": "網站的檔案放在 S3 bucket lab-static-site。用它當來源建立 CloudFront 分配，預設根物件是 index.html。記下輸出裡的 Id 和 DomainName。",
+      "hint": "aws cloudfront create-distribution --origin-domain-name lab-static-site.s3.amazonaws.com --default-root-object index.html",
+      "check": { "type": "state", "path": ["cloud", "aws", "cloudfront", "distributions", "lab-static-site.s3.amazonaws.com", "defaultRootObject"], "equals": "index.html" }
+    },
+    {
+      "instruction": "設計師剛換了 /images/ 底下的圖片，但使用者看到的還是快取裡的舊圖。清除 /images/ 底下所有檔案的快取（用一個路徑就好）。",
+      "hint": "aws cloudfront create-invalidation --distribution-id 你的分配 Id --paths \"/images/*\"（忘了 Id 可以用 aws cloudfront list-distributions 查）",
+      "check": { "type": "state", "path": ["cloud", "aws", "cloudfront", "distributions", "lab-static-site.s3.amazonaws.com", "invalidations", "/images/*"], "exists": true }
+    },
+    {
+      "instruction": "替 example.com 建立公有代管區域。用 list-resource-record-sets 看看 Route 53 自動建立了哪些紀錄；NS 紀錄裡的名稱伺服器，就是要填到網域註冊商的值。",
+      "hint": "aws route53 create-hosted-zone --name example.com --caller-reference lab-1，然後 aws route53 list-resource-record-sets --hosted-zone-id 代管區域的 Id",
+      "check": { "type": "state", "path": ["cloud", "aws", "route53", "zones", "example.com.", "nameServerCount"], "equals": 4 }
+    },
+    {
+      "instruction": "建立 www.example.com 的 A 別名紀錄，指到剛才的 CloudFront 分配。指到 CloudFront 的別名，HostedZoneId 一律是 Z2FDTNDATAQYW2。",
+      "hint": "aws route53 change-resource-record-sets --hosted-zone-id 代管區域的 Id --change-batch '{\"Changes\": [{\"Action\": \"CREATE\", \"ResourceRecordSet\": {\"Name\": \"www.example.com\", \"Type\": \"A\", \"AliasTarget\": {\"HostedZoneId\": \"Z2FDTNDATAQYW2\", \"DNSName\": \"分配的 DomainName\", \"EvaluateTargetHealth\": false}}}]}'",
+      "check": { "type": "state", "path": ["cloud", "aws", "route53", "zones", "example.com.", "records", "www.example.com./A", "aliasTo"], "equals": "cloudfront:lab-static-site.s3.amazonaws.com" }
+    },
+    {
+      "instruction": "讓 example.com 本身也能連到網站。先試試用 CNAME 指到 www.example.com，會發生什麼事？再改用 A 別名紀錄，指到 CloudFront 分配或同區域的 www.example.com。",
+      "hint": "CNAME 不能放在頂點。改用 '{\"Changes\": [{\"Action\": \"CREATE\", \"ResourceRecordSet\": {\"Name\": \"example.com\", \"Type\": \"A\", \"AliasTarget\": {\"HostedZoneId\": \"代管區域的 Id\", \"DNSName\": \"www.example.com\", \"EvaluateTargetHealth\": false}}}]}'",
+      "check": { "type": "state", "path": ["cloud", "aws", "route53", "zones", "example.com.", "records", "example.com./A", "aliasTo"], "exists": true }
+    },
+    {
+      "instruction": "API 有了新版本。替 api.example.com 建立兩筆加權 A 紀錄（TTL 60）：SetIdentifier blue 指到 192.0.2.10、權重 90；green 指到 192.0.2.20、權重 10。再用 test-dns-answer 查幾次，看看答案的比例。",
+      "hint": "--change-batch '{\"Changes\": [{\"Action\": \"CREATE\", \"ResourceRecordSet\": {\"Name\": \"api.example.com\", \"Type\": \"A\", \"SetIdentifier\": \"blue\", \"Weight\": 90, \"TTL\": 60, \"ResourceRecords\": [{\"Value\": \"192.0.2.10\"}]}}, {\"Action\": \"CREATE\", \"ResourceRecordSet\": {\"Name\": \"api.example.com\", \"Type\": \"A\", \"SetIdentifier\": \"green\", \"Weight\": 10, \"TTL\": 60, \"ResourceRecords\": [{\"Value\": \"192.0.2.20\"}]}}]}'",
+      "check": { "type": "state", "path": ["cloud", "aws", "route53", "zones", "example.com.", "weighted", "api.example.com./A"], "equals": { "blue": 90, "green": 10 } }
+    }
+  ]
+}

@@ -31,7 +31,8 @@
       "description": "負載平衡、監控與日誌、資安與成本管理，讓系統穩定又不超支。",
       "units": [
         "load-balancing",
-        "monitoring-logging"
+        "monitoring-logging",
+        "dns-cdn"
       ]
     },
     {
