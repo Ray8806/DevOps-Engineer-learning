@@ -32,6 +32,8 @@ const HELP = `可用的指令：
               aws dynamodb create-table | describe-table | list-tables | put-item | get-item | query | scan | delete-item | update-time-to-live | delete-table
               aws cloudwatch put-metric-alarm | describe-alarms | set-alarm-state | delete-alarms，aws sns create-topic | subscribe | list-topics | list-subscriptions-by-topic
               aws logs create-log-group | describe-log-groups | put-retention-policy | filter-log-events | put-metric-filter，aws cloudtrail lookup-events
+              aws route53 create-hosted-zone | list-hosted-zones | change-resource-record-sets | list-resource-record-sets | test-dns-answer
+              aws cloudfront create-distribution | list-distributions | get-distribution | create-invalidation | list-invalidations
   GCP         gcloud storage buckets create | delete | list | describe
               gcloud storage ls | cp | mv | rm | cat      （也支援 gsutil）
               gcloud iam service-accounts create | list | delete
@@ -51,6 +53,8 @@ const HELP = `可用的指令：
               gcloud firestore fields ttls update | list，firestore export
               gcloud logging read，logging metrics | sinks create | list | delete，logging buckets list | describe | update
               gcloud monitoring uptime create | list-configs | delete，monitoring policies create | list
+              gcloud dns managed-zones create | list | describe | delete，dns record-sets create | list | describe | update | delete
+              gcloud compute backend-buckets create | list | describe | delete，backend-services update --enable-cdn，url-maps invalidate-cdn-cache
   其他        clear  help  whoami
 支援 > 與 >> 輸出到檔案、用 && 或 ; 串接指令。按 Tab 補完路徑，上下鍵瀏覽歷史指令。
 `;

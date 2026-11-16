@@ -1,0 +1,60 @@
+{
+  "id": "gcp-dns-cdn",
+  "title": "Cloud CDN 與 Cloud DNS",
+  "description": "把 Cloud Storage bucket 接到外部 HTTP 負載平衡器並開啟 Cloud CDN，清除快取，再建立 Cloud DNS 區域，讓網域指到負載平衡器的 IP。",
+  "provider": "gcp",
+  "estimatedMinutes": 25,
+  "initialState": {
+    "files": {},
+    "cloud": {
+      "gcs": {
+        "buckets": {
+          "lab-static-site": {
+            "location": "us",
+            "objects": {
+              "index.html": "<h1>Welcome</h1>",
+              "images/logo.png": "(logo v2)",
+              "images/banner.png": "(banner)"
+            }
+          }
+        }
+      }
+    }
+  },
+  "steps": [
+    {
+      "instruction": "網站的檔案放在 Cloud Storage bucket lab-static-site。建立 backend bucket static-backend 指向它，並開啟 Cloud CDN。用 describe 看看快取模式是什麼。",
+      "hint": "gcloud compute backend-buckets create static-backend --gcs-bucket-name=lab-static-site --enable-cdn，然後 gcloud compute backend-buckets describe static-backend",
+      "check": {
+        "type": "state",
+        "path": ["cloud", "gcp", "backendBuckets", "static-backend"],
+        "equals": { "gcsBucket": "lab-static-site", "cdn": true, "cacheMode": "CACHE_ALL_STATIC" }
+      }
+    },
+    {
+      "instruction": "組出外部 HTTP 負載平衡器：URL 對應 static-map 預設送到 static-backend，target HTTP proxy static-proxy，全域轉送規則 static-rule（連接埠 80）。",
+      "hint": "gcloud compute url-maps create static-map --default-backend-bucket=static-backend，gcloud compute target-http-proxies create static-proxy --url-map=static-map，gcloud compute forwarding-rules create static-rule --global --target-http-proxy=static-proxy --ports=80",
+      "check": { "type": "state", "path": ["cloud", "gcp", "forwardingRules", "static-rule", "serving"], "equals": true }
+    },
+    {
+      "instruction": "/images/ 底下的圖片更新了，但 Cloud CDN 還在送快取裡的舊圖。清除 /images/ 底下所有檔案的快取。",
+      "hint": "gcloud compute url-maps invalidate-cdn-cache static-map --path=\"/images/*\"",
+      "check": { "type": "state", "path": ["cloud", "gcp", "urlMaps", "static-map", "invalidations", "/images/*"], "exists": true }
+    },
+    {
+      "instruction": "替 example.com 建立公開的代管區域 lab-zone。用 record-sets list 看看 Cloud DNS 自動建立了哪些紀錄。",
+      "hint": "gcloud dns managed-zones create lab-zone --dns-name=example.com. --description=\"Lab zone\"，然後 gcloud dns record-sets list --zone=lab-zone",
+      "check": { "type": "state", "path": ["cloud", "gcp", "dns", "zones", "lab-zone", "dnsName"], "equals": "example.com." }
+    },
+    {
+      "instruction": "用 forwarding-rules describe 查出 static-rule 的 IP 位址，建立 www.example.com 的 A 紀錄（TTL 300）指到它。",
+      "hint": "gcloud compute forwarding-rules describe static-rule --global，然後 gcloud dns record-sets create www.example.com. --zone=lab-zone --type=A --ttl=300 --rrdatas=轉送規則的 IP",
+      "check": { "type": "state", "path": ["cloud", "gcp", "dns", "zones", "lab-zone", "records", "www.example.com./A", "forwardingRule"], "equals": "static-rule" }
+    },
+    {
+      "instruction": "讓 example.com 本身也能連到網站。先試試用 CNAME 指到 www.example.com.，會發生什麼事？再改用 A 紀錄指到同一個 IP。",
+      "hint": "gcloud dns record-sets create example.com. --zone=lab-zone --type=A --ttl=300 --rrdatas=轉送規則的 IP",
+      "check": { "type": "state", "path": ["cloud", "gcp", "dns", "zones", "lab-zone", "records", "example.com./A", "forwardingRule"], "equals": "static-rule" }
+    }
+  ]
+}

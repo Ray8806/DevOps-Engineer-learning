@@ -255,6 +255,10 @@ Lab 引擎維護一份虛擬狀態（檔案系統加雲端資源），指令會�
 | `["cloud", "aws", "logs", "groups", 名稱, "retentionInDays" \| "eventCount" \| "searches" \| "metricFilters", …]` | 記錄群組；`retentionInDays` 為 `null` 代表永久保留，`searches` 是用過的篩選模式 |
 | `["cloud", "gcp", "logging", "queries" \| "metrics" \| "buckets" \| "sinks", …]` | `queries` 是 `gcloud logging read` 用過的篩選條件（去掉運算子旁的空白）；`metrics.名稱.filter`；`buckets.ID.retentionDays`；`sinks.名稱` 像 `{ "destination": "…", "filter": "…" }` |
 | `["cloud", "gcp", "monitoring", "uptimeChecks" \| "policies", 名稱, …]` | 正常運作時間檢查（`host`、`path`、`period`）與快訊政策（`conditionFilter`、`condition` 像 `"> 5 for 60s"`） |
+| `["cloud", "aws", "route53", "zones", "example.com.", "nameServerCount" \| "records" \| "weighted", …]` | Route 53 代管區域（以結尾有句點的網域名稱當鍵）；`records["www.example.com./A"]` 是 `{ ttl, values, aliasTo }`，`aliasTo` 像 `"cloudfront:來源網域"`、`"elb:名稱"`、`"record:名稱"`；`weighted["api.example.com./A"]` 像 `{ "blue": 90, "green": 10 }` |
+| `["cloud", "aws", "cloudfront", "distributions", 來源網域, "defaultRootObject" \| "invalidations", …]` | CloudFront 分配（以來源網域當鍵，例如 `my-site.s3.amazonaws.com`）；`invalidations` 是清除過的路徑集合 |
+| `["cloud", "gcp", "backendBuckets", 名稱, "gcsBucket" \| "cdn" \| "cacheMode"]`、`["cloud", "gcp", "urlMaps", 名稱, "defaultService" \| "defaultBackendBucket" \| "invalidations", …]` | backend bucket 與 URL 對應；後端服務也有 `cdn`、`cacheMode` |
+| `["cloud", "gcp", "dns", "zones", 區域名稱, "dnsName" \| "visibility" \| "records", …]` | Cloud DNS 區域；`records["www.example.com./A"]` 是 `{ ttl, rrdatas, forwardingRule }`，`forwardingRule` 是 IP 對得上的轉送規則名稱 |
 | `["cloud", "aws", "dynamodb", "tables", 名稱, "definition"]` | 資料表的定義，值像 `{ "partitionKey": "CustomerId", "sortKey": "OrderId", "billingMode": "PAY_PER_REQUEST" }`，用 `equals` 檢查 |
 | `["cloud", "aws", "dynamodb", "tables", 名稱, "itemCount" \| "ttlAttribute"]`、`[…, "items", "分割區鍵值\|排序鍵值"]`、`[…, "queriedPartitions", 分割區鍵值]` | 項目數量、TTL 屬性、某個項目是否存在（簡單主鍵只有分割區鍵值）、是否用 Query 查過某個分割區 |
 | `["cloud", "gcp", "firestore", "databases", 資料庫 ID, "location" \| "type" \| "edition" \| "deleteProtection" \| "exportCount"]` | Firestore 資料庫；預設資料庫的 ID 是 `(default)` |
@@ -288,11 +292,11 @@ Lab 引擎維護一份虛擬狀態（檔案系統加雲端資源），指令會�
 
 程式在 `src/lib/lab-engine/`，是不依賴瀏覽器的純函式：`execute(state, line)` 回傳新的狀態與輸出，不修改傳入的狀態。
 
-- **支援的指令**：`pwd ls cd mkdir touch cat echo cp mv rm rmdir zip clear help whoami`（`zip` 產生的是模擬的封存檔，`cat` 可以看到內容）；`aws s3 mb|rb|ls|cp|mv|rm`；`gcloud storage buckets create|delete|list|describe` 與 `gcloud storage ls|cp|mv|rm|cat`；`gsutil mb|rb|ls|cp|mv|rm|cat`；`aws iam`（使用者、群組、角色、受管政策）；`aws ec2`（安全群組、執行個體、EBS 磁碟區與快照、VPC、子網路、網際網路閘道、路由表）；`aws lambda`（建立、呼叫、修改設定與程式碼；不會真的執行程式碼，呼叫時把事件原樣放在回應的 body）；`aws dynamodb`（資料表、項目、Query、Scan、TTL；不含次要索引與 filter expression）；`aws elbv2`（目標群組、ALB、接聽程式；只支援 HTTP(S) 與 forward 動作）；`aws autoscaling`（群組與目標追蹤政策；群組會啟動執行個體、註冊到目標群組，並替換被停止或終止的執行個體）；`aws rds`（DB 子網路群組、執行個體、唯讀複本、快照；不含 Aurora 叢集）；`gcloud iam service-accounts`；`gcloud projects`（IAM 授權）；`gcloud compute instances|firewall-rules|networks|networks subnets|routers|routers nats|disks|snapshots`；`gcloud run deploy|services|revisions`（只能部署現成的映像檔，不能從原始碼建置）；`gcloud firestore databases|indexes composite|fields ttls|export`（只有管理操作，沒有讀寫文件）；`gcloud compute instance-templates|instance-groups managed|health-checks create http|backend-services|url-maps|target-http-proxies|forwarding-rules`（全域外部 HTTP 負載平衡器；MIG 會用相同名稱重建被停止或刪除的 VM）；`gcloud sql instances|databases|users|backups`；`aws sns`（主題與訂閱；電子郵件訂閱停在待確認）；`aws cloudwatch`（單一指標警示，新警示的狀態是 `INSUFFICIENT_DATA`，可用 `set-alarm-state` 改變）；`aws logs`（記錄群組、保留政策、篩選模式只支援區分大小寫的詞語與引號片語、指標篩選器）；`aws cloudtrail lookup-events`（Lab 預先放的事件）；`gcloud logging read|metrics|buckets|sinks`（篩選只支援 severity、resource.type、logName、textPayload 與關鍵字，用 AND 串接；只有 `_Required` 與 `_Default` 兩個記錄 bucket）；`gcloud monitoring uptime|policies`（只記錄設定，不會真的檢查或發快訊）；`gcloud config`；`git init|status|add|commit|log|branch|switch|checkout|merge`（只有本機操作，沒有遠端；合併衝突會取消合併）。
+- **支援的指令**：`pwd ls cd mkdir touch cat echo cp mv rm rmdir zip clear help whoami`（`zip` 產生的是模擬的封存檔，`cat` 可以看到內容）；`aws s3 mb|rb|ls|cp|mv|rm`；`gcloud storage buckets create|delete|list|describe` 與 `gcloud storage ls|cp|mv|rm|cat`；`gsutil mb|rb|ls|cp|mv|rm|cat`；`aws iam`（使用者、群組、角色、受管政策）；`aws ec2`（安全群組、執行個體、EBS 磁碟區與快照、VPC、子網路、網際網路閘道、路由表）；`aws lambda`（建立、呼叫、修改設定與程式碼；不會真的執行程式碼，呼叫時把事件原樣放在回應的 body）；`aws dynamodb`（資料表、項目、Query、Scan、TTL；不含次要索引與 filter expression）；`aws elbv2`（目標群組、ALB、接聽程式；只支援 HTTP(S) 與 forward 動作）；`aws autoscaling`（群組與目標追蹤政策；群組會啟動執行個體、註冊到目標群組，並替換被停止或終止的執行個體）；`aws rds`（DB 子網路群組、執行個體、唯讀複本、快照；不含 Aurora 叢集）；`gcloud iam service-accounts`；`gcloud projects`（IAM 授權）；`gcloud compute instances|firewall-rules|networks|networks subnets|routers|routers nats|disks|snapshots`；`gcloud run deploy|services|revisions`（只能部署現成的映像檔，不能從原始碼建置）；`gcloud firestore databases|indexes composite|fields ttls|export`（只有管理操作，沒有讀寫文件）；`gcloud compute instance-templates|instance-groups managed|health-checks create http|backend-services|url-maps|target-http-proxies|forwarding-rules`（全域外部 HTTP 負載平衡器；MIG 會用相同名稱重建被停止或刪除的 VM）；`gcloud sql instances|databases|users|backups`；`aws sns`（主題與訂閱；電子郵件訂閱停在待確認）；`aws cloudwatch`（單一指標警示，新警示的狀態是 `INSUFFICIENT_DATA`，可用 `set-alarm-state` 改變）；`aws logs`（記錄群組、保留政策、篩選模式只支援區分大小寫的詞語與引號片語、指標篩選器）；`aws cloudtrail lookup-events`（Lab 預先放的事件）；`gcloud logging read|metrics|buckets|sinks`（篩選只支援 severity、resource.type、logName、textPayload 與關鍵字，用 AND 串接；只有 `_Required` 與 `_Default` 兩個記錄 bucket）；`gcloud monitoring uptime|policies`（只記錄設定，不會真的檢查或發快訊）；`aws route53`（公有代管區域、簡單與加權紀錄、指到 CloudFront、ALB 或同區域紀錄的別名、`test-dns-answer`；不含私有區域、健康檢查和其他路由政策）；`aws cloudfront`（用 `--origin-domain-name` 建立分配、清除快取；不會真的快取內容）；`gcloud dns managed-zones|record-sets`（不含路由政策和 ALIAS 紀錄）；`gcloud compute backend-buckets`、`backend-services update --enable-cdn`、`url-maps invalidate-cdn-cache`（Cloud CDN 的設定）；`gcloud config`；`git init|status|add|commit|log|branch|switch|checkout|merge`（只有本機操作，沒有遠端；合併衝突會取消合併）。
 - **支援的語法**：引號、反斜線跳脫、註解、`>` 與 `>>`、`&&` 與 `;`。不支援管線、變數與萬用字元，會明確告知。
 - **新增指令**：在 `engine.ts` 的 `commands` 註冊一個 `Command`（收到可修改的草稿狀態與輸出函式，回傳結束碼），並補上測試。
 - **輸出訊息是近似值**：格式盡量貼近真實 CLI，但不保證逐字相同。
-- 每個 Lab 都必須在測試裡（`engine.test.ts`、`cloud.test.ts`、`network-db.test.ts`、`serverless-storage.test.ts`、`nosql.test.ts`、`lb.test.ts` 或 `monitoring.test.ts`）有一條能從頭做到完成的指令腳本。
+- 每個 Lab 都必須在測試裡（`engine.test.ts`、`cloud.test.ts`、`network-db.test.ts`、`serverless-storage.test.ts`、`nosql.test.ts`、`lb.test.ts`、`monitoring.test.ts` 或 `dns-cdn.test.ts`）有一條能從頭做到完成的指令腳本。
 
 所有格式的權威定義在 `src/lib/content/schema.ts`，本節與它不一致時以程式為準。
 
@@ -340,8 +344,8 @@ interface Progress {
 |---|---|---|
 | 0 基礎 | Linux 指令基礎、網路基礎、Git 基礎 | 完成（網路基礎沒有 Lab） |
 | 1 雲端核心 | 全部 8 個單元 | 完成 |
-| 2 維運 | 負載平衡與自動擴展、監控與日誌 | 完成 |
-| 2 維運 | DNS 與 CDN、資安基礎、成本管理 | 待寫 |
+| 2 維運 | 負載平衡與自動擴展、監控與日誌、DNS 與 CDN | 完成 |
+| 2 維運 | 資安基礎、成本管理 | 待寫 |
 | 3 自動化 | 全部 5 個單元 | 待寫 |
 | 4 實戰 | 架構設計案例、面試題 | 待寫 |
 
