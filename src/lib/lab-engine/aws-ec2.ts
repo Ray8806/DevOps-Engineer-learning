@@ -1,3 +1,4 @@
+import { EBS_COMMANDS, ebs } from "./aws-ebs";
 import { VPC_COMMANDS, newId, vpc } from "./aws-vpc";
 import { parseCidr } from "./cidr";
 import { parseArgs, type Ctx } from "./context";
@@ -11,7 +12,7 @@ function fail(ctx: Ctx, code: string, operation: string, message: string): numbe
 
 const INSTANCE_COMMANDS =
   "create-security-group、authorize-security-group-ingress、describe-security-groups、delete-security-group、run-instances、describe-instances、stop-instances、start-instances、terminate-instances";
-export const EC2_COMMANDS = `${INSTANCE_COMMANDS}、${VPC_COMMANDS.join("、")}`;
+export const EC2_COMMANDS = `${INSTANCE_COMMANDS}、${VPC_COMMANDS.join("、")}、${EBS_COMMANDS.join("、")}`;
 
 export function ec2(ctx: Ctx, args: string[]): number {
   const [sub, ...rest] = args;
@@ -21,11 +22,12 @@ export function ec2(ctx: Ctx, args: string[]): number {
     return 252;
   }
   if (VPC_COMMANDS.includes(sub)) return vpc(ctx, sub, rest);
+  if (EBS_COMMANDS.includes(sub)) return ebs(ctx, sub, rest);
   const parsed = parseArgs(rest, {
     options: [
       "--group-name", "--group-id", "--description", "--protocol", "--port", "--cidr", "--vpc-id",
       "--image-id", "--instance-type", "--key-name", "--count", "--security-group-ids", "--security-groups",
-      "--instance-ids", "--group-ids", "--group-names", "--tag-specifications", "--subnet-id", "--region", "--output",
+      "--instance-ids", "--group-ids", "--group-names", "--tag-specifications", "--subnet-id", "--placement", "--region", "--output",
     ],
   });
   if (parsed.unknown) {
@@ -54,6 +56,7 @@ export function ec2(ctx: Ctx, args: string[]): number {
       InstanceId: id,
       ImageId: i.imageId,
       InstanceType: i.instanceType,
+      Placement: { AvailabilityZone: i.availabilityZone },
       State: { Name: i.state },
       SecurityGroups: i.securityGroups.map((g) => ({ GroupId: g, GroupName: securityGroups.get(g)?.name ?? g })),
     };
@@ -142,8 +145,12 @@ export function ec2(ctx: Ctx, args: string[]): number {
         if (!id) return noGroup(name);
         groups.push(id);
       }
+      // --placement AvailabilityZone=us-east-1b; this simulated Region defaults to us-east-1a.
+      const placement = opt("placement");
+      const az = placement === undefined ? "us-east-1a" : /^AvailabilityZone=([a-z]{2}-[a-z]+-\d[a-z])$/.exec(placement)?.[1];
+      if (!az) return fail(ctx, "InvalidParameterValue", operation, `這個模擬終端機的 --placement 只支援 AvailabilityZone=us-east-1a 這種寫法，收到 '${placement}'`);
       const id = newId("i", ++ctx.state.aws.ec2.created);
-      instances.set(id, { imageId, instanceType, state: "running", securityGroups: groups });
+      instances.set(id, { imageId, instanceType, state: "running", securityGroups: groups, availabilityZone: az });
       json(ctx, { Instances: [describe(id)] });
       return 0;
     }
@@ -172,6 +179,10 @@ export function ec2(ctx: Ctx, args: string[]): number {
         const instance = instances.get(id)!;
         const previous = instance.state;
         instance.state = target;
+        // Data volumes attached after launch are preserved and detached when the instance is terminated.
+        if (target === "terminated") {
+          for (const volume of ctx.state.aws.ec2.volumes.values()) if (volume.attachment?.instanceId === id) volume.attachment = null;
+        }
         return { InstanceId: id, CurrentState: { Name: target }, PreviousState: { Name: previous } };
       });
       const key = sub === "stop-instances" ? "StoppingInstances" : sub === "start-instances" ? "StartingInstances" : "TerminatingInstances";

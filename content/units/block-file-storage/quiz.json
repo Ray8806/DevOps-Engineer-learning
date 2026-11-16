@@ -1,0 +1,146 @@
+{
+  "questions": [
+    {
+      "id": "block-file-storage-001",
+      "type": "single",
+      "provider": "general",
+      "certs": [{ "id": "clf-c02", "domain": 3 }],
+      "unitId": "block-file-storage",
+      "difficulty": 1,
+      "question": "三台網站伺服器要同時讀寫同一批使用者上傳的圖片，而且程式是用一般的檔案路徑存取。最適合的儲存方式是？",
+      "options": [
+        { "id": "a", "text": "每台伺服器各掛一個區塊儲存磁碟", "explanation": "各自的磁碟資料不會同步，一台寫入的檔案其他台看不到。" },
+        { "id": "b", "text": "代管的檔案儲存（例如 EFS 或 Filestore），三台一起掛載", "explanation": "正確。檔案儲存透過 NFS 讓多台機器同時讀寫同一個檔案系統，程式照樣用檔案路徑存取。" },
+        { "id": "c", "text": "本機的臨時磁碟", "explanation": "臨時磁碟只屬於一台機器，停止或終止後資料還會消失。" },
+        { "id": "d", "text": "把圖片存在執行中程式的記憶體", "explanation": "記憶體裡的資料不會在機器之間共用，重開後也會消失。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "block-file-storage-002",
+      "type": "single",
+      "provider": "general",
+      "unitId": "block-file-storage",
+      "difficulty": 2,
+      "question": "你在可用區 A 有一個資料磁碟，現在想把資料搬到可用區 B 的一台新虛擬機上使用。正確的做法是？",
+      "options": [
+        { "id": "a", "text": "直接把磁碟掛到可用區 B 的虛擬機", "explanation": "磁碟綁在一個可用區，只能掛到同一個可用區的虛擬機。" },
+        { "id": "b", "text": "替磁碟建立快照，再用快照在可用區 B 建立新磁碟", "explanation": "正確。快照不綁在單一可用區，可以用來在其他可用區還原出新的磁碟。" },
+        { "id": "c", "text": "把磁碟縮小後就可以跨可用區掛載", "explanation": "磁碟不能縮小，大小也和能不能跨可用區無關。" },
+        { "id": "d", "text": "變更磁碟類型，它就會移到另一個可用區", "explanation": "變更類型不會改變磁碟所在的可用區。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "block-file-storage-003",
+      "type": "single",
+      "provider": "general",
+      "unitId": "block-file-storage",
+      "difficulty": 1,
+      "question": "一顆 500 GB 的資料磁碟實際只用了 80 GB。關於調整它的大小，哪個敘述正確？",
+      "options": [
+        { "id": "a", "text": "可以直接縮小到 100 GB，節省費用", "explanation": "兩個平台的磁碟都只能加大，不能直接縮小。" },
+        { "id": "b", "text": "只能加大；要用更小的磁碟，得另外建立一個小磁碟再把資料複製過去", "explanation": "正確。雲端磁碟可以線上加大，但不能縮小，要縮小只能建立新磁碟並搬資料。" },
+        { "id": "c", "text": "磁碟大小建立後就完全不能改", "explanation": "磁碟可以加大，而且通常不必停機。" },
+        { "id": "d", "text": "雲端會自動依用量縮小磁碟", "explanation": "區塊儲存依配置的大小收費，不會自動縮小。自動增減容量是 EFS 這類檔案儲存的特性。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "block-file-storage-004",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 4 }],
+      "unitId": "block-file-storage",
+      "difficulty": 2,
+      "question": "你用 aws ec2 create-volume --size 100 --availability-zone us-east-1a 建立磁碟區，沒有指定類型。建立出來的是什麼類型？",
+      "options": [
+        { "id": "a", "text": "gp3", "explanation": "gp3 是較新的一般用途 SSD，但 AWS CLI 的 create-volume 沒指定類型時不是用它。" },
+        { "id": "b", "text": "gp2", "explanation": "正確。create-volume 的 --volume-type 預設是 gp2，要用 gp3 必須明確指定。" },
+        { "id": "c", "text": "io2", "explanation": "io2 是佈建 IOPS SSD，需要明確指定。" },
+        { "id": "d", "text": "st1", "explanation": "st1 是 HDD，而且最小 125 GiB。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "block-file-storage-005",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 3 }],
+      "unitId": "block-file-storage",
+      "difficulty": 3,
+      "question": "一個叢集式應用程式需要讓同一個可用區的 3 台 EC2 執行個體同時掛載同一個 EBS 磁碟區。應該選哪種磁碟區類型？",
+      "options": [
+        { "id": "a", "text": "gp3", "explanation": "一般用途 SSD 不支援 Multi-Attach。" },
+        { "id": "b", "text": "io2，並啟用 Multi-Attach", "explanation": "正確。Multi-Attach 只支援 io1 和 io2，可以掛到最多 16 台同一可用區的 Nitro 執行個體。" },
+        { "id": "c", "text": "st1", "explanation": "HDD 類型不支援 Multi-Attach。" },
+        { "id": "d", "text": "任何類型都可以，只要執行個體在不同可用區", "explanation": "Multi-Attach 要求所有執行個體在同一個可用區，而且只支援 io1、io2。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "block-file-storage-006",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 2 }],
+      "unitId": "block-file-storage",
+      "difficulty": 2,
+      "question": "關於 EBS 快照，哪些敘述正確？（選兩個）",
+      "options": [
+        { "id": "a", "text": "快照是增量的，只儲存上次快照之後有變動的區塊", "explanation": "正確。這讓快照比完整複製更快也更省錢。" },
+        { "id": "b", "text": "快照會複寫到 Region 內所有可用區，可以在任一可用區還原成新磁碟區", "explanation": "正確。這也是把資料搬到其他可用區的方法。" },
+        { "id": "c", "text": "AWS 會自動替每個 EBS 磁碟區每天建立快照", "explanation": "AWS 不會自動備份 EBS，要自己建立，或用 Amazon Data Lifecycle Manager、AWS Backup 排程。" },
+        { "id": "d", "text": "快照可以用 S3 主控台直接下載", "explanation": "快照雖然存在 S3，但無法用 S3 主控台或 S3 API 存取。" }
+      ],
+      "answer": ["a", "b"]
+    },
+    {
+      "id": "block-file-storage-007",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 2 }],
+      "unitId": "block-file-storage",
+      "difficulty": 2,
+      "question": "一台 EC2 執行個體把重要的訂單資料寫在執行個體儲存（instance store）上。之後執行個體被停止再啟動，資料會怎樣？",
+      "options": [
+        { "id": "a", "text": "資料完整保留", "explanation": "只有重新開機時資料會保留；停止、休眠或終止都會清除執行個體儲存。" },
+        { "id": "b", "text": "資料會被清除", "explanation": "正確。執行個體儲存是臨時的，重要資料應該放在 EBS、S3 或資料庫。" },
+        { "id": "c", "text": "資料會自動搬到 EBS", "explanation": "AWS 不會自動搬移執行個體儲存的資料。" },
+        { "id": "d", "text": "資料會自動建立快照", "explanation": "AWS 不會自動替執行個體儲存備份；要保留的資料必須自己複製到 EBS、S3 等持久的儲存。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "block-file-storage-008",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 2 }],
+      "unitId": "block-file-storage",
+      "difficulty": 2,
+      "question": "一個資料庫 VM 需要在可用區故障時，能用另一個可用區的磁碟副本繼續運作。應該使用哪種 Persistent Disk？",
+      "options": [
+        { "id": "a", "text": "zonal 的 pd-standard", "explanation": "zonal 磁碟只存在一個可用區。" },
+        { "id": "b", "text": "regional Persistent Disk", "explanation": "正確。regional Persistent Disk 在同一個區域的兩個可用區各有副本，主要可用區故障時可以使用另一個可用區的副本。" },
+        { "id": "c", "text": "本機 SSD", "explanation": "本機 SSD 綁在主機上，VM 停止或終止時資料可能遺失。" },
+        { "id": "d", "text": "以唯讀模式把磁碟掛到兩台 VM", "explanation": "唯讀共用是讓多台 VM 讀取同一份資料，不是跨可用區的備援。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "block-file-storage-009",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 3 }],
+      "unitId": "block-file-storage",
+      "difficulty": 2,
+      "question": "你執行 gcloud compute disks create logs --zone=asia-east1-b，沒有指定其他選項。建立出來的磁碟是什麼？",
+      "options": [
+        { "id": "a", "text": "100 GB 的 pd-balanced", "explanation": "pd-balanced 是 Google Cloud 主控台的預設類型，gcloud 的預設不同。" },
+        { "id": "b", "text": "500 GB 的 pd-standard", "explanation": "正確。gcloud 的預設類型是 pd-standard，沒有指定 --size 時 pd-standard 的預設大小是 500 GB。" },
+        { "id": "c", "text": "10 GB 的 pd-ssd", "explanation": "pd-ssd 要明確指定，而且預設大小是 100 GB。" },
+        { "id": "d", "text": "指令會失敗，因為一定要指定 --size", "explanation": "--size 不是必填，沒有指定時會依類型使用預設大小。" }
+      ],
+      "answer": ["b"]
+    }
+  ]
+}

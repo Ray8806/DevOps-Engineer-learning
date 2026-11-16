@@ -24,7 +24,7 @@ describe("aws iam", () => {
   it("creates users and groups and prints their ARNs", () => {
     const r = sh(createLabState(), "aws iam create-group --group-name developers", "aws iam create-user --user-name alice");
     expect(JSON.parse(r.text)).toEqual({ User: { Path: "/", UserName: "alice", Arn: "arn:aws:iam::123456789012:user/alice" } });
-    expect(cloud(r.state).aws.iam).toEqual({ users: { alice: { groups: {}, policies: {} } }, groups: { developers: { policies: {} } } });
+    expect(cloud(r.state).aws.iam).toEqual({ users: { alice: { groups: {}, policies: {} } }, groups: { developers: { policies: {} } }, roles: {} });
     expect(JSON.parse(sh(r.state, "aws iam list-users").text).Users).toHaveLength(1);
     expect(JSON.parse(sh(r.state, "aws iam list-groups").text).Groups[0].GroupName).toBe("developers");
   });
@@ -73,7 +73,7 @@ describe("aws iam", () => {
     expect(sh(s, "aws iam delete-user --user-name alice").error).toMatch(/DeleteConflict/);
     expect(sh(s, "aws iam delete-group --group-name devs").error).toMatch(/DeleteConflict/);
     const cleared = sh(s, "aws iam remove-user-from-group --group-name devs --user-name alice", "aws iam delete-user --user-name alice", "aws iam delete-group --group-name devs").state;
-    expect(cloud(cleared).aws.iam).toEqual({ users: {}, groups: {} });
+    expect(cloud(cleared).aws.iam).toEqual({ users: {}, groups: {}, roles: {} });
   });
 
   it("handles names that collide with object prototype keys", () => {
@@ -83,7 +83,7 @@ describe("aws iam", () => {
   });
 
   it("lists what is supported for unknown subcommands", () => {
-    expect(sh(createLabState(), "aws iam create-role --role-name x").error).toMatch(/不支援的 iam 指令 'create-role'/);
+    expect(sh(createLabState(), "aws iam create-access-key --user-name x").error).toMatch(/不支援的 iam 指令 'create-access-key'/);
     expect(sh(createLabState(), "aws iam").error).toMatch(/usage: aws iam/);
   });
 });
@@ -307,7 +307,7 @@ describe("gcloud compute", () => {
     expect(sh(createLabState(), `${base} --allow=tcp:80`).error).toMatch(/NAME: Must be specified/);
     expect(sh(createLabState(), `${base} r1 --allow=tcp:80 --direction=EGRESS`).error).toMatch(/只支援輸入/);
     expect(sh(createLabState(), `${base} r1 --allow=tcp:80`, `${base} r1 --allow=tcp:80`).error).toMatch(/already exists/);
-    expect(sh(createLabState(), "gcloud compute disks list").error).toMatch(/不支援 'disks'/);
+    expect(sh(createLabState(), "gcloud compute images list").error).toMatch(/不支援 'images'/);
   });
 });
 

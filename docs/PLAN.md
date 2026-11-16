@@ -240,6 +240,12 @@ Lab 引擎維護一份虛擬狀態（檔案系統加雲端資源），指令會�
 | `["cloud", "aws", "iam", "users" \| "groups", 名稱, "groups" \| "policies", 名稱或 ARN]` | IAM 使用者、群組、附加的政策 |
 | `["cloud", "aws", "ec2", "securityGroups", 群組名稱, "ingress" \| "runningInstances"]` | 安全群組的規則（例如 `"tcp:443:0.0.0.0/0"`）與使用它的執行中執行個體數 |
 | `["cloud", "aws", "ec2", "counts", "running" \| "stopped" \| "terminated"]` | 各狀態的執行個體數量（ID 是產生的，Lab 無法預先知道，所以用數量檢查） |
+| `["cloud", "aws", "ec2", "volumeSpecs", "可用區/類型/大小", "count" \| "attached" \| "fromSnapshot"]` | EBS 磁碟區依規格分組的數量，例如 `"us-east-1a/gp3/20"`；`["cloud", "aws", "ec2", "snapshotCount"]` 是 EBS 快照數量 |
+| `["cloud", "aws", "iam", "roles", 名稱, "trustedServices" \| "policies", 服務或 ARN]` | IAM 角色：信任政策允許扮演的服務（例如 `lambda.amazonaws.com`）與附加的政策 |
+| `["cloud", "aws", "lambda", "functions", 名稱, "runtime" \| "handler" \| "role" \| "timeout" \| "memorySize" \| "environment" \| "invoked"]` | Lambda 函式；`invoked` 代表至少成功呼叫過一次 |
+| `["cloud", "gcp", "disks", 名稱, "zone" \| "sizeGb" \| "type" \| "sourceSnapshot" \| "users", 執行個體]` | Persistent Disk；`users` 的值是 `"rw"` 或 `"ro"` |
+| `["cloud", "gcp", "snapshots", 名稱, "sourceDisk" \| "sizeGb"]` | 磁碟快照 |
+| `["cloud", "gcp", "run", "services", 名稱, "region" \| "image" \| "public" \| "concurrency" \| "memory" \| "timeout" \| "minInstances" \| "maxInstances" \| "env" \| "revisionCount"]` | Cloud Run 服務；`public` 代表已關閉 Invoker IAM 檢查，或 `allUsers` 有 `roles/run.invoker` |
 | `["cloud", "gcp", "serviceAccounts", 電子郵件]`、`["cloud", "gcp", "bindings", 角色, 成員]` | 服務帳戶與專案的 IAM 授權 |
 | `["cloud", "gcp", "instances", 名稱, "status" \| "zone" \| "machineType" \| "tags"]` | Compute Engine 執行個體 |
 | `["cloud", "gcp", "instances", 名稱, "networkInterface"]` | 執行個體的網路，值像 `{ "network": "lab-net", "subnet": "web", "externalIp": false }`，用 `equals` 檢查 |
@@ -260,17 +266,17 @@ Lab 引擎維護一份虛擬狀態（檔案系統加雲端資源），指令會�
 
 `initialState.files` 的路徑要以 `~/` 或 `/` 開頭。`initialState.cloud` 可以預先放 bucket，形狀與上表相同；也可以用 `cloud.gcp` 預設專案 ID 和既有的 IAM 授權（`{ "project": "…", "bindings": { 角色: [成員] } }`），用 `cloud.aws.vpcs` 預先建立 VPC 與子網路（`{ VPC ID: { "cidr": "…", "subnets": { 子網路 ID: { "cidr": "…", "availabilityZone": "…" } } } }`，每個 VPC 會自動有只含本地路由的主路由表）。
 
-模擬環境的起始狀態：AWS 帳戶裡沒有預設 VPC；Google Cloud 專案裡有 auto 模式的 `default` 網路（不另外列出它在各區域的子網路），沒有指定網路的執行個體和防火牆規則都放在 `default`。
+模擬環境的起始狀態：AWS 帳戶裡沒有預設 VPC，執行個體預設啟動在 `us-east-1a`；Google Cloud 專案裡有 auto 模式的 `default` 網路（不另外列出它在各區域的子網路），沒有指定網路的執行個體和防火牆規則都放在 `default`。
 
 ### Lab 引擎
 
 程式在 `src/lib/lab-engine/`，是不依賴瀏覽器的純函式：`execute(state, line)` 回傳新的狀態與輸出，不修改傳入的狀態。
 
-- **支援的指令**：`pwd ls cd mkdir touch cat echo cp mv rm rmdir clear help whoami`；`aws s3 mb|rb|ls|cp|mv|rm`；`gcloud storage buckets create|delete|list|describe` 與 `gcloud storage ls|cp|mv|rm|cat`；`gsutil mb|rb|ls|cp|mv|rm|cat`；`aws iam`（使用者、群組、受管政策）；`aws ec2`（安全群組、執行個體、VPC、子網路、網際網路閘道、路由表）；`aws rds`（DB 子網路群組、執行個體、唯讀複本、快照；不含 Aurora 叢集）；`gcloud iam service-accounts`；`gcloud projects`（IAM 授權）；`gcloud compute instances|firewall-rules|networks|networks subnets|routers|routers nats`；`gcloud sql instances|databases|users|backups`；`gcloud config`；`git init|status|add|commit|log|branch|switch|checkout|merge`（只有本機操作，沒有遠端；合併衝突會取消合併）。
+- **支援的指令**：`pwd ls cd mkdir touch cat echo cp mv rm rmdir zip clear help whoami`（`zip` 產生的是模擬的封存檔，`cat` 可以看到內容）；`aws s3 mb|rb|ls|cp|mv|rm`；`gcloud storage buckets create|delete|list|describe` 與 `gcloud storage ls|cp|mv|rm|cat`；`gsutil mb|rb|ls|cp|mv|rm|cat`；`aws iam`（使用者、群組、角色、受管政策）；`aws ec2`（安全群組、執行個體、EBS 磁碟區與快照、VPC、子網路、網際網路閘道、路由表）；`aws lambda`（建立、呼叫、修改設定與程式碼；不會真的執行程式碼，呼叫時把事件原樣放在回應的 body）；`aws rds`（DB 子網路群組、執行個體、唯讀複本、快照；不含 Aurora 叢集）；`gcloud iam service-accounts`；`gcloud projects`（IAM 授權）；`gcloud compute instances|firewall-rules|networks|networks subnets|routers|routers nats|disks|snapshots`；`gcloud run deploy|services|revisions`（只能部署現成的映像檔，不能從原始碼建置）；`gcloud sql instances|databases|users|backups`；`gcloud config`；`git init|status|add|commit|log|branch|switch|checkout|merge`（只有本機操作，沒有遠端；合併衝突會取消合併）。
 - **支援的語法**：引號、反斜線跳脫、註解、`>` 與 `>>`、`&&` 與 `;`。不支援管線、變數與萬用字元，會明確告知。
 - **新增指令**：在 `engine.ts` 的 `commands` 註冊一個 `Command`（收到可修改的草稿狀態與輸出函式，回傳結束碼），並補上測試。
 - **輸出訊息是近似值**：格式盡量貼近真實 CLI，但不保證逐字相同。
-- 每個 Lab 都必須在測試裡（`engine.test.ts`、`cloud.test.ts` 或 `network-db.test.ts`）有一條能從頭做到完成的指令腳本。
+- 每個 Lab 都必須在測試裡（`engine.test.ts`、`cloud.test.ts`、`network-db.test.ts` 或 `serverless-storage.test.ts`）有一條能從頭做到完成的指令腳本。
 
 所有格式的權威定義在 `src/lib/content/schema.ts`，本節與它不一致時以程式為準。
 
@@ -317,8 +323,8 @@ interface Progress {
 | 階段 | 單元 | 狀態 |
 |---|---|---|
 | 0 基礎 | Linux 指令基礎、網路基礎、Git 基礎 | 完成（網路基礎沒有 Lab） |
-| 1 雲端核心 | 身分與權限、虛擬機、物件儲存、虛擬網路、關聯式資料庫 | 完成 |
-| 1 雲端核心 | 無伺服器運算、區塊與檔案儲存、NoSQL 資料庫 | 待寫 |
+| 1 雲端核心 | 身分與權限、虛擬機、無伺服器運算、物件儲存、區塊與檔案儲存、虛擬網路、關聯式資料庫 | 完成 |
+| 1 雲端核心 | NoSQL 資料庫 | 待寫 |
 | 2 維運 | 全部 5 個單元 | 待寫 |
 | 3 自動化 | 全部 5 個單元 | 待寫 |
 | 4 實戰 | 架構設計案例、面試題 | 待寫 |

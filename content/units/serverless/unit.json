@@ -1,0 +1,25 @@
+{
+  "id": "serverless",
+  "title": "無伺服器運算",
+  "summary": "不必管理伺服器，只交出程式碼或容器：平台依流量自動擴展、沒有流量時縮到零，依實際用量計費。",
+  "stage": 1,
+  "prerequisites": ["iam-basics", "virtual-machines"],
+  "providers": {
+    "aws": { "services": ["Lambda"] },
+    "gcp": { "services": ["Cloud Run", "Cloud Functions"] }
+  },
+  "compare": [
+    { "aspect": "代表服務", "aws": "AWS Lambda", "gcp": "Cloud Run（服務、工作）與 Cloud Run functions" },
+    { "aspect": "交出去的東西", "aws": "函式：.zip 部署套件或容器映像檔", "gcp": "容器映像檔（也可以從原始碼自動建置）" },
+    { "aspect": "怎麼被呼叫", "aws": "事件觸發（S3、SQS、EventBridge 等）或直接呼叫；也可以設定函式網址", "gcp": "服務有自己的 HTTPS 網址，也可以接收事件" },
+    { "aspect": "預設逾時", "aws": "3 秒，最多 900 秒（15 分鐘）", "gcp": "5 分鐘，最多 60 分鐘" },
+    { "aspect": "記憶體", "aws": "128 MB 到 10,240 MB，CPU 依記憶體比例分配", "gcp": "預設 512 MiB，最多 32 GiB" },
+    { "aspect": "一個執行環境同時處理的請求", "aws": "預設一次一個", "gcp": "用 gcloud 建立時預設最多 80 × vCPU 數，最多 1,000" },
+    { "aspect": "執行時的身分", "aws": "執行角色（信任 lambda.amazonaws.com 的 IAM 角色）", "gcp": "服務帳戶" },
+    { "aspect": "公開給所有人呼叫", "aws": "函式網址或 API Gateway", "gcp": "關閉 Invoker IAM 檢查，或把 roles/run.invoker 授權給 allUsers" },
+    { "aspect": "計費", "aws": "請求次數加上執行時間（GB-秒）", "gcp": "預設依請求計費，只在處理請求時收費；也可以改為依執行個體計費" },
+    { "aspect": "命令列工具", "aws": "aws lambda", "gcp": "gcloud run" }
+  ],
+  "certDomains": ["clf-c02:3", "saa-c03:3", "saa-c03:4", "gcp-cdl:4", "gcp-ace:2"],
+  "estimatedMinutes": 40
+}

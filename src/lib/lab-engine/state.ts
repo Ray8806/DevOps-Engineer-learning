@@ -33,16 +33,29 @@ export interface AwsState {
   iam: {
     users: Map<string, { groups: Set<string>; policies: Set<string> }>;
     groups: Map<string, { policies: Set<string> }>;
+    /** Roles: the services allowed to assume them (from the trust policy) and attached policies. */
+    roles: Map<string, { trustedServices: Set<string>; policies: Set<string> }>;
   };
   ec2: {
     /** Keyed by instance id. */
-    instances: Map<string, { imageId: string; instanceType: string; state: "running" | "stopped" | "terminated"; securityGroups: string[] }>;
+    instances: Map<
+      string,
+      { imageId: string; instanceType: string; state: "running" | "stopped" | "terminated"; securityGroups: string[]; availabilityZone: string }
+    >;
+    /** EBS volumes, keyed by volume id. */
+    volumes: Map<
+      string,
+      { availabilityZone: string; size: number; type: string; snapshotId: string | null; attachment: { instanceId: string; device: string } | null }
+    >;
+    /** EBS snapshots, keyed by snapshot id. */
+    snapshots: Map<string, { volumeId: string; size: number; description: string }>;
     /** Keyed by security group id. Ingress entries look like "tcp:443:0.0.0.0/0". */
     securityGroups: Map<string, { name: string; description: string; ingress: Set<string> }>;
     /** Number of ids handed out so far (instances, groups, VPC resources), so new ids are deterministic. */
     created: number;
   };
   vpc: AwsVpcState;
+  lambda: { functions: Map<string, LambdaFunction> };
   rds: {
     subnetGroups: Map<string, { description: string; subnetIds: string[] }>;
     instances: Map<string, RdsInstance>;
@@ -67,6 +80,35 @@ export interface AwsVpcState {
       associations: Map<string, string>;
     }
   >;
+}
+
+export interface LambdaFunction {
+  runtime: string;
+  handler: string;
+  role: string;
+  /** Files in the deployment package: name -> content. */
+  code: Record<string, string>;
+  timeout: number;
+  memorySize: number;
+  environment: Record<string, string>;
+  invocations: number;
+}
+
+export interface CloudRunService {
+  region: string;
+  image: string;
+  /** Cloud Run's invoker IAM check; disabling it makes the service public. */
+  invokerIamCheck: boolean;
+  /** Members holding roles/run.invoker on the service. */
+  invokers: Set<string>;
+  concurrency: number;
+  memory: string;
+  timeout: number;
+  minInstances: number;
+  maxInstances: number;
+  env: Record<string, string>;
+  /** Revision names, oldest first; the last one serves all traffic. */
+  revisions: string[];
 }
 
 export interface RdsInstance {
@@ -130,6 +172,11 @@ export interface GcpState {
   /** Cloud Routers, keyed by "region/name"; each NAT lists "ALL" or the subnets it serves. */
   routers: Map<string, { name: string; network: string; region: string; nats: Map<string, string[] | "ALL"> }>;
   sql: { instances: Map<string, CloudSqlInstance>; backupsCreated: number };
+  /** Zonal Persistent Disk volumes (data disks) by name; users maps instance name -> "rw" | "ro". */
+  disks: Map<string, { zone: string; sizeGb: number; type: string; sourceSnapshot: string | null; users: Map<string, "rw" | "ro"> }>;
+  /** Disk snapshots by name. */
+  snapshots: Map<string, { sourceDisk: string; sizeGb: number }>;
+  run: { services: Map<string, CloudRunService>; revisionsCreated: number };
 }
 
 export interface LabState {
@@ -267,8 +314,9 @@ export function createLabState(initial: InitialState = {}): LabState {
  */
 function awsFrom(cloud: Record<string, unknown>): AwsState {
   const aws: AwsState = {
-    iam: { users: new Map(), groups: new Map() },
-    ec2: { instances: new Map(), securityGroups: new Map(), created: 0 },
+    iam: { users: new Map(), groups: new Map(), roles: new Map() },
+    ec2: { instances: new Map(), securityGroups: new Map(), volumes: new Map(), snapshots: new Map(), created: 0 },
+    lambda: { functions: new Map() },
     vpc: { vpcs: new Map(), subnets: new Map(), internetGateways: new Map(), routeTables: new Map() },
     rds: { subnetGroups: new Map(), instances: new Map(), snapshots: new Map() },
   };
@@ -317,6 +365,9 @@ function gcpFrom(cloud: Record<string, unknown>): GcpState {
     subnets: new Map(),
     routers: new Map(),
     sql: { instances: new Map(), backupsCreated: 0 },
+    disks: new Map(),
+    snapshots: new Map(),
+    run: { services: new Map(), revisionsCreated: 0 },
   };
 }
 
@@ -473,6 +524,33 @@ function rdsView(aws: AwsState) {
   };
 }
 
+/**
+ * EBS volumes grouped by "availabilityZone/type/sizeGiB", because volume ids
+ * are generated: how many exist, how many are attached, how many came from a snapshot.
+ */
+function volumeSpecs(aws: AwsState) {
+  const specs: Record<string, { count: number; attached: number; fromSnapshot: number }> = {};
+  for (const v of aws.ec2.volumes.values()) {
+    const key = `${v.availabilityZone}/${v.type}/${v.size}`;
+    specs[key] ??= { count: 0, attached: 0, fromSnapshot: 0 };
+    specs[key].count++;
+    if (v.attachment) specs[key].attached++;
+    if (v.snapshotId) specs[key].fromSnapshot++;
+  }
+  return specs;
+}
+
+function lambdaView(aws: AwsState) {
+  return {
+    functions: Object.fromEntries(
+      [...aws.lambda.functions].map(([name, f]) => [
+        name,
+        { runtime: f.runtime, handler: f.handler, role: f.role, timeout: f.timeout, memorySize: f.memorySize, environment: f.environment, invoked: f.invocations > 0 },
+      ]),
+    ),
+  };
+}
+
 function awsView(aws: AwsState) {
   const instances = [...aws.ec2.instances.values()];
   const count = (state: string, groupId?: string) =>
@@ -482,6 +560,9 @@ function awsView(aws: AwsState) {
     ec2: {
       instances: plain(aws.ec2.instances),
       counts: { running: count("running"), stopped: count("stopped"), terminated: count("terminated") },
+      volumes: plain(aws.ec2.volumes),
+      volumeSpecs: volumeSpecs(aws),
+      snapshotCount: aws.ec2.snapshots.size,
       // By name, because ids are generated and a lab cannot know them in advance.
       securityGroups: Object.fromEntries(
         [...aws.ec2.securityGroups].map(([id, g]) => [
@@ -492,6 +573,7 @@ function awsView(aws: AwsState) {
     },
     vpcs: vpcsView(aws.vpc),
     rds: rdsView(aws),
+    lambda: lambdaView(aws),
   };
 }
 
@@ -529,6 +611,29 @@ function gcpView(gcp: GcpState) {
     routers: Object.fromEntries(
       routers.map((r) => [r.name, { network: r.network, region: r.region, nats: Object.fromEntries([...r.nats].map(([n, served]) => [n, plain(served)])) }]),
     ),
+    disks: Object.fromEntries(
+      [...gcp.disks].map(([name, d]) => [name, { zone: d.zone, sizeGb: d.sizeGb, type: d.type, sourceSnapshot: d.sourceSnapshot, users: plain(d.users) }]),
+    ),
+    snapshots: plain(gcp.snapshots),
+    run: {
+      services: Object.fromEntries(
+        [...gcp.run.services].map(([name, r]) => [
+          name,
+          {
+            region: r.region,
+            image: r.image,
+            public: !r.invokerIamCheck || r.invokers.has("allUsers"),
+            concurrency: r.concurrency,
+            memory: r.memory,
+            timeout: r.timeout,
+            minInstances: r.minInstances,
+            maxInstances: r.maxInstances,
+            env: r.env,
+            revisionCount: r.revisions.length,
+          },
+        ]),
+      ),
+    },
     sql: {
       instances: Object.fromEntries(
         [...gcp.sql.instances].map(([name, i]) => [
@@ -590,6 +695,11 @@ function repoView(state: LabState, root: string, repo: GitRepo) {
  *   cloud.gcp.firewallRules[name].{network, allow["tcp:80"],sourceRanges[cidr],targetTags[tag]},
  *   cloud.gcp.networks[name].{mode, subnets[name].{region, range}, natRegions[region]},
  *   cloud.gcp.routers[name].{network, region, nats[name]},
+ *   cloud.aws.iam.roles[name].{trustedServices[service], policies[arn]},
+ *   cloud.aws.lambda.functions[name].{runtime, handler, role, timeout, memorySize, environment[key], invoked},
+ *   cloud.aws.ec2.volumeSpecs["az/type/size"].{count, attached, fromSnapshot}, cloud.aws.ec2.snapshotCount,
+ *   cloud.gcp.disks[name].{zone, sizeGb, type, sourceSnapshot, users[instance]}, cloud.gcp.snapshots[name].{sourceDisk, sizeGb},
+ *   cloud.gcp.run.services[name].{region, image, public, concurrency, memory, timeout, minInstances, maxInstances, env[key], revisionCount},
  *   cloud.gcp.sql.instances[name].{databaseVersion, edition, tier, region, availabilityType, backupsEnabled,
  *     deletionProtection, masterInstanceName, databases[name], users[name], backupCount},
  *   git["~/project"].{branch, branches[name], commitCount, lastMessage,
