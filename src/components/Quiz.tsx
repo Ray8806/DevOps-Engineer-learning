@@ -234,15 +234,19 @@ export function Quiz({ mode, questions }: { mode: QuizMode; questions: QuizQuest
           {question.options.map((option, oi) => {
             const chosen = selected.includes(option.id);
             const right = question.answer.includes(option.id);
+            // A correct option left unticked on a multiple-choice question is a mistake too.
+            const missed = submitted && multiple && right && !chosen;
             const tone = !submitted
               ? chosen
                 ? "border-accent bg-accent-soft"
                 : "border-border hover:border-accent"
-              : right
-                ? "border-accent bg-accent-soft"
-                : chosen
-                  ? "border-danger bg-danger-soft"
-                  : "border-border";
+              : missed
+                ? "border-danger bg-danger-soft"
+                : right
+                  ? "border-accent bg-accent-soft"
+                  : chosen
+                    ? "border-danger bg-danger-soft"
+                    : "border-border";
             return (
               <li key={option.id}>
                 <label
@@ -264,9 +268,17 @@ export function Quiz({ mode, questions }: { mode: QuizMode; questions: QuizQuest
                     </span>
                   </span>
                   {submitted ? (
-                    <span className="mt-2 block pl-7 text-sm">
-                      <span className={`font-bold ${right ? "text-accent" : chosen ? "text-danger" : "text-muted"}`}>
-                        {right ? (chosen ? "正確答案，你選對了" : "正確答案") : chosen ? "你選了這個，不正確" : "不正確"}
+                    <span className="mt-2 block pl-7 text-sm" data-result={missed ? "missed" : right ? "right" : chosen ? "wrong" : "neutral"}>
+                      <span className={`font-bold ${missed ? "text-danger" : right ? "text-accent" : chosen ? "text-danger" : "text-muted"}`}>
+                        {missed
+                          ? "你漏選了這個正確答案"
+                          : right
+                            ? chosen
+                              ? "正確答案，你選對了"
+                              : "正確答案"
+                            : chosen
+                              ? "你選了這個，不正確"
+                              : "不正確"}
                       </span>
                       <span className="mt-0.5 block text-muted">{option.explanation}</span>
                     </span>
