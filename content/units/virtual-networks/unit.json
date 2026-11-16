@@ -1,0 +1,26 @@
+{
+  "id": "virtual-networks",
+  "title": "虛擬網路",
+  "summary": "在雲端劃出自己的私有網路：規劃 IP 範圍、切子網路、決定哪些資源連得到網際網路，以及兩層防火牆怎麼分工。",
+  "stage": 1,
+  "prerequisites": ["networking-basics", "virtual-machines"],
+  "providers": {
+    "aws": { "services": ["VPC"] },
+    "gcp": { "services": ["VPC"] }
+  },
+  "compare": [
+    { "aspect": "服務名稱", "aws": "Amazon VPC", "gcp": "VPC 網路（Virtual Private Cloud）" },
+    { "aspect": "網路的範圍", "aws": "一個 VPC 屬於一個 Region，可以橫跨該 Region 的所有可用區", "gcp": "VPC 網路是全球資源，不屬於任何區域" },
+    { "aspect": "子網路的範圍", "aws": "一個子網路只在一個可用區", "gcp": "一個子網路屬於一個區域，可以用在該區域的所有可用區" },
+    { "aspect": "IP 範圍設定在哪裡", "aws": "建立 VPC 時指定（/16 到 /28），子網路從中切出", "gcp": "網路本身沒有 IP 範圍，每個子網路各自指定" },
+    { "aspect": "每個子網路保留的位址", "aws": "5 個（前四個和最後一個）", "gcp": "4 個（前兩個和最後兩個）" },
+    { "aspect": "預設網路", "aws": "每個 Region 一個預設 VPC（172.31.0.0/16），每個可用區一個公有子網路", "gcp": "每個新專案有一個 auto 模式的 default 網路，每個區域一個子網路" },
+    { "aspect": "連到網際網路", "aws": "網際網路閘道，加上指向它的路由", "gcp": "系統自動建立的預設路由，指向預設網際網路閘道" },
+    { "aspect": "只出不進的上網方式", "aws": "NAT 閘道", "gcp": "Cloud NAT（設定在 Cloud Router 上）" },
+    { "aspect": "防火牆", "aws": "安全群組（執行個體層級，有狀態）加上網路 ACL（子網路層級，無狀態）", "gcp": "VPC 防火牆規則（有狀態，用網路標記或服務帳戶指定目標）" },
+    { "aspect": "連接兩個網路", "aws": "VPC 對等互連，不可遞移", "gcp": "VPC 網路對等互連，不可遞移" },
+    { "aspect": "命令列工具", "aws": "aws ec2（create-vpc、create-subnet…）", "gcp": "gcloud compute networks、networks subnets、routers" }
+  ],
+  "certDomains": ["clf-c02:3", "saa-c03:1", "saa-c03:3", "gcp-cdl:4", "gcp-ace:2"],
+  "estimatedMinutes": 45
+}

@@ -17,7 +17,9 @@
       "units": [
         "iam-basics",
         "virtual-machines",
-        "object-storage"
+        "object-storage",
+        "virtual-networks",
+        "relational-databases"
       ]
     },
     {

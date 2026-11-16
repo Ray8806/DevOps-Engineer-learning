@@ -1,0 +1,55 @@
+{
+  "id": "aws-rds-instance",
+  "title": "建立 RDS 資料庫、Multi-AZ 與唯讀複本",
+  "description": "在已經準備好的 VPC 私有子網路裡建立 MySQL 資料庫，開啟 Multi-AZ、加上唯讀複本、建立手動快照，最後刪除複本。",
+  "provider": "aws",
+  "estimatedMinutes": 20,
+  "initialState": {
+    "files": {},
+    "cloud": {
+      "aws": {
+        "vpcs": {
+          "vpc-0f3c2a1b9d8e7c6b5": {
+            "cidr": "10.0.0.0/16",
+            "subnets": {
+              "subnet-0a1b2c3d4e5f60718": { "cidr": "10.0.11.0/24", "availabilityZone": "us-east-1a" },
+              "subnet-0b2c3d4e5f6071829": { "cidr": "10.0.12.0/24", "availabilityZone": "us-east-1b" }
+            }
+          }
+        }
+      }
+    }
+  },
+  "steps": [
+    {
+      "instruction": "帳戶裡已經有一個 VPC 和兩個私有子網路。先用 aws ec2 describe-subnets 查出它們的 ID，再建立一個名為 lab-db-subnets 的 DB 子網路群組，包含這兩個子網路。",
+      "hint": "aws rds create-db-subnet-group --db-subnet-group-name lab-db-subnets --db-subnet-group-description \"Lab database\" --subnet-ids subnet-0a1b2c3d4e5f60718 subnet-0b2c3d4e5f6071829",
+      "check": { "type": "state", "path": ["cloud", "aws", "rds", "subnetGroups", "lab-db-subnets"], "exists": true }
+    },
+    {
+      "instruction": "建立 MySQL 資料庫 lab-db：類別 db.t3.micro、儲存空間 20 GiB、管理員帳號 admin、密碼交給 Secrets Manager 管理，放在 lab-db-subnets，而且不可公開存取。",
+      "hint": "aws rds create-db-instance --db-instance-identifier lab-db --engine mysql --db-instance-class db.t3.micro --allocated-storage 20 --master-username admin --manage-master-user-password --db-subnet-group-name lab-db-subnets --no-publicly-accessible",
+      "check": { "type": "state", "path": ["cloud", "aws", "rds", "instances", "lab-db", "subnetGroup"], "equals": "lab-db-subnets" }
+    },
+    {
+      "instruction": "把 lab-db 改成 Multi-AZ，並且立刻套用，不要等維護時段。用 aws rds describe-db-instances 確認 MultiAZ 變成 true。",
+      "hint": "aws rds modify-db-instance --db-instance-identifier lab-db --multi-az --apply-immediately（沒有加 --apply-immediately 的話，變更會停在 PendingModifiedValues）",
+      "check": { "type": "state", "path": ["cloud", "aws", "rds", "instances", "lab-db", "multiAZ"], "equals": true }
+    },
+    {
+      "instruction": "為 lab-db 建立一個唯讀複本 lab-db-replica，用來分擔讀取。",
+      "hint": "aws rds create-db-instance-read-replica --db-instance-identifier lab-db-replica --source-db-instance-identifier lab-db",
+      "check": { "type": "state", "path": ["cloud", "aws", "rds", "instances", "lab-db-replica", "readReplicaSource"], "equals": "lab-db" }
+    },
+    {
+      "instruction": "準備做一次大量修改前，先為 lab-db 建立手動快照 lab-db-before-change。",
+      "hint": "aws rds create-db-snapshot --db-instance-identifier lab-db --db-snapshot-identifier lab-db-before-change",
+      "check": { "type": "state", "path": ["cloud", "aws", "rds", "snapshots", "lab-db-before-change", "instance"], "equals": "lab-db" }
+    },
+    {
+      "instruction": "讀取量下降了，刪除唯讀複本 lab-db-replica。想想看：為什麼刪除複本時一定要加某個選項？",
+      "hint": "aws rds delete-db-instance --db-instance-identifier lab-db-replica --skip-final-snapshot",
+      "check": { "type": "state", "path": ["cloud", "aws", "rds", "instances", "lab-db-replica"], "exists": false }
+    }
+  ]
+}

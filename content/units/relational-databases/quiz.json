@@ -1,0 +1,147 @@
+{
+  "questions": [
+    {
+      "id": "relational-databases-001",
+      "type": "single",
+      "provider": "general",
+      "certs": [{ "id": "clf-c02", "domain": 3 }],
+      "unitId": "relational-databases",
+      "difficulty": 1,
+      "question": "團隊把自己在虛擬機上架設的 MySQL 搬到雲端的代管資料庫服務。搬過去之後，哪一項工作仍然是團隊自己的責任？",
+      "options": [
+        { "id": "a", "text": "更新資料庫主機的作業系統", "explanation": "代管服務由供應商負責作業系統的更新。" },
+        { "id": "b", "text": "設定每天的自動備份排程", "explanation": "代管服務內建自動備份，只需要設定保留期間和備份時段。" },
+        { "id": "c", "text": "設計資料表、調整慢的 SQL 查詢", "explanation": "正確。代管服務負責基礎設施，資料表設計和查詢效能仍然是使用者的責任。" },
+        { "id": "d", "text": "偵測主機故障並切換到備用機器", "explanation": "開啟高可用設定後，故障偵測和容錯移轉由服務自動處理。" }
+      ],
+      "answer": ["c"]
+    },
+    {
+      "id": "relational-databases-002",
+      "type": "single",
+      "provider": "general",
+      "unitId": "relational-databases",
+      "difficulty": 2,
+      "question": "電商網站的資料庫 CPU 長期偏高，分析後發現九成以上是商品查詢等讀取操作。最適合的做法是？",
+      "options": [
+        { "id": "a", "text": "開啟高可用，讓備用執行個體分擔讀取", "explanation": "高可用的備用執行個體只是待命，平常不能處理讀取。" },
+        { "id": "b", "text": "建立唯讀複本，把讀取的查詢送到複本", "explanation": "正確。唯讀複本專門用來分擔讀取負載。" },
+        { "id": "c", "text": "縮短自動備份的保留期間", "explanation": "備份保留期間和查詢負載無關。" },
+        { "id": "d", "text": "把資料庫改成可公開存取", "explanation": "這只會增加資安風險，對效能沒有幫助。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "relational-databases-003",
+      "type": "multiple",
+      "provider": "general",
+      "certs": [{ "id": "saa-c03", "domain": 2 }],
+      "unitId": "relational-databases",
+      "difficulty": 2,
+      "question": "比較高可用的備用執行個體和唯讀複本，哪些敘述正確？（選兩個）",
+      "options": [
+        { "id": "a", "text": "備用執行個體使用同步複寫，交易完成時兩邊都已經寫入", "explanation": "正確。同步複寫確保容錯移轉後不會遺失已經完成的交易。" },
+        { "id": "b", "text": "唯讀複本使用非同步複寫，剛寫入的資料可能還讀不到", "explanation": "正確。非同步複寫會有一點延遲，應用程式要能接受讀到稍舊的資料。" },
+        { "id": "c", "text": "唯讀複本在主要執行個體故障時，一定會自動接手", "explanation": "唯讀複本要手動升格；自動容錯移轉是高可用設定的功能。" },
+        { "id": "d", "text": "備用執行個體可以同時處理讀取，所以開啟高可用就不需要唯讀複本", "explanation": "RDS 的 Multi-AZ 執行個體部署和 Cloud SQL 的高可用，備用執行個體都不能處理讀取。" }
+      ],
+      "answer": ["a", "b"]
+    },
+    {
+      "id": "relational-databases-004",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 3 }],
+      "unitId": "relational-databases",
+      "difficulty": 2,
+      "question": "你用 AWS CLI 對一台 RDS for MySQL 執行個體執行 create-db-instance-read-replica，卻收到錯誤，說來源執行個體沒有啟用自動備份。該怎麼處理？",
+      "options": [
+        { "id": "a", "text": "先建立一個手動快照，再建立唯讀複本", "explanation": "手動快照不能取代自動備份這個條件。" },
+        { "id": "b", "text": "把來源執行個體的備份保留期間改成大於 0 的值，再建立唯讀複本", "explanation": "正確。建立唯讀複本前，來源必須啟用自動備份，也就是備份保留期間不是 0。" },
+        { "id": "c", "text": "先開啟 Multi-AZ", "explanation": "Multi-AZ 和唯讀複本的條件無關。" },
+        { "id": "d", "text": "RDS for MySQL 不支援唯讀複本，要改用 Aurora", "explanation": "RDS for MySQL 支援唯讀複本，每個來源最多 15 個。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "relational-databases-005",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 2 }],
+      "unitId": "relational-databases",
+      "difficulty": 2,
+      "question": "你執行 aws rds modify-db-instance --db-instance-identifier app-db --multi-az，指令成功，但 describe-db-instances 顯示 MultiAZ 仍然是 false。最可能的原因是？",
+      "options": [
+        { "id": "a", "text": "DB 子網路群組只涵蓋一個可用區", "explanation": "DB 子網路群組在建立時就必須涵蓋至少兩個可用區，不會出現只有一個可用區的群組。" },
+        { "id": "b", "text": "沒有加上 --apply-immediately，變更要等到下一個維護時段才套用", "explanation": "正確。這個變更會出現在 PendingModifiedValues，等維護時段才套用；要立刻套用必須加上 --apply-immediately。" },
+        { "id": "c", "text": "MySQL 不支援 Multi-AZ", "explanation": "RDS for MySQL 支援 Multi-AZ 部署。" },
+        { "id": "d", "text": "必須先刪除所有唯讀複本", "explanation": "唯讀複本不會阻止開啟 Multi-AZ。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "relational-databases-006",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "clf-c02", "domain": 3 }],
+      "unitId": "relational-databases",
+      "difficulty": 2,
+      "question": "哪一項是 Amazon Aurora 和一般 RDS for MySQL 不同的特點？",
+      "options": [
+        { "id": "a", "text": "Aurora 只能在單一可用區運作", "explanation": "相反地，Aurora 的叢集磁碟區會自動在三個可用區保存資料副本。" },
+        { "id": "b", "text": "Aurora 的儲存空間會隨資料量自動成長，不需要預先配置容量", "explanation": "正確。Aurora 的叢集磁碟區自動成長，並依實際用量收費。" },
+        { "id": "c", "text": "Aurora 使用自己的查詢語言，不相容 MySQL", "explanation": "Aurora 相容 MySQL 和 PostgreSQL，現有的程式和工具大多可以直接使用。" },
+        { "id": "d", "text": "Aurora 不支援讀取擴展", "explanation": "Aurora 叢集最多可以有 15 個 Aurora 複本，並提供讀取端點分散讀取。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "relational-databases-007",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 3 }],
+      "unitId": "relational-databases",
+      "difficulty": 2,
+      "question": "你想刪除一個 Cloud SQL 主要執行個體，但它還有兩個唯讀備用資源。會發生什麼事？",
+      "options": [
+        { "id": "a", "text": "主要執行個體被刪除，唯讀備用資源自動升格", "explanation": "這是 RDS 的行為。Cloud SQL 不允許這樣刪除。" },
+        { "id": "b", "text": "刪除會失敗，必須先刪除所有唯讀備用資源", "explanation": "正確。Cloud SQL 不能刪除還有唯讀備用資源的執行個體。" },
+        { "id": "c", "text": "主要執行個體和唯讀備用資源一起被刪除", "explanation": "Cloud SQL 不會連帶刪除唯讀備用資源，而是拒絕刪除主要執行個體。" },
+        { "id": "d", "text": "主要執行個體變成停止狀態，資料保留 7 天", "explanation": "刪除不是停止，也沒有這種行為。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "relational-databases-008",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-cdl", "domain": 2 }],
+      "unitId": "relational-databases",
+      "difficulty": 2,
+      "question": "一個全球性的金融服務需要關聯式資料庫，資料量和交易量會持續成長到單台機器無法負荷，而且要在多個區域都提供強一致性的讀寫。Google Cloud 上最適合的是？",
+      "options": [
+        { "id": "a", "text": "Cloud SQL 加上多個唯讀備用資源", "explanation": "唯讀備用資源只能分擔讀取，寫入仍然集中在一台主要執行個體，而且是非同步複寫。" },
+        { "id": "b", "text": "Spanner", "explanation": "正確。Spanner 可水平擴展讀寫容量，並在多區域設定下提供強一致性的交易。" },
+        { "id": "c", "text": "Cloud Storage", "explanation": "Cloud Storage 是物件儲存，不是關聯式資料庫，不支援 SQL 交易。" },
+        { "id": "d", "text": "在 Compute Engine 上自己架設 MySQL", "explanation": "自己架設仍然受限於單台機器，還要自己處理複寫和故障切換。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "relational-databases-009",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 2 }],
+      "unitId": "relational-databases",
+      "difficulty": 3,
+      "question": "你執行 gcloud sql instances create app-db --database-version=POSTGRES_16 --cpu=2 --memory=8GiB --region=asia-east1，卻收到錯誤說 --cpu 和 --memory 不相容。最簡單的修正方式是？",
+      "options": [
+        { "id": "a", "text": "把 --memory 改成 7680MiB", "explanation": "問題不在記憶體的數值，而是版本不支援用 --cpu、--memory 指定規格。" },
+        { "id": "b", "text": "加上 --edition=enterprise", "explanation": "正確。PostgreSQL 16 沒有指定版本時預設是 Enterprise Plus，而 Enterprise Plus 只能用 --tier 指定機器類型；改成 Enterprise 就能用 --cpu 和 --memory。" },
+        { "id": "c", "text": "拿掉 --region", "explanation": "區域和這個錯誤無關。" },
+        { "id": "d", "text": "改用 --availability-type=REGIONAL", "explanation": "高可用設定和機器規格的指定方式無關。" }
+      ],
+      "answer": ["b"]
+    }
+  ]
+}

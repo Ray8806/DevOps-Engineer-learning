@@ -1,0 +1,45 @@
+{
+  "id": "gcp-cloud-sql-instance",
+  "title": "建立 Cloud SQL 執行個體、高可用與唯讀備用資源",
+  "description": "建立 PostgreSQL 執行個體、資料庫和使用者，改成高可用，加上唯讀備用資源和隨選備份，最後刪除唯讀備用資源。",
+  "provider": "gcp",
+  "estimatedMinutes": 20,
+  "initialState": { "files": {}, "cloud": {} },
+  "steps": [
+    {
+      "instruction": "在 asia-east1 建立 PostgreSQL 16 執行個體 lab-db。明確指定 Enterprise 版本，規格用 2 個 vCPU、8 GiB 記憶體。",
+      "hint": "gcloud sql instances create lab-db --database-version=POSTGRES_16 --edition=enterprise --cpu=2 --memory=8GiB --region=asia-east1（PostgreSQL 16 沒指定版本時預設是 Enterprise Plus，不能用 --cpu 和 --memory）",
+      "check": { "type": "state", "path": ["cloud", "gcp", "sql", "instances", "lab-db", "region"], "equals": "asia-east1" }
+    },
+    {
+      "instruction": "在 lab-db 建立資料庫 appdb。",
+      "hint": "gcloud sql databases create appdb --instance=lab-db",
+      "check": { "type": "state", "path": ["cloud", "gcp", "sql", "instances", "lab-db", "databases", "appdb"], "exists": true }
+    },
+    {
+      "instruction": "建立應用程式要用的使用者 app_user，密碼自訂。",
+      "hint": "gcloud sql users create app_user --instance=lab-db --password=Chang3-Me-Now",
+      "check": { "type": "state", "path": ["cloud", "gcp", "sql", "instances", "lab-db", "users", "app_user"], "exists": true }
+    },
+    {
+      "instruction": "把 lab-db 改成高可用（REGIONAL），讓同一區域另一個可用區有備用執行個體。",
+      "hint": "gcloud sql instances patch lab-db --availability-type=REGIONAL",
+      "check": { "type": "state", "path": ["cloud", "gcp", "sql", "instances", "lab-db", "availabilityType"], "equals": "REGIONAL" }
+    },
+    {
+      "instruction": "為 lab-db 建立唯讀備用資源 lab-db-replica。建立後用 gcloud sql databases list --instance=lab-db-replica 看看，appdb 是不是也在上面。",
+      "hint": "gcloud sql instances create lab-db-replica --master-instance-name=lab-db",
+      "check": { "type": "state", "path": ["cloud", "gcp", "sql", "instances", "lab-db-replica", "masterInstanceName"], "equals": "lab-db" }
+    },
+    {
+      "instruction": "為 lab-db 建立一份隨選備份。",
+      "hint": "gcloud sql backups create --instance=lab-db",
+      "check": { "type": "state", "path": ["cloud", "gcp", "sql", "instances", "lab-db", "backupCount"], "equals": 1 }
+    },
+    {
+      "instruction": "練習結束，刪除唯讀備用資源 lab-db-replica。（試試看先刪 lab-db 會發生什麼事。）",
+      "hint": "gcloud sql instances delete lab-db-replica",
+      "check": { "type": "state", "path": ["cloud", "gcp", "sql", "instances", "lab-db-replica"], "exists": false }
+    }
+  ]
+}

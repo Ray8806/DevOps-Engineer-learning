@@ -1,0 +1,230 @@
+## 什麼是關聯式資料庫
+
+**關聯式資料庫**把資料存成一張張的**資料表**，每張表有固定的欄位，表和表之間用欄位互相關聯。例如「訂單」表裡的「客戶編號」，對應到「客戶」表的某一列。存取資料用的語言是 **SQL**。
+
+關聯式資料庫最重要的特性是**交易**（transaction）：一組操作要嘛全部成功、要嘛全部取消。轉帳時「A 帳戶扣款」和「B 帳戶入帳」必須一起完成，不能只做一半。這種保證通常用 ACID 四個字母描述：不可分割、一致、隔離、持久。
+
+常見的引擎有 MySQL、PostgreSQL、MariaDB、SQL Server、Oracle。電商網站的訂單、會員資料、庫存，大多放在關聯式資料庫裡。
+
+## 自己架，還是用代管服務
+
+你可以在虛擬機上自己安裝 MySQL，但要負責的事情很多。雲端的**代管資料庫**把大部分維運工作交給供應商：
+
+| 工作 | 在虛擬機上自己架 | 代管資料庫 |
+|---|---|---|
+| 作業系統更新 | 自己 | 供應商 |
+| 資料庫軟體更新 | 自己 | 供應商（在你設定的維護時段） |
+| 備份 | 自己寫排程 | 內建自動備份 |
+| 故障偵測與切換 | 自己設計 | 內建，勾選高可用即可 |
+| 資料表設計、SQL 查詢效能 | 自己 | **還是自己** |
+
+代管服務省下的是基礎設施的工作。資料表怎麼設計、查詢寫得好不好、要不要加索引，仍然是你的責任。
+
+## 建立資料庫要決定的事
+
+| 要決定的事 | 說明 |
+|---|---|
+| 引擎與版本 | 例如 MySQL 8.0、PostgreSQL 16 |
+| 規格 | 幾個 CPU、多少記憶體 |
+| 儲存空間 | 容量與磁碟類型 |
+| 網路 | 放在哪個虛擬網路，要不要有公有 IP |
+| 高可用 | 要不要在另一個可用區準備備用執行個體 |
+| 備份 | 自動備份保留多久 |
+| 管理員帳號 | 使用者名稱與密碼，最好交給密碼管理服務保管 |
+
+<Callout title="資料庫不要放在公有網路">
+資料庫通常只有應用程式需要連線，應該放在**私有子網路**、不給公有 IP，再用防火牆規則只允許應用程式伺服器連到資料庫的連接埠。直接把資料庫暴露在網際網路上，是常見的資料外洩原因。
+</Callout>
+
+## 高可用：備用執行個體
+
+一台資料庫只在一個可用區。為了撐過可用區故障，兩個平台都提供**高可用**設定：
+
+- 在**同一個區域的另一個可用區**準備一台**備用執行個體**。
+- 寫入主要執行個體的資料，會**同步複寫**到備用執行個體，交易回報成功前，兩邊都已經寫入。
+- 主要執行個體或它所在的可用區故障時，自動**容錯移轉**（failover）到備用執行個體，應用程式繼續用同一個連線位址。
+
+要注意的是：**備用執行個體只是待命用，不能拿來分擔讀取**。另外，同步複寫會讓寫入稍微變慢，而且費用大約多一倍。
+
+## 擴展讀取：唯讀複本
+
+如果資料庫的瓶頸是**讀取**（例如大量的商品查詢、報表），可以建立**唯讀複本**（read replica）：
+
+- 複本只能讀、不能寫，應用程式把讀取的查詢送到複本，減輕主要執行個體的負擔。
+- 複本用**非同步複寫**，資料可能比主要執行個體晚一點點，剛寫入的資料不一定馬上讀得到。
+- 複本可以**升格**成獨立的執行個體，所以也能當作災難復原的手段，例如在另一個區域放一個複本。
+
+| | 高可用的備用執行個體 | 唯讀複本 |
+|---|---|---|
+| 目的 | 故障時接手，提高可用性 | 分擔讀取，提高效能 |
+| 複寫方式 | 同步 | 非同步 |
+| 平常能不能讀 | 不能 | 可以 |
+| 故障時 | 自動容錯移轉 | 要手動升格 |
+
+## 備份與還原
+
+代管資料庫有兩種備份：
+
+- **自動備份**：每天在備份時段自動執行，加上交易紀錄，可以把資料庫還原到保留期間內的**任一時間點**（point-in-time recovery，PITR）。不小心刪錯資料時，還原到刪除前一刻。
+- **手動備份**：在升級、大量修改資料之前，手動建立一份備份。
+
+以 RDS 為例，還原到某個時間點會**建立一個新的執行個體**，原本的執行個體不受影響，確認資料正確後再把應用程式切過去。
+
+刪除資料庫是無法復原的動作，兩個平台都提供**刪除保護**：開啟後必須先關掉它才能刪除，避免誤刪正式環境的資料庫。
+
+## 在兩個平台上怎麼做
+
+<ProviderTabs>
+<Provider name="aws">
+
+### Amazon RDS
+
+RDS（Relational Database Service）支援 **MySQL、PostgreSQL、MariaDB、Oracle、SQL Server 和 IBM Db2**。一台資料庫稱為 **DB 執行個體**，規格用 **DB 執行個體類別**表示，例如 `db.t3.micro`。
+
+**儲存空間**：MySQL、PostgreSQL、MariaDB 使用一般用途 SSD（gp2、gp3）時，容量介於 20 到 65,536 GiB。
+
+**DB 子網路群組**：要把資料庫放進自己的 VPC，先建立 DB 子網路群組，列出資料庫可以使用的子網路（通常是私有子網路）。子網路群組**至少要涵蓋兩個可用區**，Multi-AZ 才有地方放備用執行個體。
+
+**公開存取**：用 CLI 建立時，有指定 DB 子網路群組的話，預設**不可公開存取**；沒有指定子網路群組時，非 Aurora 的執行個體預設**可公開存取**，所以建立時最好明確加上 `--no-publicly-accessible`。
+
+**管理員密碼**：可以自己設定，也可以加上 `--manage-master-user-password`，讓 RDS 產生密碼並存放在 AWS Secrets Manager，不必把密碼寫在指令或程式碼裡。
+
+**Multi-AZ**
+
+- **Multi-AZ DB 執行個體部署**：一台主要執行個體，加上另一個可用區的一台備用執行個體，同步複寫。備用執行個體**不能**處理讀取。
+- **Multi-AZ DB 叢集部署**：一台寫入執行個體加上兩台**可讀取**的備用執行個體，分布在三個可用區。
+
+修改設定時要注意：沒有加上 `--apply-immediately` 的話，像開啟 Multi-AZ 這類變更會等到**下一個維護時段**才套用。
+
+**唯讀複本**
+
+- 來源執行個體必須**啟用自動備份**（備份保留期間不是 0）才能建立複本。
+- MySQL、PostgreSQL、MariaDB 每個來源最多 15 個複本。
+- 複本按一般 DB 執行個體的價格收費；同一個 Region 內複寫的資料傳輸不收費。
+- 刪除來源執行個體時，同一個 Region 的複本會**升格**為獨立的執行個體。
+
+**備份**
+
+- 自動備份的保留期間可設為 **0 到 35 天**，0 代表停用。用 CLI 或 API 建立時預設 **1 天**，用主控台建立時預設 7 天。
+- 可以還原到保留期間內的任一時間點。
+- **手動快照**不會隨著執行個體刪除而消失，每個 Region 最多 100 個。
+- 刪除執行個體時，必須指定**最終快照**的名稱，或明確加上 `--skip-final-snapshot` 表示不要最終快照。刪除唯讀複本則一定要加上 `--skip-final-snapshot`。
+- 用主控台建立的執行個體預設開啟刪除保護。
+
+**常用指令**
+
+```bash
+# 建立 DB 子網路群組（子網路要涵蓋兩個可用區）
+aws rds create-db-subnet-group --db-subnet-group-name app-db-subnets --db-subnet-group-description "App database" --subnet-ids subnet-0aaa1111bbbb2222c subnet-0ddd3333eeee4444f
+
+# 建立 MySQL 執行個體，密碼交給 Secrets Manager
+aws rds create-db-instance --db-instance-identifier app-db --engine mysql --db-instance-class db.t3.micro --allocated-storage 20 --master-username admin --manage-master-user-password --db-subnet-group-name app-db-subnets --no-publicly-accessible
+
+# 立刻改成 Multi-AZ
+aws rds modify-db-instance --db-instance-identifier app-db --multi-az --apply-immediately
+
+# 建立唯讀複本、手動快照
+aws rds create-db-instance-read-replica --db-instance-identifier app-db-replica --source-db-instance-identifier app-db
+aws rds create-db-snapshot --db-instance-identifier app-db --db-snapshot-identifier app-db-before-upgrade
+
+# 查詢與刪除
+aws rds describe-db-instances --db-instance-identifier app-db
+aws rds delete-db-instance --db-instance-identifier app-db-replica --skip-final-snapshot
+```
+
+### Amazon Aurora
+
+Aurora 是 AWS 自己設計、**相容 MySQL 和 PostgreSQL** 的資料庫引擎，屬於 RDS 的一部分，但架構不同：**運算和儲存分開**。
+
+- 資料存在**叢集磁碟區**（cluster volume），自動在同一個 Region 的**三個可用區**保存多份副本，寫入時同步複寫到六個儲存節點。
+- 儲存空間**自動成長**，不必預先配置容量，只依實際用量收費。依引擎版本，最大可到 256 TiB。
+- 一個 Aurora 叢集有一台寫入執行個體，最多再加 **15 個 Aurora 複本**（讀取執行個體）。寫入執行個體故障時，其中一個複本會接手成為新的寫入執行個體。
+- 叢集提供**叢集端點**（連到寫入執行個體）和**讀取端點**（自動分散到所有複本），應用程式不必知道個別執行個體的位址。
+
+</Provider>
+<Provider name="gcp">
+
+### Cloud SQL
+
+Cloud SQL 支援 **MySQL、PostgreSQL 和 SQL Server**。每個 Cloud SQL 執行個體背後是一台 VM，資料存在掛載的永久磁碟上。
+
+**版本（edition）**：Cloud SQL 分成 **Enterprise** 和 **Enterprise Plus** 兩種版本，Enterprise Plus 提供更好的效能和可用性，價格也較高。用 gcloud 建立時沒有指定版本的話，預設版本取決於資料庫版本：例如 PostgreSQL 16 以上和 MySQL 8.4 預設是 Enterprise Plus，PostgreSQL 15 以下和 MySQL 8.0 以下預設是 Enterprise。
+
+**規格**
+
+- Enterprise：專用核心的機器用 `--cpu` 和 `--memory` 指定（每個 vCPU 搭配 0.9 GB 到 6.5 GB 記憶體）；也可以用 `--tier` 選共用核心的 `db-f1-micro`、`db-g1-small`，但這兩種不在 Cloud SQL 的 SLA 涵蓋範圍內，只適合練習。
+- Enterprise Plus：用 `--tier` 選預先定義的機器類型，例如 `db-perf-optimized-N-2`，不能用 `--cpu`、`--memory`。
+
+**連線**：執行個體可以有公有 IP、私人 IP，或兩者都有。私人 IP 只能從 VPC 網路裡連線。Google 建議透過 **Cloud SQL Auth Proxy** 或 Cloud SQL 語言連接器連線，能更簡單、安全地存取執行個體，特別是經由公有 IP 連線的時候。
+
+**高可用（REGIONAL）**
+
+- 高可用的執行個體也稱為**區域執行個體**，在同一個區域有主要和次要兩個可用區，各有一台主要執行個體和備用執行個體。
+- 所有寫入都同步複寫到兩個可用區的永久磁碟，才回報交易完成。
+- 主要執行個體或可用區故障時，備用執行個體成為新的主要執行個體。
+- 高可用執行個體的費用是一般執行個體的**兩倍**。
+- 必須**啟用自動備份與時間點復原**才能設定高可用。
+
+**唯讀備用資源**（read replica）
+
+- 非同步複寫，只能讀取、不能寫入。
+- 建立時沒有指定版本和規格，通常沿用主要執行個體的設定。
+- 主要執行個體**還有唯讀備用資源時不能刪除**，必須先刪除所有唯讀備用資源。這點和 RDS 不同。
+
+**備份**
+
+- 有**隨選備份**（on-demand，隨時手動建立）和**自動備份**兩種。
+- 自動備份預設保留的份數：Enterprise 是 7 份，Enterprise Plus 是 15 份。
+- 開啟時間點復原後，可以還原到保留期間內的任一時間點。
+- 刪除保護開啟時，必須先關閉才能刪除執行個體。
+
+**常用指令**
+
+```bash
+# 建立 PostgreSQL 16 執行個體（明確指定 Enterprise 版本，用 CPU 和記憶體決定規格）
+gcloud sql instances create app-db --database-version=POSTGRES_16 --edition=enterprise --cpu=2 --memory=8GiB --region=asia-east1
+
+# 建立資料庫與使用者
+gcloud sql databases create appdb --instance=app-db
+gcloud sql users create app_user --instance=app-db --password=請換成強密碼
+
+# 改成高可用
+gcloud sql instances patch app-db --availability-type=REGIONAL
+
+# 建立唯讀備用資源、隨選備份
+gcloud sql instances create app-db-replica --master-instance-name=app-db
+gcloud sql backups create --instance=app-db
+
+# 查詢與刪除
+gcloud sql instances list
+gcloud sql instances delete app-db-replica
+```
+
+### Spanner
+
+Spanner 是 Google Cloud 的**可水平擴展**的關聯式資料庫，支援 GoogleSQL 和 PostgreSQL 兩種介面。
+
+- 資料自動分割到多台機器，讀寫容量可以隨需求增加，不受單台機器的限制。
+- 提供**強一致性**的交易：每次讀取都看得到最新的寫入，即使資料分散在不同區域。
+- 執行個體可以設定為**單一區域、雙區域或多區域**。單一區域的可用性 SLA 是 99.99%，雙區域和多區域是 99.999%。
+
+一般的網站用 Cloud SQL 就夠了；資料量或流量大到單台資料庫撐不住、或需要跨區域都能寫入時，才考慮 Spanner。
+
+</Provider>
+</ProviderTabs>
+
+## 兩個平台的差異
+
+<Compare />
+
+要特別記住的差異：**刪除還有複本的主要執行個體**，RDS 會把複本升格為獨立的執行個體，Cloud SQL 則要求先刪除所有複本。
+
+## 重點整理
+
+- 代管資料庫幫你處理作業系統、資料庫軟體更新、備份和故障切換，但資料表設計和查詢效能還是你的責任。
+- 資料庫放在私有子網路、不給公有 IP，只允許應用程式連線。
+- 高可用：另一個可用區的備用執行個體，同步複寫、自動容錯移轉，但不能分擔讀取。
+- 唯讀複本：非同步複寫，用來分擔讀取，也可以升格做災難復原。
+- 自動備份加上交易紀錄，可以還原到任一時間點；重要變更前再做一份手動備份。
+- RDS 的自動備份保留 0 到 35 天，建立唯讀複本前必須啟用自動備份。
+- Aurora 和 Spanner 是各自的雲端原生資料庫：Aurora 相容 MySQL 與 PostgreSQL、儲存自動成長；Spanner 可水平擴展並跨區域提供強一致性。

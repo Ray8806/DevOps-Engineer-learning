@@ -1,0 +1,130 @@
+{
+  "questions": [
+    {
+      "id": "virtual-networks-001",
+      "type": "single",
+      "provider": "general",
+      "unitId": "virtual-networks",
+      "difficulty": 1,
+      "question": "公司正在規劃開發、測試、正式三個雲端網路，將來會用 VPN 把它們和公司機房接在一起。規劃 IP 範圍時最重要的原則是什麼？",
+      "options": [
+        { "id": "a", "text": "三個網路都用 10.0.0.0/16，設定比較一致", "explanation": "範圍重疊的網路無法用對等互連或 VPN 互通，之後要接在一起時會出問題。" },
+        { "id": "b", "text": "每個網路使用彼此不重疊、也不和公司機房重疊的範圍", "explanation": "正確。網路之間要互連，兩邊的 IP 範圍就不能重疊，所以一開始就要分配好。" },
+        { "id": "c", "text": "使用公有 IP 範圍，比較容易連上網際網路", "explanation": "雲端網路內部一般使用私有位址；能不能上網由路由、閘道和公有 IP 決定，不是靠網路本身的範圍。" },
+        { "id": "d", "text": "範圍越小越好，可以節省費用", "explanation": "IP 範圍的大小不影響費用。範圍太小反而會不夠用，之後很難更換。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "virtual-networks-002",
+      "type": "single",
+      "provider": "general",
+      "certs": [{ "id": "saa-c03", "domain": 1 }],
+      "unitId": "virtual-networks",
+      "difficulty": 2,
+      "question": "私有子網路裡的應用程式伺服器需要下載作業系統更新，但不能讓網際網路上的人主動連進來。應該怎麼做？",
+      "options": [
+        { "id": "a", "text": "給伺服器一個公有 IP，並在防火牆開放所有輸入連線", "explanation": "這樣伺服器就直接暴露在網際網路上，違反「不能被主動連入」的要求。" },
+        { "id": "b", "text": "透過 NAT 服務讓伺服器連出去", "explanation": "正確。NAT 讓私有子網路的機器可以主動連出，回應會送回來，但外面無法主動建立連線。" },
+        { "id": "c", "text": "把伺服器搬到公有子網路", "explanation": "公有子網路的資源可以從網際網路直接連到，不符合需求。" },
+        { "id": "d", "text": "建立網路對等互連", "explanation": "對等互連是讓兩個虛擬網路用私有 IP 互通，不提供網際網路連線。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "virtual-networks-003",
+      "type": "single",
+      "provider": "general",
+      "unitId": "virtual-networks",
+      "difficulty": 2,
+      "question": "網路 A 和網路 B 建立了對等互連，網路 B 和網路 C 也建立了對等互連。網路 A 的機器能直接連到網路 C 嗎？",
+      "options": [
+        { "id": "a", "text": "可以，流量會經過網路 B 轉送", "explanation": "AWS 和 Google Cloud 的對等互連都不可遞移，B 不會替 A 轉送到 C 的流量。" },
+        { "id": "b", "text": "不行，要另外建立 A 和 C 之間的對等互連", "explanation": "正確。對等互連只在直接相連的兩個網路之間有效。" },
+        { "id": "c", "text": "只有在三個網路屬於同一個帳戶或專案時可以", "explanation": "不可遞移和帳戶歸屬無關。" },
+        { "id": "d", "text": "可以，但只限 ICMP（ping）", "explanation": "沒有這種例外，任何協定都不會經過 B 轉送。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "virtual-networks-004",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 1 }],
+      "unitId": "virtual-networks",
+      "difficulty": 2,
+      "question": "在 Amazon VPC 中，什麼條件決定一個子網路是「公有子網路」？",
+      "options": [
+        { "id": "a", "text": "子網路的 CIDR 使用公有 IP 範圍", "explanation": "子網路通常使用私有範圍，公有或私有和 CIDR 無關。" },
+        { "id": "b", "text": "子網路關聯的路由表有一條通往網際網路閘道的路由", "explanation": "正確。AWS 的定義就是看路由表：有路由通往網際網路閘道是公有子網路，沒有就是私有子網路。" },
+        { "id": "c", "text": "子網路裡至少有一台執行個體有公有 IP", "explanation": "沒有通往網際網路閘道的路由，即使執行個體有公有 IP 也無法和網際網路通訊。" },
+        { "id": "d", "text": "子網路的網路 ACL 允許所有流量", "explanation": "預設網路 ACL 本來就允許所有流量，私有子網路也是如此。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "virtual-networks-005",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "clf-c02", "domain": 3 }],
+      "unitId": "virtual-networks",
+      "difficulty": 2,
+      "question": "你在 VPC 建立了一個 CIDR 為 10.0.1.0/24 的子網路。這個子網路最多可以分配幾個 IPv4 位址給資源使用？",
+      "options": [
+        { "id": "a", "text": "256", "explanation": "/24 共有 256 個位址，但 AWS 會保留其中 5 個。" },
+        { "id": "b", "text": "254", "explanation": "傳統網路扣掉網路位址和廣播位址是 254，但 AWS 還另外保留了路由器、DNS 和未來使用的位址。" },
+        { "id": "c", "text": "251", "explanation": "正確。AWS 保留每個子網路的前四個位址和最後一個位址，256 減 5 是 251。" },
+        { "id": "d", "text": "252", "explanation": "252 是 Google Cloud 的算法（保留 4 個）。AWS 保留 5 個。" }
+      ],
+      "answer": ["c"]
+    },
+    {
+      "id": "virtual-networks-006",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 1 }],
+      "unitId": "virtual-networks",
+      "difficulty": 3,
+      "question": "關於 AWS 的安全群組和網路 ACL，哪些敘述正確？（選兩個）",
+      "options": [
+        { "id": "a", "text": "安全群組是有狀態的，允許的輸入連線，其回應會自動放行", "explanation": "正確。安全群組會記住連線狀態，回應不受輸出規則限制。" },
+        { "id": "b", "text": "網路 ACL 作用在子網路層級，可以設定拒絕規則", "explanation": "正確。網路 ACL 同時有允許和拒絕規則，套用到關聯的整個子網路。" },
+        { "id": "c", "text": "安全群組可以設定拒絕規則，用來封鎖特定 IP", "explanation": "安全群組只有允許規則。要封鎖特定 IP 可以用網路 ACL。" },
+        { "id": "d", "text": "網路 ACL 是有狀態的，不需要為回應流量設定規則", "explanation": "網路 ACL 是無狀態的，回應流量也必須有規則明確允許。" }
+      ],
+      "answer": ["a", "b"]
+    },
+    {
+      "id": "virtual-networks-007",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 2 }],
+      "unitId": "virtual-networks",
+      "difficulty": 2,
+      "question": "你要在 Google Cloud 建立一個網路，在台灣（asia-east1）和美國（us-central1）各放一些 VM，並讓它們用私有 IP 互通。最簡單的做法是？",
+      "options": [
+        { "id": "a", "text": "在兩個區域各建一個網路，再用 VPC 網路對等互連接起來", "explanation": "可行但多此一舉。Google Cloud 的網路是全球資源，一個網路就能涵蓋兩個區域。" },
+        { "id": "b", "text": "建立一個網路，在兩個區域各建一個子網路", "explanation": "正確。網路是全球的、子網路是區域的，同一個網路裡不同區域的子網路可以直接用私有 IP 互通。" },
+        { "id": "c", "text": "建立一個子網路，範圍同時涵蓋兩個區域", "explanation": "子網路是區域資源，一個子網路只能屬於一個區域。" },
+        { "id": "d", "text": "只能透過 Cloud VPN 連接兩個區域", "explanation": "同一個網路內不需要 VPN，VPN 是用來連接其他網路或公司機房。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "virtual-networks-008",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 2 }],
+      "unitId": "virtual-networks",
+      "difficulty": 3,
+      "question": "你建立了一個自訂模式的網路，並在裡面建立了一台 VM，但完全無法從公司 SSH 連進去。最可能的原因是什麼？",
+      "options": [
+        { "id": "a", "text": "自訂模式網路不支援 SSH", "explanation": "網路模式只影響子網路怎麼建立，和能用什麼協定無關。" },
+        { "id": "b", "text": "沒有任何防火牆規則允許輸入，隱含規則拒絕了所有輸入連線", "explanation": "正確。自己建立的網路不像 default 網路有預先建立的 default-allow-ssh 等規則；沒有規則符合時，隱含規則會拒絕所有輸入。" },
+        { "id": "c", "text": "隱含規則拒絕了所有輸出，VM 無法回應", "explanation": "隱含規則是允許所有輸出，而且防火牆是有狀態的，允許的連線其回應會自動放行。" },
+        { "id": "d", "text": "必須先建立 Cloud NAT 才能 SSH 連入", "explanation": "Cloud NAT 只處理 VM 主動連出的流量，不提供輸入連線。" }
+      ],
+      "answer": ["b"]
+    }
+  ]
+}

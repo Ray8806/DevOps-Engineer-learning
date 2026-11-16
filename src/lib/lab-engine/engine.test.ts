@@ -343,7 +343,7 @@ describe("aws s3", () => {
   });
 
   it("explains unsupported services, subcommands and options", () => {
-    expect(sh(fresh(), "aws rds describe-db-instances").errors[0]).toMatch(/不支援的服務 'rds'/);
+    expect(sh(fresh(), "aws dynamodb list-tables").errors[0]).toMatch(/不支援的服務 'dynamodb'/);
     expect(sh(fresh(), "aws s3 sync . s3://bbb").errors[0]).toMatch(/不支援的 s3 指令 'sync'/);
     expect(sh(fresh(), "aws s3 ls --profile x").errors[0]).toMatch(/Unknown options: --profile/);
     expect(sh(fresh(), "aws").errors[0]).toMatch(/usage/);
@@ -435,7 +435,7 @@ describe("gcloud storage and gsutil", () => {
   });
 
   it("explains unsupported gcloud groups", () => {
-    expect(sh(fresh(), "gcloud sql instances list").errors[0]).toMatch(/不支援 'sql'/);
+    expect(sh(fresh(), "gcloud spanner instances list").errors[0]).toMatch(/不支援 'spanner'/);
     expect(sh(fresh(), "gcloud storage rsync a b").errors[0]).toMatch(/不支援的指令 'rsync'/);
     expect(sh(fresh(), "gcloud storage buckets update gs://aaa").errors[0]).toMatch(/不支援的指令 'update'/);
   });

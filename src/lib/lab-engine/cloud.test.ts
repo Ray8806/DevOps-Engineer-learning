@@ -240,7 +240,13 @@ describe("gcloud compute", () => {
   it("creates an instance and lists it", () => {
     const r = withVm();
     expect(r.out[0]).toMatch(/^Created \[.*\/zones\/asia-east1-b\/instances\/web-1\]\.$/);
-    expect(cloud(r.state).gcp.instances["web-1"]).toEqual({ zone: "asia-east1-b", machineType: "e2-micro", status: "RUNNING", tags: { web: true } });
+    expect(cloud(r.state).gcp.instances["web-1"]).toEqual({
+      zone: "asia-east1-b",
+      machineType: "e2-micro",
+      status: "RUNNING",
+      tags: { web: true },
+      networkInterface: { network: "default", subnet: "default", externalIp: true },
+    });
     const listed = sh(r.state, "gcloud compute instances list").out;
     expect(listed[0]).toMatch(/^NAME\s+ZONE\s+MACHINE_TYPE\s+STATUS$/);
     expect(listed[1]).toMatch(/^web-1\s+asia-east1-b\s+e2-micro\s+RUNNING$/);
@@ -276,14 +282,14 @@ describe("gcloud compute", () => {
   it("adds tags later and describes an instance", () => {
     const s = sh(createLabState(), "gcloud compute instances create db-1 --zone=asia-east1-a", "gcloud compute instances add-tags db-1 --tags=db,internal").state;
     expect(cloud(s).gcp.instances["db-1"].tags).toEqual({ db: true, internal: true });
-    expect(sh(s, "gcloud compute instances describe db-1").text).toMatch(/name: db-1\nstatus: RUNNING\ntags:\n {2}items:\n {2}- db\n {2}- internal\nzone: asia-east1-a/);
+    expect(sh(s, "gcloud compute instances describe db-1").text).toMatch(/name: db-1\nnetworkInterfaces:\n- accessConfigs:[\s\S]*subnetwork: .*\/regions\/asia-east1\/subnetworks\/default\nstatus: RUNNING\ntags:\n {2}items:\n {2}- db\n {2}- internal\nzone: asia-east1-a/);
     expect(sh(s, "gcloud compute instances add-tags db-1").error).toMatch(/--tags: Must be specified/);
   });
 
   it("creates, lists and deletes firewall rules", () => {
     const r = sh(createLabState(), "gcloud compute firewall-rules create allow-http --allow=tcp:80 --source-ranges=0.0.0.0/0 --target-tags=web");
     expect(r.out[1]).toMatch(/^Created \[.*\/global\/firewalls\/allow-http\]\.$/);
-    expect(cloud(r.state).gcp.firewallRules["allow-http"]).toEqual({ allow: { "tcp:80": true }, sourceRanges: { "0.0.0.0/0": true }, targetTags: { web: true } });
+    expect(cloud(r.state).gcp.firewallRules["allow-http"]).toEqual({ network: "default", allow: { "tcp:80": true }, sourceRanges: { "0.0.0.0/0": true }, targetTags: { web: true } });
     expect(sh(r.state, "gcloud compute firewall-rules list").out[1]).toMatch(/^allow-http\s+default\s+INGRESS\s+tcp:80\s+0\.0\.0\.0\/0\s+web$/);
     expect(cloud(sh(r.state, "gcloud compute firewall-rules delete allow-http").state).gcp.firewallRules).toEqual({});
     expect(sh(r.state, "gcloud compute firewall-rules delete nope").error).toMatch(/was not found/);
@@ -291,7 +297,7 @@ describe("gcloud compute", () => {
 
   it("defaults the source to everywhere and accepts several protocols", () => {
     const s = sh(createLabState(), "gcloud compute firewall-rules create web --allow tcp:80,tcp:443,icmp").state;
-    expect(cloud(s).gcp.firewallRules.web).toEqual({ allow: { "tcp:80": true, "tcp:443": true, icmp: true }, sourceRanges: { "0.0.0.0/0": true }, targetTags: {} });
+    expect(cloud(s).gcp.firewallRules.web).toEqual({ network: "default", allow: { "tcp:80": true, "tcp:443": true, icmp: true }, sourceRanges: { "0.0.0.0/0": true }, targetTags: {} });
   });
 
   it("validates firewall rule arguments", () => {
