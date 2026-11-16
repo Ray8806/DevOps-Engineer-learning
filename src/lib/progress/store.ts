@@ -53,7 +53,9 @@ export function createLocalProgressStore(getStorage: () => StorageLike | undefin
   return {
     get,
     update(change) {
-      const next = change(get());
+      const current = get();
+      const next = change(current);
+      if (next === current) return;
       const raw = JSON.stringify(next);
       try {
         const s = storage();

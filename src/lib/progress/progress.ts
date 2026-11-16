@@ -50,6 +50,8 @@ export function parseProgress(raw: string | null): Progress {
 // ------------------------------------------------------------------ updates
 
 export function setPreferredProvider(progress: Progress, preferredProvider: PreferredProvider): Progress {
+  // Unchanged: return the same object so nothing is rewritten or re-rendered.
+  if (progress.preferredProvider === preferredProvider) return progress;
   return { ...progress, preferredProvider };
 }
 

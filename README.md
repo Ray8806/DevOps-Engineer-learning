@@ -2,6 +2,8 @@
 
 學習雲端工程師技能的網站：AWS 與 GCP 雙平台課程、測驗、模擬終端機實作與證照備考。規劃見 [docs/PLAN.md](docs/PLAN.md)。
 
+線上版本：https://dev-ops-engineer-learning.vercel.app/ （`main` 合併後由 Vercel 自動部署）
+
 ## 開發
 
 ```bash
