@@ -1,0 +1,193 @@
+{
+  "questions": [
+    {
+      "id": "cost-management-001",
+      "type": "single",
+      "provider": "general",
+      "unitId": "cost-management",
+      "difficulty": 1,
+      "question": "工程師把測試用的虛擬機「停止」了，以為就不會再有任何費用。這個想法哪裡有問題？",
+      "options": [
+        { "id": "a", "text": "停止的虛擬機仍然會依 CPU 用量收費", "explanation": "停止後不會再有運算的費用；問題出在其他還留著的資源。" },
+        { "id": "b", "text": "掛在上面的磁碟（以及快照、外部 IP 等）仍然會收費", "explanation": "正確。磁碟依配置的容量收費，不需要的話要刪掉。" },
+        { "id": "c", "text": "停止的虛擬機會自動被刪除", "explanation": "停止不會刪除虛擬機。" },
+        { "id": "d", "text": "沒有問題，停止後就完全不收費", "explanation": "磁碟、快照、IP 等資源還在，就會繼續收費。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "cost-management-002",
+      "type": "single",
+      "provider": "general",
+      "unitId": "cost-management",
+      "difficulty": 2,
+      "question": "公司有三個產品團隊共用一個雲端帳戶，財務想知道每個團隊每月各花多少。最基本的做法是？",
+      "options": [
+        { "id": "a", "text": "替每個資源加上團隊的標籤，再依標籤分組看費用", "explanation": "正確。標籤讓費用可以依團隊、專案、環境拆分。" },
+        { "id": "b", "text": "每個月把總費用平均分給三個團隊", "explanation": "平均分攤看不出誰用得多，也沒有人會想省錢。" },
+        { "id": "c", "text": "設定一個總預算", "explanation": "預算只會在超過時通知，不會告訴你是哪個團隊花的。" },
+        { "id": "d", "text": "改用 Spot 執行個體", "explanation": "這是降低單價的方法，和分攤費用無關。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "cost-management-003",
+      "type": "single",
+      "provider": "general",
+      "unitId": "cost-management",
+      "difficulty": 2,
+      "question": "一個夜間批次報表工作每次跑 2 小時，中途被打斷的話重跑即可，不在乎幾點完成。最省錢的運算買法是？",
+      "options": [
+        { "id": "a", "text": "隨用隨付（On-Demand）", "explanation": "可以用，但單價最高。" },
+        { "id": "b", "text": "Spot（AWS Spot 執行個體或 GCP Spot VM）", "explanation": "正確。可以中斷、時間有彈性的工作最適合用閒置容量，折扣很大。" },
+        { "id": "c", "text": "買 3 年的承諾方案", "explanation": "每天只跑 2 小時，承諾全天的用量會浪費。" },
+        { "id": "d", "text": "改用更大的機器", "explanation": "更大的機器單價更高。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "cost-management-004",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "clf-c02", "domain": 4 }],
+      "unitId": "cost-management",
+      "difficulty": 2,
+      "question": "團隊替資源加了 Project 標籤，但在 Cost Explorer 依 Project 分組時，所有費用都在「Project$」這一組。最可能的原因是？",
+      "options": [
+        { "id": "a", "text": "Project 還沒有啟用成為成本分配標籤", "explanation": "正確。使用者定義的標籤要先在帳單主控台啟用，才會出現在 Cost Explorer。" },
+        { "id": "b", "text": "Cost Explorer 不支援依標籤分組", "explanation": "Cost Explorer 支援依標籤分組。" },
+        { "id": "c", "text": "標籤的鍵只能是小寫", "explanation": "大小寫不是原因。" },
+        { "id": "d", "text": "要先買 Savings Plans", "explanation": "Savings Plans 和標籤無關。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "cost-management-005",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "clf-c02", "domain": 4 }],
+      "unitId": "cost-management",
+      "difficulty": 1,
+      "question": "主管希望在這個月「預計」會超過 1,000 美元時就收到電子郵件，而不是真的超過後才知道。應該用哪個服務？",
+      "options": [
+        { "id": "a", "text": "AWS Budgets，設定依預測金額觸發的通知", "explanation": "正確。Budgets 的通知可以依實際或預測金額觸發。" },
+        { "id": "b", "text": "AWS Pricing Calculator", "explanation": "Pricing Calculator 用來在建置前估算成本，不會監控實際花費。" },
+        { "id": "c", "text": "AWS CloudTrail", "explanation": "CloudTrail 記錄 API 操作。" },
+        { "id": "d", "text": "AWS KMS", "explanation": "KMS 管理加密金鑰。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "cost-management-006",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [{ "id": "clf-c02", "domain": 4 }],
+      "unitId": "cost-management",
+      "difficulty": 3,
+      "question": "關於 AWS 的成本管理工具，哪些敘述正確？（選兩個）",
+      "options": [
+        { "id": "a", "text": "Cost Explorer 的主控台免費使用，透過 API 查詢則每次分頁請求收費", "explanation": "正確。每次分頁的 API 請求收費 0.01 美元。" },
+        { "id": "b", "text": "AWS Budgets 超過預算時，預設會自動停止所有資源", "explanation": "預算預設只發通知；要自動處理得另外設定預算動作。" },
+        { "id": "c", "text": "預算的通知可能有延遲，資源用量發生後要等帳單資料更新", "explanation": "正確。所以實際花費可能在收到通知前就超過門檻。" },
+        { "id": "d", "text": "Cost Explorer 的預測一定準確，不會和實際帳單有差距", "explanation": "預測依過去用量計算，是估計值，預測區間是 80%。" }
+      ],
+      "answer": ["a", "c"]
+    },
+    {
+      "id": "cost-management-007",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 4 }],
+      "unitId": "cost-management",
+      "difficulty": 3,
+      "question": "公司的運算用量很穩定，但未來一年可能從 EC2 改用 Fargate 和 Lambda，也可能換執行個體系列。想用承諾換取折扣，最有彈性的選擇是？",
+      "options": [
+        { "id": "a", "text": "Compute Savings Plans", "explanation": "正確。承諾每小時的運算金額，不限執行個體系列、大小、區域，也適用 Fargate 和 Lambda。" },
+        { "id": "b", "text": "針對目前執行個體類型的 Reserved Instances", "explanation": "Reserved Instances 承諾特定的執行個體設定，換系列或改用 Fargate 就用不到。" },
+        { "id": "c", "text": "全部改用 Spot 執行個體", "explanation": "穩定的正式工作負載不適合隨時可能被中斷的 Spot。" },
+        { "id": "d", "text": "維持隨需，不做任何承諾", "explanation": "用量穩定卻不承諾，就放棄了可觀的折扣。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "cost-management-008",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 4 }],
+      "unitId": "cost-management",
+      "difficulty": 2,
+      "question": "帳單上每個月都有一筆 EBS 費用，但相關的 EC2 執行個體早就終止了。最可能的原因和處理方式是？",
+      "options": [
+        { "id": "a", "text": "卸載的 EBS 磁碟區仍依儲存量收費；確認不需要後刪除它（需要的話先建立快照）", "explanation": "正確。磁碟區要刪除才不會繼續收費。" },
+        { "id": "b", "text": "EBS 的費用一定會延遲一年才停止", "explanation": "沒有這樣的規定，刪除磁碟區後就不再收儲存費用。" },
+        { "id": "c", "text": "重新啟動執行個體就不會收費", "explanation": "執行個體已經終止，而且磁碟區是獨立計費的資源。" },
+        { "id": "d", "text": "把磁碟區改成 gp3 就不會收費", "explanation": "換類型可能比較便宜，但仍然收費。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "cost-management-009",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 1 }],
+      "unitId": "cost-management",
+      "difficulty": 2,
+      "question": "你在 Cloud Billing 建立了每月 500 美元的預算。月中花費衝到 700 美元，服務卻照常運作。為什麼？",
+      "options": [
+        { "id": "a", "text": "只發快訊的預算不會自動擋住花費，只會依門檻寄出快訊", "explanation": "正確。要自動處理，可以把快訊送到 Pub/Sub，用程式回應。" },
+        { "id": "b", "text": "預算要等到下個月才生效", "explanation": "預算建立後就會開始追蹤當期花費。" },
+        { "id": "c", "text": "預算只計算 Compute Engine 的費用", "explanation": "預算可以涵蓋整個帳單帳戶，也可以篩選特定服務。" },
+        { "id": "d", "text": "預算超過 100% 後會自動提高金額", "explanation": "預算不會自動調整金額。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "cost-management-010",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-cdl", "domain": 6 }],
+      "unitId": "cost-management",
+      "difficulty": 2,
+      "question": "一台 Compute Engine VM 整個月都在執行，沒有購買任何承諾方案。它會自動得到什麼折扣？",
+      "options": [
+        { "id": "a", "text": "持續使用折扣（SUD），整個月都在跑的 VM 最多約 30%", "explanation": "正確。一個月用超過 25% 的時間就開始自動折扣，不需要事先承諾。" },
+        { "id": "b", "text": "承諾使用折扣（CUD）", "explanation": "CUD 要事先承諾 1 年或 3 年。" },
+        { "id": "c", "text": "Spot VM 的折扣", "explanation": "要建立 Spot VM 才有，而且可能被搶占。" },
+        { "id": "d", "text": "沒有任何折扣", "explanation": "符合條件的 Compute Engine 資源會自動得到持續使用折扣。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "cost-management-011",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 1 }],
+      "unitId": "cost-management",
+      "difficulty": 3,
+      "question": "資料分析團隊想用 SQL 細查過去幾個月每個專案、每個服務、每個標籤的費用明細。最適合的做法是？",
+      "options": [
+        { "id": "a", "text": "啟用 Cloud Billing 匯出到 BigQuery，在 BigQuery 查詢", "explanation": "正確。帳單資料會整天自動匯出到 BigQuery 資料集；越早啟用，資料越完整。" },
+        { "id": "b", "text": "建立更多預算", "explanation": "預算用來通知，不提供明細查詢。" },
+        { "id": "c", "text": "用 Cloud Logging 查詢帳單", "explanation": "Cloud Logging 存的是記錄，不是帳單資料。" },
+        { "id": "d", "text": "每個月手動下載帳單 PDF", "explanation": "PDF 不方便用 SQL 分析。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "cost-management-012",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 1 }],
+      "unitId": "cost-management",
+      "difficulty": 2,
+      "question": "團隊想讓 gcloud 建立的預算在「實際花到 90%」和「預測會超過 100%」時都通知。下列哪個設定正確？",
+      "options": [
+        { "id": "a", "text": "--threshold-rule=percent=0.9 --threshold-rule=percent=1.0,basis=forecasted-spend", "explanation": "正確。percent 以 1.0 為基準，basis 預設是 current-spend（實際花費）。" },
+        { "id": "b", "text": "--threshold-rule=percent=90 --threshold-rule=percent=100", "explanation": "percent 是 1.0 為基準的比例，90% 要寫 0.9；而且沒有設定預測。" },
+        { "id": "c", "text": "--threshold-rule=percent=0.9,basis=forecasted-spend", "explanation": "這只設定了預測 90% 的門檻，沒有實際花費的門檻。" },
+        { "id": "d", "text": "--budget-amount=90%", "explanation": "--budget-amount 是預算的金額，不是門檻。" }
+      ],
+      "answer": ["a"]
+    }
+  ]
+}

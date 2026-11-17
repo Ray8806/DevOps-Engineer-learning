@@ -90,6 +90,7 @@ function createInstance(state: LabState, groupName: string, name?: string): stri
     machineType: template.machineType,
     status: "RUNNING",
     tags: new Set(template.tags),
+    labels: new Map(),
     network: template.network,
     subnet: template.network,
     externalIp: true,

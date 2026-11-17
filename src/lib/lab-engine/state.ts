@@ -3,6 +3,7 @@
  * for anything keyed by learner input, so names like "__proto__" are safe.
  */
 import { healthyBackends, ruleServing } from "./gcloud-lb";
+import { notificationLabel } from "./aws-cost";
 import { aliasTarget } from "./aws-dns-cdn";
 
 export const HOME = "/home/learner";
@@ -83,6 +84,9 @@ export interface AwsState {
   cloudfront: { distributions: Map<string, Distribution>; created: number };
   /** KMS keys by key id; aliases map "alias/name" to a key id. */
   kms: { keys: Map<string, KmsKey>; aliases: Map<string, string>; created: number };
+  /** Cost Explorer data (seeded by the lab) and cost allocation tag status. */
+  ce: { costs: CostItem[]; tagStatus: Map<string, "Active" | "Inactive">; queries: Set<string>; forecasts: number };
+  budgets: Map<string, Budget>;
   wafv2: {
     ipSets: Map<string, { id: string; arn: string; scope: string; addresses: string[] }>;
     webAcls: Map<string, { id: string; arn: string; scope: string; defaultAction: string; rules: WafRule[]; associations: string[] }>;
@@ -182,6 +186,30 @@ export interface Distribution {
   defaultRootObject: string;
   /** Every path submitted in an invalidation, in order. */
   invalidations: string[];
+}
+
+export interface CostItem {
+  /** "2026-10" */
+  month: string;
+  service: string;
+  amount: number;
+  tags: Record<string, string>;
+}
+
+export interface Budget {
+  timeUnit: string;
+  amount: number;
+  unit: string;
+  notifications: { type: string; operator: string; threshold: number; thresholdType: string; subscribers: string[] }[];
+}
+
+export interface GcpBudget {
+  amount: number;
+  currency: string;
+  /** Thresholds as fractions with their basis, e.g. { percent: 0.9, basis: "current-spend" }. */
+  thresholds: { percent: number; basis: string }[];
+  filterLabels: Record<string, string>;
+  filterProjects: string[];
 }
 
 export interface KmsKey {
@@ -342,6 +370,8 @@ export interface GcpState {
       machineType: string;
       status: "RUNNING" | "TERMINATED";
       tags: Set<string>;
+      /** Key-value labels, used to break down costs. */
+      labels: Map<string, string>;
       network: string;
       subnet: string;
       /** False when created with --no-address. */
@@ -394,6 +424,8 @@ export interface GcpState {
     buckets: Map<string, { retentionDays: number; locked: boolean }>;
     sinks: Map<string, { destination: string; filter: string }>;
   };
+  /** The billing account linked to the project and its budgets (by display name). */
+  billing: { accountId: string; accountName: string; linked: boolean; budgets: Map<string, GcpBudget> };
   /** Key rings keyed "location/name". */
   kms: { keyRings: Map<string, { keys: Map<string, GcpKmsKey> }> };
   /** Cloud Armor security policies; rules keyed by priority. */
@@ -555,12 +587,51 @@ function awsFrom(cloud: Record<string, unknown>): AwsState {
     route53: { zones: new Map(), created: 0 },
     cloudfront: { distributions: new Map(), created: 0 },
     kms: { keys: new Map(), aliases: new Map(), created: 0 },
+    ce: { costs: [], tagStatus: new Map(), queries: new Set(), forecasts: 0 },
+    budgets: new Map(),
     wafv2: { ipSets: new Map(), webAcls: new Map() },
     vpc: { vpcs: new Map(), subnets: new Map(), internetGateways: new Map(), routeTables: new Map() },
     rds: { subnetGroups: new Map(), instances: new Map(), snapshots: new Map() },
   };
   // { logs: { "/app/web": [{ stream, message }] }, cloudtrail: [{ eventName, username, eventSource, resourceName, eventTime }] }
   const awsSeed = isRecord(cloud.aws) ? cloud.aws : {};
+  // { costs: [{ month: "2026-10", service, amount, tags: { Project: "web" } }] }: Cost Explorer data.
+  if (Array.isArray(awsSeed.costs)) {
+    aws.ce.costs = awsSeed.costs.filter(isRecord).map((c) => ({
+      month: String(c.month ?? ""),
+      service: String(c.service ?? ""),
+      amount: Number(c.amount ?? 0),
+      tags: isRecord(c.tags) ? Object.fromEntries(Object.entries(c.tags).map(([k, v]) => [k, String(v)])) : {},
+    }));
+  }
+  // { ec2: { instances: { id: { instanceType, state, availabilityZone } }, volumes: { id: { size, type, availabilityZone, attachedTo } } } }
+  if (isRecord(awsSeed.ec2)) {
+    const ec2 = awsSeed.ec2;
+    if (isRecord(ec2.instances)) {
+      for (const [id, raw] of Object.entries(ec2.instances)) {
+        const i = isRecord(raw) ? raw : {};
+        aws.ec2.instances.set(id, {
+          imageId: String(i.imageId ?? "ami-0abcdef1234567890"),
+          instanceType: String(i.instanceType ?? "t3.micro"),
+          state: i.state === "stopped" ? "stopped" : "running",
+          securityGroups: [],
+          availabilityZone: String(i.availabilityZone ?? "us-east-1a"),
+        });
+      }
+    }
+    if (isRecord(ec2.volumes)) {
+      for (const [id, raw] of Object.entries(ec2.volumes)) {
+        const v = isRecord(raw) ? raw : {};
+        aws.ec2.volumes.set(id, {
+          availabilityZone: String(v.availabilityZone ?? "us-east-1a"),
+          size: Number(v.size ?? 8),
+          type: String(v.type ?? "gp3"),
+          snapshotId: null,
+          attachment: typeof v.attachedTo === "string" ? { instanceId: v.attachedTo, device: String(v.device ?? "/dev/xvda") } : null,
+        });
+      }
+    }
+  }
   // { kms: { "alias/name": { description } } }: existing symmetric keys, each with an alias.
   if (isRecord(awsSeed.kms)) {
     Object.entries(awsSeed.kms).forEach(([alias, raw], i) => {
@@ -630,18 +701,44 @@ function gcpFrom(cloud: Record<string, unknown>): GcpState {
       if (Array.isArray(members)) bindings.set(role, new Set(members.filter((m): m is string => typeof m === "string")));
     }
   }
+  // { instances: { name: { zone, machineType, status, labels } } }
+  const instances: GcpState["instances"] = new Map();
+  if (isRecord(gcp.instances)) {
+    for (const [name, raw] of Object.entries(gcp.instances)) {
+      const i = isRecord(raw) ? raw : {};
+      instances.set(name, {
+        zone: String(i.zone ?? "asia-east1-b"),
+        machineType: String(i.machineType ?? "e2-medium"),
+        status: i.status === "TERMINATED" ? "TERMINATED" : "RUNNING",
+        tags: new Set(),
+        labels: new Map(isRecord(i.labels) ? Object.entries(i.labels).map(([k, v]) => [k, String(v)]) : []),
+        network: "default",
+        subnet: "default",
+        externalIp: true,
+      });
+    }
+  }
+  // { disks: { name: { zone, sizeGb, type, users: [instance] } } }
+  const disks: GcpState["disks"] = new Map();
+  if (isRecord(gcp.disks)) {
+    for (const [name, raw] of Object.entries(gcp.disks)) {
+      const d = isRecord(raw) ? raw : {};
+      const users = Array.isArray(d.users) ? d.users.filter((u): u is string => typeof u === "string") : [];
+      disks.set(name, { zone: String(d.zone ?? "asia-east1-b"), sizeGb: Number(d.sizeGb ?? 10), type: String(d.type ?? "pd-balanced"), sourceSnapshot: null, users: new Map(users.map((u) => [u, "rw" as const])) });
+    }
+  }
   return {
     project: typeof gcp.project === "string" ? gcp.project : DEFAULT_GCP_PROJECT,
     serviceAccounts: new Map(),
     bindings,
-    instances: new Map(),
+    instances,
     firewallRules: new Map(),
     // Every new project starts with the auto mode "default" network.
     networks: new Map([["default", { mode: "auto" as const }]]),
     subnets: new Map(),
     routers: new Map(),
     sql: { instances: new Map(), backupsCreated: 0 },
-    disks: new Map(),
+    disks,
     snapshots: new Map(),
     run: { services: new Map(), revisionsCreated: 0 },
     firestore: { databases: new Map() },
@@ -675,6 +772,12 @@ function gcpFrom(cloud: Record<string, unknown>): GcpState {
     dns: { zones: new Map() },
     kms: { keyRings: new Map() },
     securityPolicies: new Map(),
+    billing: {
+      accountId: isRecord(gcp.billingAccount) && typeof gcp.billingAccount.id === "string" ? gcp.billingAccount.id : "0X0X0X-0X0X0X-0X0X0X",
+      accountName: isRecord(gcp.billingAccount) && typeof gcp.billingAccount.name === "string" ? gcp.billingAccount.name : "My Billing Account",
+      linked: true,
+      budgets: new Map(),
+    },
   };
 }
 
@@ -990,6 +1093,21 @@ function awsView(state: LabState) {
         }),
       ),
     },
+    ce: {
+      queries: keysTrue(aws.ce.queries),
+      forecastCount: aws.ce.forecasts,
+      costAllocationTags: Object.fromEntries([...new Set(aws.ce.costs.flatMap((c) => Object.keys(c.tags)))].map((k) => [k, aws.ce.tagStatus.get(k) ?? "Inactive"])),
+    },
+    budgets: Object.fromEntries(
+      [...aws.budgets].map(([n, b]) => [
+        n,
+        {
+          limit: `${b.amount} ${b.unit}`,
+          timeUnit: b.timeUnit,
+          notifications: Object.fromEntries(b.notifications.map((x) => [notificationLabel(x), keysTrue(x.subscribers)])),
+        },
+      ]),
+    ),
     kms: {
       keyCount: aws.kms.keys.size,
       aliases: Object.fromEntries(
@@ -1059,6 +1177,7 @@ function gcpView(state: LabState) {
           machineType: i.machineType,
           status: i.status,
           tags: keysTrue(i.tags),
+          labels: Object.fromEntries(i.labels),
           networkInterface: { network: i.network, subnet: i.subnet, externalIp: i.externalIp },
         },
       ]),
@@ -1161,6 +1280,20 @@ function gcpView(state: LabState) {
                 },
               ]),
             ),
+          },
+        ]),
+      ),
+    },
+    billing: {
+      linked: gcp.billing.linked,
+      budgets: Object.fromEntries(
+        [...gcp.billing.budgets].map(([n, b]) => [
+          n,
+          {
+            amount: `${b.amount} ${b.currency}`,
+            thresholds: Object.fromEntries(b.thresholds.map((t) => [`${Math.round(t.percent * 100)}%`, t.basis])),
+            filterLabels: b.filterLabels,
+            filterProjects: keysTrue(b.filterProjects),
           },
         ]),
       ),
@@ -1287,6 +1420,10 @@ function repoView(state: LabState, root: string, repo: GitRepo) {
  *   cloud.aws.wafv2.ipSets[name].{scope, addresses[cidr]}, cloud.aws.wafv2.webAcls[name].{scope, defaultAction, rules[name], associatedLoadBalancers[name]},
  *   cloud.gcp.kms.keyRings["location/ring"].keys[name].{purpose, rotationPeriod, primary, versions["1"], recovered["1"]},
  *   cloud.gcp.securityPolicies[name].rules["1000"].{action, srcIpRanges, preview}, cloud.gcp.backendServices[name].securityPolicy,
+ *   cloud.aws.ce.{queries["SERVICE" | "TAG:Project:active"], forecastCount, costAllocationTags[key] = "Active" | "Inactive"},
+ *   cloud.aws.budgets[name].{limit: "500 USD", timeUnit, notifications["ACTUAL > 80%"][subscriber]},
+ *   cloud.gcp.billing.{linked, budgets[displayName].{amount, thresholds["90%"] = basis, filterLabels, filterProjects}},
+ *   cloud.gcp.instances[name].labels,
  *   cloud.gcp.monitoring.{uptimeChecks[name].{host, path, period}, policies[displayName].{conditionFilter, condition}},
  *   cloud.gcp.sql.instances[name].{databaseVersion, edition, tier, region, availabilityType, backupsEnabled,
  *     deletionProtection, masterInstanceName, databases[name], users[name], backupCount},

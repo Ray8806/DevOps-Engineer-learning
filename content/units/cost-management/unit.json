@@ -1,0 +1,26 @@
+{
+  "id": "cost-management",
+  "title": "成本管理",
+  "summary": "看懂錢花在哪裡、用標籤把費用分給專案、設定預算在超支前收到通知，並且找出閒置的資源和適合的折扣方案。",
+  "stage": 2,
+  "prerequisites": ["virtual-machines", "block-file-storage", "monitoring-logging"],
+  "providers": {
+    "aws": { "services": ["Cost Explorer", "Budgets"] },
+    "gcp": { "services": ["Cloud Billing", "Budgets"] }
+  },
+  "compare": [
+    { "aspect": "查看與分析費用", "aws": "AWS Cost Explorer（主控台免費；API 每次分頁請求 0.01 美元）", "gcp": "Cloud Billing 報表；詳細資料可以匯出到 BigQuery 分析" },
+    { "aspect": "付費的單位", "aws": "AWS 帳戶（多個帳戶可以合併帳單）", "gcp": "Cloud Billing 帳戶，連結一個或多個專案" },
+    { "aspect": "依專案或團隊分攤", "aws": "成本分配標籤：使用者定義的標籤要先啟用，才會出現在 Cost Explorer", "gcp": "標籤（labels）：鍵值對，可以在帳單報表依標籤篩選和分組" },
+    { "aspect": "預算", "aws": "AWS Budgets：成本、用量、RI／Savings Plans 使用率與涵蓋率預算", "gcp": "Cloud Billing 預算：可以針對整個帳單帳戶、專案、服務或標籤" },
+    { "aspect": "預算的通知", "aws": "實際或預測的金額超過門檻時，寄電子郵件或通知 SNS 主題", "gcp": "實際或預測的花費超過門檻時寄電子郵件，也可以送到 Pub/Sub；主控台預設門檻 50%、90%、100%" },
+    { "aspect": "預算會不會擋住花費", "aws": "不會；可以設定預算動作，例如套用拒絕建立資源的 IAM 政策", "gcp": "只發快訊的預算不會自動擋住花費；部分服務支援 spend cap 預算" },
+    { "aspect": "預測", "aws": "Cost Explorer 依過去用量預測，預測區間 80%", "gcp": "預算可以依預測花費觸發快訊" },
+    { "aspect": "長期使用的折扣", "aws": "Savings Plans、Reserved Instances：承諾 1 年或 3 年", "gcp": "承諾使用折扣（CUD）：1 年或 3 年；Compute Engine 的持續使用折扣（SUD）自動套用" },
+    { "aspect": "可以被中斷的便宜運算", "aws": "Spot 執行個體：使用閒置容量，中斷前 2 分鐘通知", "gcp": "Spot VM：最多 91% 折扣，Compute Engine 隨時可能搶占" },
+    { "aspect": "事前估算", "aws": "AWS Pricing Calculator", "gcp": "Google Cloud Pricing Calculator" },
+    { "aspect": "命令列工具", "aws": "aws ce、aws budgets", "gcp": "gcloud billing" }
+  ],
+  "certDomains": ["clf-c02:4", "saa-c03:4", "gcp-cdl:6", "gcp-ace:1"],
+  "estimatedMinutes": 45
+}

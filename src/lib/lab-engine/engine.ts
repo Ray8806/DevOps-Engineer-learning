@@ -36,11 +36,13 @@ const HELP = `可用的指令：
               aws cloudfront create-distribution | list-distributions | get-distribution | create-invalidation | list-invalidations
               aws kms create-key | create-alias | enable-key-rotation | encrypt | decrypt | schedule-key-deletion（輸入 aws kms 看完整清單）
               aws wafv2 create-ip-set | list-ip-sets | create-web-acl | list-web-acls | get-web-acl | associate-web-acl
+              aws ce get-cost-and-usage | get-cost-forecast | list-cost-allocation-tags | update-cost-allocation-tags-status
+              aws budgets create-budget | describe-budgets | delete-budget
   GCP         gcloud storage buckets create | delete | list | describe
               gcloud storage ls | cp | mv | rm | cat      （也支援 gsutil）
               gcloud iam service-accounts create | list | delete
               gcloud projects get-iam-policy | add-iam-policy-binding | remove-iam-policy-binding
-              gcloud compute instances create | list | describe | stop | start | delete | add-tags | attach-disk | detach-disk
+              gcloud compute instances create | list | describe | stop | start | delete | add-tags | add-labels | remove-labels | attach-disk | detach-disk
               gcloud compute disks create | list | describe | resize | snapshot | delete，snapshots create | list | describe | delete
               gcloud compute firewall-rules create | list | delete
               gcloud compute instance-templates，instance-groups managed create | list | describe | list-instances | resize | set-autoscaling | set-named-ports | delete
@@ -59,6 +61,7 @@ const HELP = `可用的指令：
               gcloud compute backend-buckets create | list | describe | delete，backend-services update --enable-cdn，url-maps invalidate-cdn-cache
               gcloud kms keyrings create | list，kms keys create | list | describe，kms keys versions list | create | destroy | restore，kms encrypt | decrypt
               gcloud compute security-policies create | list | describe | delete，security-policies rules create | update | delete
+              gcloud billing accounts list，billing projects describe | link | unlink，billing budgets create | list | delete
   其他        clear  help  whoami
 支援 > 與 >> 輸出到檔案、用 && 或 ; 串接指令。按 Tab 補完路徑，上下鍵瀏覽歷史指令。
 `;

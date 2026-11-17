@@ -1,0 +1,86 @@
+{
+  "id": "aws-cost-budgets",
+  "title": "Cost Explorer、成本分配標籤與 Budgets",
+  "description": "用 Cost Explorer 找出花最多錢的服務和專案（啟用成本分配標籤），預測本月的花費，建立有實際與預測通知的預算，最後刪掉一個沒在用、卻一直在收費的 EBS 磁碟區。",
+  "provider": "aws",
+  "estimatedMinutes": 30,
+  "initialState": {
+    "files": {
+      "~/budget.json": "{\n  \"BudgetName\": \"monthly-total\",\n  \"BudgetType\": \"COST\",\n  \"TimeUnit\": \"MONTHLY\",\n  \"BudgetLimit\": { \"Amount\": \"700\", \"Unit\": \"USD\" }\n}\n",
+      "~/notifications.json": "[\n  {\n    \"Notification\": { \"NotificationType\": \"ACTUAL\", \"ComparisonOperator\": \"GREATER_THAN\", \"Threshold\": 80, \"ThresholdType\": \"PERCENTAGE\" },\n    \"Subscribers\": [{ \"SubscriptionType\": \"EMAIL\", \"Address\": \"finance@example.com\" }]\n  },\n  {\n    \"Notification\": { \"NotificationType\": \"FORECASTED\", \"ComparisonOperator\": \"GREATER_THAN\", \"Threshold\": 100, \"ThresholdType\": \"PERCENTAGE\" },\n    \"Subscribers\": [{ \"SubscriptionType\": \"EMAIL\", \"Address\": \"finance@example.com\" }]\n  }\n]\n"
+    },
+    "cloud": {
+      "aws": {
+        "costs": [
+          { "month": "2026-09", "service": "Amazon Elastic Compute Cloud - Compute", "amount": 118.4, "tags": { "Project": "web" } },
+          { "month": "2026-09", "service": "Amazon Elastic Compute Cloud - Compute", "amount": 265.2, "tags": { "Project": "data-pipeline" } },
+          { "month": "2026-09", "service": "Amazon Relational Database Service", "amount": 92.1, "tags": { "Project": "web" } },
+          { "month": "2026-09", "service": "Amazon Simple Storage Service", "amount": 11.6, "tags": { "Project": "web" } },
+          { "month": "2026-09", "service": "Amazon Simple Storage Service", "amount": 41.3, "tags": { "Project": "data-pipeline" } },
+          { "month": "2026-09", "service": "EC2 - Other", "amount": 40, "tags": {} },
+          { "month": "2026-10", "service": "Amazon Elastic Compute Cloud - Compute", "amount": 120.5, "tags": { "Project": "web" } },
+          { "month": "2026-10", "service": "Amazon Elastic Compute Cloud - Compute", "amount": 310.8, "tags": { "Project": "data-pipeline" } },
+          { "month": "2026-10", "service": "Amazon Relational Database Service", "amount": 95.2, "tags": { "Project": "web" } },
+          { "month": "2026-10", "service": "Amazon Simple Storage Service", "amount": 12.1, "tags": { "Project": "web" } },
+          { "month": "2026-10", "service": "Amazon Simple Storage Service", "amount": 48.4, "tags": { "Project": "data-pipeline" } },
+          { "month": "2026-10", "service": "EC2 - Other", "amount": 40, "tags": {} },
+          { "month": "2026-11", "service": "Amazon Elastic Compute Cloud - Compute", "amount": 58.3, "tags": { "Project": "web" } },
+          { "month": "2026-11", "service": "Amazon Elastic Compute Cloud - Compute", "amount": 171.6, "tags": { "Project": "data-pipeline" } },
+          { "month": "2026-11", "service": "Amazon Relational Database Service", "amount": 46.1, "tags": { "Project": "web" } },
+          { "month": "2026-11", "service": "Amazon Simple Storage Service", "amount": 6.2, "tags": { "Project": "web" } },
+          { "month": "2026-11", "service": "Amazon Simple Storage Service", "amount": 26.9, "tags": { "Project": "data-pipeline" } },
+          { "month": "2026-11", "service": "EC2 - Other", "amount": 20, "tags": {} }
+        ],
+        "ec2": {
+          "instances": {
+            "i-0a1b2c3d4e5f60718": { "instanceType": "t3.medium", "state": "running", "availabilityZone": "us-east-1a" }
+          },
+          "volumes": {
+            "vol-0a1b2c3d4e5f60718": { "size": 30, "type": "gp3", "availabilityZone": "us-east-1a", "attachedTo": "i-0a1b2c3d4e5f60718" },
+            "vol-0f9e8d7c6b5a49382": { "size": 500, "type": "gp3", "availabilityZone": "us-east-1a" }
+          }
+        }
+      }
+    }
+  },
+  "steps": [
+    {
+      "instruction": "查詢 10 月（2026-10-01 到 2026-11-01，結束日不包含）依服務分組的費用（UnblendedCost）。哪個服務花最多錢？",
+      "hint": "aws ce get-cost-and-usage --time-period Start=2026-10-01,End=2026-11-01 --granularity MONTHLY --metrics UnblendedCost --group-by Type=DIMENSION,Key=SERVICE",
+      "check": { "type": "state", "path": ["cloud", "aws", "ce", "queries", "SERVICE"], "exists": true }
+    },
+    {
+      "instruction": "資源都加了 Project 標籤。改依標籤 Project 分組查 10 月的費用，為什麼全部都在 Project$？用 list-cost-allocation-tags 看看，再把 Project 啟用成成本分配標籤。",
+      "hint": "aws ce list-cost-allocation-tags，然後 aws ce update-cost-allocation-tags-status --cost-allocation-tags-status TagKey=Project,Status=Active",
+      "check": { "type": "state", "path": ["cloud", "aws", "ce", "costAllocationTags", "Project"], "equals": "Active" }
+    },
+    {
+      "instruction": "再依 Project 分組查一次 10 月的費用。把花最多錢的專案名稱寫進 ~/top-project.txt。",
+      "hint": "aws ce get-cost-and-usage --time-period Start=2026-10-01,End=2026-11-01 --granularity MONTHLY --metrics UnblendedCost --group-by Type=TAG,Key=Project，再用 echo 專案名稱 > ~/top-project.txt（Keys 裡 Project$ 後面的就是專案名稱）",
+      "check": { "type": "state", "path": ["files", "~/top-project.txt"], "equals": "data-pipeline\n" }
+    },
+    {
+      "instruction": "今天是 2026-11-16。預測這個月剩下的日子（到 2026-12-01）還會花多少（UNBLENDED_COST）。",
+      "hint": "aws ce get-cost-forecast --time-period Start=2026-11-16,End=2026-12-01 --metric UNBLENDED_COST --granularity MONTHLY",
+      "check": { "type": "state", "path": ["cloud", "aws", "ce", "queries", "FORECAST"], "exists": true }
+    },
+    {
+      "instruction": "用 cat 看看 ~/budget.json 和 ~/notifications.json，再用它們建立每月預算：實際花到 80% 和預測會超過 100% 時，都寄信給 finance@example.com。帳戶 ID 是 123456789012。",
+      "hint": "aws budgets create-budget --account-id 123456789012 --budget file://budget.json --notifications-with-subscribers file://notifications.json",
+      "check": {
+        "type": "state",
+        "path": ["cloud", "aws", "budgets", "monthly-total"],
+        "equals": {
+          "limit": "700 USD",
+          "timeUnit": "MONTHLY",
+          "notifications": { "ACTUAL > 80%": { "email:finance@example.com": true }, "FORECASTED > 100%": { "email:finance@example.com": true } }
+        }
+      }
+    },
+    {
+      "instruction": "EC2 - Other 每個月都有一筆固定的費用。用 describe-volumes 找出沒有掛載在任何執行個體上的 EBS 磁碟區（State 是 available），它卸載後仍然在收費。確認不需要後把它刪掉。",
+      "hint": "aws ec2 describe-volumes，然後 aws ec2 delete-volume --volume-id 那個 available 的磁碟區 ID",
+      "check": { "type": "state", "path": ["cloud", "aws", "ec2", "volumes", "vol-0f9e8d7c6b5a49382"], "exists": false }
+    }
+  ]
+}

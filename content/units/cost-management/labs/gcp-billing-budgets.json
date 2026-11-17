@@ -1,0 +1,55 @@
+{
+  "id": "gcp-billing-budgets",
+  "title": "Cloud Billing 預算、標籤與閒置資源",
+  "description": "查出專案的帳單帳戶，建立有實際與預測門檻的預算，替 VM 加上標籤並建立只看某個團隊的預算，最後清掉閒置的磁碟和停止很久的 VM。",
+  "provider": "gcp",
+  "estimatedMinutes": 25,
+  "initialState": {
+    "files": {},
+    "cloud": {
+      "gcp": {
+        "billingAccount": { "id": "01A2B3-C4D5E6-F7G8H9", "name": "Lab Billing Account" },
+        "instances": {
+          "web-1": { "zone": "asia-east1-b", "machineType": "e2-medium", "status": "RUNNING" },
+          "batch-old": { "zone": "asia-east1-b", "machineType": "n2-standard-8", "status": "TERMINATED" }
+        },
+        "disks": {
+          "web-1-data": { "zone": "asia-east1-b", "sizeGb": 50, "type": "pd-balanced", "users": ["web-1"] },
+          "batch-old-data": { "zone": "asia-east1-b", "sizeGb": 1000, "type": "pd-standard", "users": ["batch-old"] },
+          "old-export": { "zone": "asia-east1-b", "sizeGb": 500, "type": "pd-standard", "users": [] }
+        }
+      }
+    }
+  },
+  "steps": [
+    {
+      "instruction": "用 billing accounts list 查出帳單帳戶 ID，用 billing projects describe my-project 確認專案已經連結。建立預算 monthly-budget：每月 300 美元，實際花到 50% 和 90% 時通知，預測會到 100% 時也通知。",
+      "hint": "gcloud billing budgets create --billing-account=帳單帳戶ID --display-name=monthly-budget --budget-amount=300USD --threshold-rule=percent=0.5 --threshold-rule=percent=0.9 --threshold-rule=percent=1.0,basis=forecasted-spend",
+      "check": {
+        "type": "state",
+        "path": ["cloud", "gcp", "billing", "budgets", "monthly-budget", "thresholds"],
+        "equals": { "50%": "current-spend", "90%": "current-spend", "100%": "forecasted-spend" }
+      }
+    },
+    {
+      "instruction": "替 web-1 加上標籤 team=web 和 env=prod，之後就能依標籤看費用。用 instances describe 確認。",
+      "hint": "gcloud compute instances add-labels web-1 --zone=asia-east1-b --labels=team=web,env=prod",
+      "check": { "type": "state", "path": ["cloud", "gcp", "instances", "web-1", "labels"], "equals": { "team": "web", "env": "prod" } }
+    },
+    {
+      "instruction": "資料團隊的資源都有標籤 team=data。建立一個只計算這些資源的預算 data-team：每月 100 美元，實際花到 90% 時通知。",
+      "hint": "gcloud billing budgets create --billing-account=帳單帳戶ID --display-name=data-team --budget-amount=100USD --filter-labels=team=data --threshold-rule=percent=0.9",
+      "check": { "type": "state", "path": ["cloud", "gcp", "billing", "budgets", "data-team", "filterLabels"], "equals": { "team": "data" } }
+    },
+    {
+      "instruction": "用 disks list 列出磁碟，再用 disks describe 一個個看：輸出裡沒有 users 的磁碟，就是沒有任何 VM 在使用。磁碟依配置的容量收費，不論有沒有掛載。確認不需要後刪掉它。",
+      "hint": "gcloud compute disks list，gcloud compute disks describe 磁碟名稱 --zone=asia-east1-b，找到沒有 users 的是 old-export，然後 gcloud compute disks delete old-export --zone=asia-east1-b",
+      "check": { "type": "state", "path": ["cloud", "gcp", "disks", "old-export"], "exists": false }
+    },
+    {
+      "instruction": "batch-old 已經停止好幾個月，但它的 1000 GB 磁碟還在收費。刪除這台 VM，再刪除它留下的磁碟 batch-old-data。",
+      "hint": "gcloud compute instances delete batch-old --zone=asia-east1-b，然後 gcloud compute disks delete batch-old-data --zone=asia-east1-b",
+      "check": { "type": "state", "path": ["cloud", "gcp", "disks", "batch-old-data"], "exists": false }
+    }
+  ]
+}
