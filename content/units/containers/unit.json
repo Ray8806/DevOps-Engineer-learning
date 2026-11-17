@@ -1,0 +1,25 @@
+{
+  "id": "containers",
+  "title": "容器",
+  "summary": "用 Dockerfile 把應用程式和它需要的一切打包成映像檔，推送到雲端的映像檔儲存庫，再交給代管服務執行。",
+  "stage": 3,
+  "prerequisites": ["linux-basics", "serverless", "virtual-networks"],
+  "providers": {
+    "aws": { "services": ["ECR", "ECS", "Fargate"] },
+    "gcp": { "services": ["Artifact Registry", "Cloud Run"] }
+  },
+  "compare": [
+    { "aspect": "映像檔儲存庫", "aws": "Amazon ECR（Elastic Container Registry）", "gcp": "Artifact Registry（Container Registry 已於 2025 年 3 月 18 日停止寫入）" },
+    { "aspect": "映像檔的位址", "aws": "帳戶ID.dkr.ecr.區域.amazonaws.com/儲存庫:標籤", "gcp": "區域-docker.pkg.dev/專案ID/儲存庫/映像檔:標籤" },
+    { "aspect": "Docker 怎麼登入", "aws": "aws ecr get-login-password | docker login --username AWS --password-stdin；權杖 12 小時有效", "gcp": "gcloud auth configure-docker 區域-docker.pkg.dev，讓 gcloud 當作 Docker 的認證工具" },
+    { "aspect": "防止標籤被覆蓋", "aws": "儲存庫開啟標籤不可變（IMMUTABLE）", "gcp": "建立 Docker 儲存庫時加上 --immutable-tags" },
+    { "aspect": "執行容器的代管服務", "aws": "Amazon ECS：叢集、任務定義、任務、服務", "gcp": "Cloud Run（不用管叢集）；需要 Kubernetes 時用 GKE" },
+    { "aspect": "不用管伺服器", "aws": "ECS 搭配 Fargate", "gcp": "Cloud Run" },
+    { "aspect": "資源大小", "aws": "Fargate 在任務層級指定 CPU 和記憶體，只能用規定的組合（例如 256 CPU 搭配 512 MiB、1 GB 或 2 GB）", "gcp": "Cloud Run 在服務上設定 CPU 和記憶體" },
+    { "aspect": "網路", "aws": "Fargate 任務一定用 awsvpc 網路模式，每個任務有自己的網路介面，要指定子網路和安全群組", "gcp": "Cloud Run 預設把請求送到容器的 8080 連接埠，可以用 --port 改" },
+    { "aspect": "拉取私有映像檔的權限", "aws": "任務執行角色（task execution role）", "gcp": "Cloud Run 的服務代理人" },
+    { "aspect": "命令列工具", "aws": "docker、aws ecr、aws ecs", "gcp": "docker、gcloud artifacts、gcloud run" }
+  ],
+  "certDomains": ["clf-c02:3", "saa-c03:2", "saa-c03:3", "gcp-cdl:4", "gcp-ace:2", "gcp-ace:3"],
+  "estimatedMinutes": 55
+}

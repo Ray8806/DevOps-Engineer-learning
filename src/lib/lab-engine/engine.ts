@@ -1,6 +1,7 @@
 import { aws } from "./aws";
 import type { Command, Ctx } from "./context";
 import { gcloud, gsutil } from "./gcloud";
+import { curl, docker } from "./docker";
 import { git } from "./git";
 import { linuxCommands } from "./linux";
 import { parseLine } from "./parse";
@@ -22,6 +23,7 @@ export interface ExecResult {
 const HELP = `可用的指令：
   檔案與目錄  pwd  ls  cd  mkdir  touch  cat  echo  cp  mv  rm  rmdir  zip  base64
   Git         git init | status | add | commit | log | branch | switch | checkout | merge
+  Docker      docker build | images | tag | run | ps | stop | rm | rmi | login | push | pull，curl http://localhost:連接埠
   AWS         aws s3 mb | rb | ls | cp | mv | rm
               aws iam  使用者、群組、角色與政策（輸入 aws iam 看完整清單）
               aws ec2  安全群組、執行個體、啟動範本、EBS 磁碟區與快照、VPC、子網路、閘道與路由表（輸入 aws ec2 看完整清單）
@@ -38,6 +40,8 @@ const HELP = `可用的指令：
               aws wafv2 create-ip-set | list-ip-sets | create-web-acl | list-web-acls | get-web-acl | associate-web-acl
               aws ce get-cost-and-usage | get-cost-forecast | list-cost-allocation-tags | update-cost-allocation-tags-status
               aws budgets create-budget | describe-budgets | delete-budget
+              aws ecr create-repository | describe-repositories | describe-images | delete-repository | get-login-password
+              aws ecs create-cluster | register-task-definition | create-service | describe-services | update-service | list-tasks
   GCP         gcloud storage buckets create | delete | list | describe
               gcloud storage ls | cp | mv | rm | cat      （也支援 gsutil）
               gcloud iam service-accounts create | list | delete
@@ -62,8 +66,9 @@ const HELP = `可用的指令：
               gcloud kms keyrings create | list，kms keys create | list | describe，kms keys versions list | create | destroy | restore，kms encrypt | decrypt
               gcloud compute security-policies create | list | describe | delete，security-policies rules create | update | delete
               gcloud billing accounts list，billing projects describe | link | unlink，billing budgets create | list | delete
+              gcloud artifacts repositories create | list | describe | delete，artifacts docker images list，auth configure-docker
   其他        clear  help  whoami
-支援 > 與 >> 輸出到檔案、用 && 或 ; 串接指令。按 Tab 補完路徑，上下鍵瀏覽歷史指令。
+支援 > 與 >> 輸出到檔案、用 | 把輸出交給下一個指令（cat、base64、docker login --password-stdin 會讀取）、用 && 或 ; 串接指令。按 Tab 補完路徑，上下鍵瀏覽歷史指令。
 `;
 
 const help: Command = (ctx) => {
@@ -71,7 +76,7 @@ const help: Command = (ctx) => {
   return 0;
 };
 
-const commands: Record<string, Command> = { ...linuxCommands, aws, gcloud, gsutil, git, help };
+const commands: Record<string, Command> = { ...linuxCommands, aws, gcloud, gsutil, git, docker, curl, help };
 
 export const COMMAND_NAMES = [...Object.keys(commands), "clear"].sort();
 
@@ -92,7 +97,12 @@ export function execute(state: LabState, line: string): ExecResult {
   let clear = false;
   let lastCode = 0;
 
-  for (const command of parsed.commands) {
+  // Output captured for the next command of a pipeline.
+  let piped: string | undefined;
+  for (const [index, command] of parsed.commands.entries()) {
+    const stdin = command.joiner === "pipe" ? (piped ?? "") : undefined;
+    piped = undefined;
+    const pipesOut = parsed.commands[index + 1]?.joiner === "pipe";
     if (command.joiner === "and" && lastCode !== 0) break;
     const [name, ...args] = command.argv;
 
@@ -107,10 +117,12 @@ export function execute(state: LabState, line: string): ExecResult {
     const ctx: Ctx = {
       state: draft,
       out: (text) => {
-        if (command.redirect) stdout += text;
+        // Like bash, a redirect wins over the pipe: the next command then reads nothing.
+        if (command.redirect || pipesOut) stdout += text;
         else lines.push(...splitLines(text, false));
       },
       err: (text) => lines.push(...splitLines(text, true)),
+      stdin,
     };
 
     // Like a shell, open the redirect target before running the command.
@@ -139,7 +151,7 @@ export function execute(state: LabState, line: string): ExecResult {
 
     if (target !== undefined && command.redirect) {
       draft.files.set(target, (command.redirect.append ? (draft.files.get(target) ?? "") : "") + stdout);
-    }
+    } else if (pipesOut) piped = stdout;
   }
 
   return { state: draft, lines, clear };

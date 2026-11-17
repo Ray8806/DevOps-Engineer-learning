@@ -1,0 +1,132 @@
+{
+  "id": "aws-ecr-ecs",
+  "title": "建置映像檔、推送到 ECR、用 ECS Fargate 執行",
+  "description": "用 Dockerfile 建置網頁伺服器的映像檔並在本機試跑，推送到 ECR，再註冊 Fargate 任務定義、建立維持兩個任務的 ECS 服務。",
+  "provider": "aws",
+  "estimatedMinutes": 30,
+  "initialState": {
+    "files": {
+      "~/app/Dockerfile": "FROM public.ecr.aws/amazonlinux/amazonlinux:latest\n# Install the Apache web server\nRUN yum update -y && \\\n    yum install -y httpd\nCOPY index.html /var/www/html/index.html\nEXPOSE 80\nCMD /usr/sbin/httpd -D FOREGROUND\n",
+      "~/app/index.html": "<h1>Hello from a container!</h1>\n",
+      "~/taskdef.json": "{\n  \"family\": \"hello-web\",\n  \"requiresCompatibilities\": [\n    \"FARGATE\"\n  ],\n  \"networkMode\": \"awsvpc\",\n  \"cpu\": \"256\",\n  \"memory\": \"512\",\n  \"executionRoleArn\": \"arn:aws:iam::123456789012:role/ecsTaskExecutionRole\",\n  \"containerDefinitions\": [\n    {\n      \"name\": \"web\",\n      \"image\": \"123456789012.dkr.ecr.us-east-1.amazonaws.com/hello-web:v1\",\n      \"essential\": true,\n      \"portMappings\": [\n        {\n          \"containerPort\": 80,\n          \"protocol\": \"tcp\"\n        }\n      ]\n    }\n  ]\n}\n"
+    },
+    "cloud": {
+      "aws": {
+        "vpcs": {
+          "vpc-0f3c2a1b9d8e7c6b5": {
+            "cidr": "10.0.0.0/16",
+            "internetGateway": true,
+            "subnets": {
+              "subnet-0a1b2c3d4e5f60718": {
+                "cidr": "10.0.1.0/24",
+                "availabilityZone": "us-east-1a"
+              },
+              "subnet-0b2c3d4e5f6071829": {
+                "cidr": "10.0.2.0/24",
+                "availabilityZone": "us-east-1b"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "steps": [
+    {
+      "instruction": "進入 ~/app，用 cat 看看 Dockerfile 每一行在做什麼。用它建置映像檔 hello-web，再用 docker images 確認。",
+      "hint": "cd app，cat Dockerfile，docker build -t hello-web .（最後的 . 代表用目前目錄當建置環境）",
+      "check": {
+        "type": "state",
+        "path": [
+          "docker",
+          "images",
+          "hello-web:latest"
+        ],
+        "exists": true
+      }
+    },
+    {
+      "instruction": "在背景執行一個名為 web 的容器，把主機的 8080 連接埠對應到容器的 80，再用 curl http://localhost:8080 看看網頁。",
+      "hint": "docker run -d -p 8080:80 --name web hello-web，然後 curl http://localhost:8080",
+      "check": {
+        "type": "state",
+        "path": [
+          "docker",
+          "containers",
+          "web",
+          "ports"
+        ],
+        "equals": [
+          "8080->80"
+        ]
+      }
+    },
+    {
+      "instruction": "建立 ECR 儲存庫 hello-web，開啟標籤不可變，避免同一個版本標籤被覆蓋。",
+      "hint": "aws ecr create-repository --repository-name hello-web --image-tag-mutability IMMUTABLE",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "ecr",
+          "repositories",
+          "hello-web",
+          "mutability"
+        ],
+        "equals": "IMMUTABLE"
+      }
+    },
+    {
+      "instruction": "讓 Docker 登入 ECR（123456789012.dkr.ecr.us-east-1.amazonaws.com），把映像檔標成 123456789012.dkr.ecr.us-east-1.amazonaws.com/hello-web:v1 再推送。先不登入直接推送看看會怎樣也可以。",
+      "hint": "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 123456789012.dkr.ecr.us-east-1.amazonaws.com，docker tag hello-web:latest 123456789012.dkr.ecr.us-east-1.amazonaws.com/hello-web:v1，docker push 123456789012.dkr.ecr.us-east-1.amazonaws.com/hello-web:v1",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "ecr",
+          "repositories",
+          "hello-web",
+          "images",
+          "v1"
+        ],
+        "exists": true
+      }
+    },
+    {
+      "instruction": "建立 ECS 叢集 lab-cluster。用 cat 看看 ~/taskdef.json（Fargate、256 CPU、512 MiB、任務執行角色），再用它註冊任務定義。",
+      "hint": "aws ecs create-cluster --cluster-name lab-cluster，cd ~，aws ecs register-task-definition --cli-input-json file://taskdef.json",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "ecs",
+          "taskDefinitions",
+          "hello-web:1",
+          "images"
+        ],
+        "equals": [
+          "123456789012.dkr.ecr.us-east-1.amazonaws.com/hello-web:v1"
+        ]
+      }
+    },
+    {
+      "instruction": "在 lab-cluster 建立 Fargate 服務 hello-svc，維持 2 個任務，放在兩個子網路（用 aws ec2 describe-subnets 查 ID），安全群組可以用 sg-0123456789abcdef0，並指派公有 IP。用 describe-services 看 runningCount。",
+      "hint": "aws ecs create-service --cluster lab-cluster --service-name hello-svc --task-definition hello-web:1 --desired-count 2 --launch-type FARGATE --network-configuration 'awsvpcConfiguration={subnets=[subnet-0a1b2c3d4e5f60718,subnet-0b2c3d4e5f6071829],securityGroups=[sg-0123456789abcdef0],assignPublicIp=ENABLED}'",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "ecs",
+          "services",
+          "lab-cluster/hello-svc",
+          "runningCount"
+        ],
+        "equals": 2
+      }
+    }
+  ]
+}

@@ -2,8 +2,8 @@
 export interface ParsedCommand {
   argv: string[];
   redirect?: { path: string; append: boolean };
-  /** How this command is joined to the previous one. */
-  joiner: "first" | "and" | "then";
+  /** How this command is joined to the previous one; "pipe" feeds it the previous command's output. */
+  joiner: "first" | "and" | "then" | "pipe";
 }
 
 export type ParseResult = { ok: true; commands: ParsedCommand[] } | { ok: false; error: string };
@@ -65,7 +65,6 @@ function tokenize(line: string): Token[] | string {
 }
 
 const UNSUPPORTED: Record<string, string> = {
-  "|": "這個模擬終端機不支援管線（|）",
   "||": "這個模擬終端機不支援 ||",
   "<": "這個模擬終端機不支援輸入重新導向（<）",
   "&": "這個模擬終端機不支援背景執行（&）",
@@ -73,7 +72,7 @@ const UNSUPPORTED: Record<string, string> = {
 
 /**
  * Parses one input line. Supports quotes, backslash escapes, comments,
- * `>` / `>>` redirection, and chaining with `&&` and `;`.
+ * `>` / `>>` redirection, pipes, and chaining with `&&` and `;`.
  */
 export function parseLine(line: string): ParseResult {
   const tokens = tokenize(line);
@@ -81,8 +80,8 @@ export function parseLine(line: string): ParseResult {
 
   const commands: ParsedCommand[] = [];
   let current: ParsedCommand = { argv: [], joiner: "first" };
-  const finish = (next: "and" | "then"): string | null => {
-    if (current.argv.length === 0) return `語法錯誤：「${next === "and" ? "&&" : ";"}」前面缺少指令`;
+  const finish = (next: "and" | "then" | "pipe"): string | null => {
+    if (current.argv.length === 0) return `語法錯誤：「${{ and: "&&", then: ";", pipe: "|" }[next]}」前面缺少指令`;
     commands.push(current);
     current = { argv: [], joiner: next };
     return null;
@@ -96,8 +95,8 @@ export function parseLine(line: string): ParseResult {
       const target = tokens[++i];
       if (!target || target.type !== "word") return { ok: false, error: `語法錯誤：「${t.value}」後面缺少檔名` };
       current.redirect = { path: target.value, append: t.value === ">>" };
-    } else if (t.value === "&&" || t.value === ";") {
-      const error = finish(t.value === "&&" ? "and" : "then");
+    } else if (t.value === "&&" || t.value === ";" || t.value === "|") {
+      const error = finish(t.value === "&&" ? "and" : t.value === "|" ? "pipe" : "then");
       if (error) return { ok: false, error };
     } else {
       return { ok: false, error: UNSUPPORTED[t.value] };
@@ -106,6 +105,7 @@ export function parseLine(line: string): ParseResult {
 
   if (current.argv.length > 0) commands.push(current);
   else if (current.joiner === "and") return { ok: false, error: "語法錯誤：「&&」後面缺少指令" };
+  else if (current.joiner === "pipe") return { ok: false, error: "語法錯誤：「|」後面缺少指令" };
   else if (current.redirect) return { ok: false, error: "語法錯誤：缺少指令" };
   return { ok: true, commands };
 }

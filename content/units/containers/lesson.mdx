@@ -1,0 +1,170 @@
+## 為什麼要用容器
+
+「在我的電腦上可以跑啊！」——程式在開發者的電腦正常，放到伺服器卻壞掉，常常是因為兩邊的作業系統、套件版本、設定不一樣。
+
+**容器**把應用程式和它需要的一切（執行環境、套件、設定）打包在一起：
+
+- **到哪裡都一樣**：同一個映像檔，在筆電、測試環境、正式環境跑起來的行為相同。
+- **輕量、啟動快**：容器共用主機的作業系統核心，不像虛擬機要各自開一整個作業系統。
+- **容易擴展**：要多一份，就從同一個映像檔多開一個容器。
+
+| | 虛擬機 | 容器 |
+|---|---|---|
+| 包含 | 完整的作業系統 | 應用程式和它需要的檔案 |
+| 啟動 | 幾十秒到幾分鐘 | 通常幾秒內 |
+| 隔離 | 各自的作業系統核心 | 共用主機的核心 |
+
+## 映像檔與容器
+
+- **映像檔**（image）：唯讀的範本，像是安裝光碟。用 **Dockerfile** 描述怎麼做出來。
+- **容器**（container）：從映像檔啟動、正在執行的實例。同一個映像檔可以啟動很多個容器。
+
+### Dockerfile
+
+Dockerfile 一行一個指令，由上往下執行：
+
+```dockerfile
+# 從現成的基礎映像檔開始
+FROM public.ecr.aws/amazonlinux/amazonlinux:latest
+# 安裝網頁伺服器
+RUN yum update -y && yum install -y httpd
+# 把網頁複製進映像檔
+COPY index.html /var/www/html/index.html
+# 說明容器裡的程式聽 80 連接埠
+EXPOSE 80
+# 容器啟動時執行的指令
+CMD /usr/sbin/httpd -D FOREGROUND
+```
+
+| 指令 | 作用 |
+|---|---|
+| `FROM` | 基礎映像檔，一定是第一個指令 |
+| `RUN` | 建置時執行指令，例如安裝套件 |
+| `COPY` | 把建置環境（通常是目前目錄）裡的檔案複製進映像檔 |
+| `EXPOSE` | 標示容器聽的連接埠 |
+| `CMD` | 容器啟動時執行的指令 |
+
+### 常用的 docker 指令
+
+```bash
+docker build -t hello-web .          # 用目前目錄的 Dockerfile 建置，命名為 hello-web:latest
+docker images                        # 列出本機的映像檔
+docker run -d -p 8080:80 --name web hello-web   # 背景執行；主機 8080 對應到容器 80
+docker ps                            # 列出執行中的容器
+docker stop web && docker rm web     # 停止並刪除容器
+```
+
+`-p 主機連接埠:容器連接埠` 把主機的連接埠轉送到容器裡，容器裡的程式聽哪個連接埠，冒號右邊就要寫哪個。
+
+## 映像檔儲存庫與標籤
+
+映像檔要放在**映像檔儲存庫**（registry），伺服器和雲端服務才拉得到。映像檔的完整名稱包含 registry 的位址：
+
+```
+registry 位址 / 儲存庫 : 標籤
+```
+
+- 沒寫標籤時預設是 `latest`。
+- `docker tag` 替映像檔多取一個名字（同一個映像檔、不同的名稱），推送前要先標成 registry 的名稱。
+- **不要依賴 `latest`**：每次部署用明確的版本標籤（例如 `v1`、Git 的提交編號），才知道正在跑哪個版本，也才能回復。開啟**不可變標籤**可以防止同一個標籤被覆蓋成別的內容。
+
+## 在兩個平台上怎麼做
+
+<ProviderTabs>
+<Provider name="aws">
+
+### Amazon ECR
+
+ECR 是 AWS 的私有映像檔儲存庫。推送前儲存庫要先存在。
+
+- **登入**：用 `aws ecr get-login-password` 取得權杖，交給 `docker login`，使用者名稱固定是 `AWS`。權杖 **12 小時**有效，每個 registry 都要各自登入。
+- **位址**：`帳戶ID.dkr.ecr.區域.amazonaws.com/儲存庫:標籤`。
+- **標籤不可變**：開啟後，推送已經存在的標籤會得到 `ImageTagAlreadyExistsException`；這個設定套用到所有標籤。
+
+```bash
+aws ecr create-repository --repository-name hello-web --image-tag-mutability IMMUTABLE
+
+aws ecr get-login-password --region us-east-1 | \
+  docker login --username AWS --password-stdin 123456789012.dkr.ecr.us-east-1.amazonaws.com
+
+docker tag hello-web:latest 123456789012.dkr.ecr.us-east-1.amazonaws.com/hello-web:v1
+docker push 123456789012.dkr.ecr.us-east-1.amazonaws.com/hello-web:v1
+```
+
+### Amazon ECS
+
+ECS 是全代管的容器協調服務：
+
+| 名詞 | 意思 |
+|---|---|
+| **任務定義**（task definition） | 應用程式的藍圖：用哪個映像檔、多少 CPU 和記憶體、連接埠 |
+| **叢集**（cluster） | 應用程式執行的基礎設施 |
+| **任務**（task） | 依任務定義執行的一組容器，例如跑完就結束的批次工作 |
+| **服務**（service） | 長期執行的應用程式：維持指定數量的任務，任務停掉會補上新的 |
+
+**執行在哪裡**：EC2 執行個體（自己管）、**Fargate**（無伺服器，不用管伺服器）、ECS Managed Instances，或自己機房的伺服器（ECS Anywhere）。
+
+**Fargate 的規定**：
+
+- 在任務層級指定 CPU 和記憶體，只能用規定的組合，例如 256（0.25 vCPU）搭配 512 MiB、1 GB 或 2 GB；512 搭配 1 到 4 GB。
+- 網路模式一定是 `awsvpc`：每個任務有自己的網路介面，建立服務時要指定子網路和安全群組。
+- 從私有 ECR 儲存庫拉取映像檔、把日誌送到 CloudWatch Logs，需要**任務執行角色**（task execution role）。程式本身要呼叫 AWS 服務的權限，則是另一個「任務角色」。
+
+```bash
+aws ecs create-cluster --cluster-name lab-cluster
+aws ecs register-task-definition --cli-input-json file://taskdef.json
+aws ecs create-service --cluster lab-cluster --service-name hello-svc \
+  --task-definition hello-web:1 --desired-count 2 --launch-type FARGATE \
+  --network-configuration 'awsvpcConfiguration={subnets=[subnet-…],securityGroups=[sg-…],assignPublicIp=ENABLED}'
+```
+
+</Provider>
+<Provider name="gcp">
+
+### Artifact Registry
+
+Artifact Registry 集中存放容器映像檔和各種套件（Maven、npm、Python 等），可以整合 Cloud Build，部署到 Cloud Run、GKE、Compute Engine。舊的 **Container Registry 已在 2025 年 3 月 18 日停止服務**，無法再寫入映像檔，請使用 Artifact Registry。
+
+- **建立儲存庫**時要指定格式（`docker`）和位置。
+- **位址**：`區域-docker.pkg.dev/專案ID/儲存庫/映像檔:標籤`。
+- **登入**：`gcloud auth configure-docker 區域-docker.pkg.dev` 把 gcloud 設定成 Docker 的認證工具，之後 `docker push` 就會自動帶上你的 Google Cloud 身分。
+- 建立儲存庫時加上 `--immutable-tags`，標籤就不能被覆蓋。
+
+```bash
+gcloud artifacts repositories create lab-repo --repository-format=docker \
+  --location=asia-east1 --description="Docker repository"
+gcloud auth configure-docker asia-east1-docker.pkg.dev
+
+docker tag hello-web:latest asia-east1-docker.pkg.dev/my-project/lab-repo/hello-web:v1
+docker push asia-east1-docker.pkg.dev/my-project/lab-repo/hello-web:v1
+gcloud artifacts docker images list asia-east1-docker.pkg.dev/my-project/lab-repo
+```
+
+### 用 Cloud Run 執行
+
+「無伺服器運算」單元已經用過 Cloud Run，這次部署自己建置的映像檔。要注意**連接埠**：Cloud Run 預設把請求送到容器的 **8080** 連接埠（透過 `PORT` 環境變數告訴容器），容器裡的程式如果聽的是別的連接埠，要用 `--port` 告訴 Cloud Run，否則修訂版會因為等不到程式回應而部署失敗。
+
+```bash
+gcloud run deploy hello-web --region=asia-east1 --port=80 --allow-unauthenticated \
+  --image=asia-east1-docker.pkg.dev/my-project/lab-repo/hello-web:v1
+```
+
+需要完整的 Kubernetes 功能時，用 GKE（下一個單元）。
+
+</Provider>
+</ProviderTabs>
+
+## 兩個平台的差異
+
+<Compare />
+
+流程完全一樣：寫 Dockerfile → `docker build` → 推送到雲端的映像檔儲存庫 → 交給代管服務執行。差別在最後一步：AWS 的 ECS 要定義任務定義、叢集和服務，搭配 Fargate 就不用管伺服器；GCP 的 Cloud Run 一行指令就部署成可以從網路連線的服務，不用管叢集。
+
+## 重點整理
+
+- 容器把應用程式和它的執行環境打包在一起，到哪裡都一樣、啟動快、容易擴展。
+- 映像檔是範本，容器是執行中的實例；用 Dockerfile 描述映像檔怎麼建置。
+- `-p 主機:容器` 轉送連接埠；容器裡的程式聽哪個連接埠，右邊就寫哪個。
+- 推送前先用 `docker tag` 標成 registry 的名稱；用明確的版本標籤，必要時開啟不可變標籤。
+- AWS：ECR 用 `get-login-password` 登入（12 小時）；ECS 的 Fargate 要指定規定的 CPU／記憶體組合、awsvpc 網路，拉取 ECR 映像檔需要任務執行角色。
+- GCP：Artifact Registry 用 `gcloud auth configure-docker` 登入；Cloud Run 預設送到 8080，容器聽別的連接埠要加 `--port`。

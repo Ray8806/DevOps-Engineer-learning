@@ -1,0 +1,79 @@
+{
+  "id": "gcp-artifact-registry-run",
+  "title": "建置映像檔、推送到 Artifact Registry、部署到 Cloud Run",
+  "description": "用 Dockerfile 建置網頁伺服器的映像檔，推送到 Artifact Registry，再部署到 Cloud Run，並處理容器連接埠和 Cloud Run 預設連接埠不同的問題。",
+  "provider": "gcp",
+  "estimatedMinutes": 25,
+  "initialState": {
+    "files": {
+      "~/app/Dockerfile": "FROM public.ecr.aws/amazonlinux/amazonlinux:latest\n# Install the Apache web server\nRUN yum update -y && \\\n    yum install -y httpd\nCOPY index.html /var/www/html/index.html\nEXPOSE 80\nCMD /usr/sbin/httpd -D FOREGROUND\n",
+      "~/app/index.html": "<h1>Hello from a container!</h1>\n"
+    },
+    "cloud": {}
+  },
+  "steps": [
+    {
+      "instruction": "進入 ~/app，用 cat 看看 Dockerfile，建置映像檔 hello-web，並在本機用 docker run 試跑（主機 8080 對應容器 80），用 curl 確認。",
+      "hint": "cd app，docker build -t hello-web .，docker run -d -p 8080:80 --name web hello-web，curl http://localhost:8080",
+      "check": {
+        "type": "state",
+        "path": [
+          "docker",
+          "containers",
+          "web",
+          "status"
+        ],
+        "equals": "running"
+      }
+    },
+    {
+      "instruction": "在 asia-east1 建立 Docker 格式的 Artifact Registry 儲存庫 lab-repo。",
+      "hint": "gcloud artifacts repositories create lab-repo --repository-format=docker --location=asia-east1 --description=\"Docker repository\"",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "artifacts",
+          "repositories",
+          "asia-east1/lab-repo",
+          "format"
+        ],
+        "equals": "docker"
+      }
+    },
+    {
+      "instruction": "設定 Docker 用 gcloud 登入 asia-east1-docker.pkg.dev，把映像檔標成 asia-east1-docker.pkg.dev/my-project/lab-repo/hello-web:v1 並推送。用 gcloud artifacts docker images list 確認。",
+      "hint": "gcloud auth configure-docker asia-east1-docker.pkg.dev，docker tag hello-web:latest asia-east1-docker.pkg.dev/my-project/lab-repo/hello-web:v1，docker push asia-east1-docker.pkg.dev/my-project/lab-repo/hello-web:v1",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "artifacts",
+          "repositories",
+          "asia-east1/lab-repo",
+          "images",
+          "hello-web:v1"
+        ],
+        "exists": true
+      }
+    },
+    {
+      "instruction": "把映像檔部署成 Cloud Run 服務 hello-web（asia-east1，允許未驗證的存取）。先不加 --port 試試看，為什麼部署失敗？再修正它。",
+      "hint": "Dockerfile 裡 EXPOSE 80，但 Cloud Run 預設送到 8080：gcloud run deploy hello-web --image=asia-east1-docker.pkg.dev/my-project/lab-repo/hello-web:v1 --region=asia-east1 --allow-unauthenticated --port=80",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "run",
+          "services",
+          "hello-web",
+          "image"
+        ],
+        "equals": "asia-east1-docker.pkg.dev/my-project/lab-repo/hello-web:v1"
+      }
+    }
+  ]
+}

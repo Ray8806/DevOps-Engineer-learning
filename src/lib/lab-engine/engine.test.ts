@@ -53,9 +53,17 @@ describe("parseLine", () => {
   });
 
   it("reports unclosed quotes, dangling operators and unsupported syntax", () => {
-    for (const line of [`echo "oops`, "echo 'oops", "echo >", "&& ls", "ls &&", "ls | cat", "cat < x", "sleep &"]) {
+    for (const line of [`echo "oops`, "echo 'oops", "echo >", "&& ls", "ls &&", "ls |", "| cat", "cat < x", "sleep &"]) {
       expect(parseLine(line).ok, line).toBe(false);
     }
+  });
+
+  it("pipes output into the next command; a redirect takes the output instead", () => {
+    const s = createLabState({ files: { "~/a.txt": "hi\n" } });
+    expect(execute(s, "cat a.txt | base64").lines.map((l) => l.text)).toEqual(["aGkK"]);
+    expect(execute(s, "echo aGkK | base64 -d | cat").lines.map((l) => l.text)).toEqual(["hi"]);
+    expect(execute(s, "echo hi > b.txt | cat").lines).toEqual([]);
+    expect(execute(s, "cat missing.txt | cat").lines.map((l) => l.text)).toEqual(["cat: missing.txt: No such file or directory"]);
   });
 });
 

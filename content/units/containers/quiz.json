@@ -1,0 +1,192 @@
+{
+  "questions": [
+    {
+      "id": "containers-001",
+      "type": "single",
+      "provider": "general",
+      "unitId": "containers",
+      "difficulty": 1,
+      "question": "開發者說「程式在我的電腦上可以跑，放到伺服器就壞了」。容器主要怎麼解決這個問題？",
+      "options": [
+        { "id": "a", "text": "把應用程式和它需要的執行環境、套件、設定打包成同一個映像檔，到哪裡跑都一樣", "explanation": "正確。環境差異是這類問題最常見的原因，容器把環境一起打包。" },
+        { "id": "b", "text": "讓程式跑得比較快", "explanation": "容器不是用來加速程式的。" },
+        { "id": "c", "text": "自動修正程式的錯誤", "explanation": "容器不會修改程式。" },
+        { "id": "d", "text": "讓每個容器都有自己的作業系統核心", "explanation": "容器共用主機的作業系統核心，各自有核心的是虛擬機。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "containers-002",
+      "type": "single",
+      "provider": "general",
+      "unitId": "containers",
+      "difficulty": 2,
+      "question": "Dockerfile 裡寫了 EXPOSE 80，執行 docker run -d -p 8080:80 hello-web 之後，要從主機用哪個網址連到網頁？",
+      "options": [
+        { "id": "a", "text": "http://localhost:8080", "explanation": "正確。-p 主機連接埠:容器連接埠，主機的 8080 轉送到容器的 80。" },
+        { "id": "b", "text": "http://localhost:80", "explanation": "主機的 80 沒有對應到容器；80 是容器裡面的連接埠。" },
+        { "id": "c", "text": "http://localhost:8080:80", "explanation": "網址不能有兩個連接埠。" },
+        { "id": "d", "text": "不能從主機連線", "explanation": "-p 就是把容器的連接埠開放到主機。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "containers-003",
+      "type": "single",
+      "provider": "general",
+      "unitId": "containers",
+      "difficulty": 2,
+      "question": "團隊每次部署都推送成同一個標籤 latest。某次部署出問題，想回到上一版，卻不知道上一版是哪個映像檔。比較好的做法是？",
+      "options": [
+        { "id": "a", "text": "每次用明確的版本標籤（例如 v12 或 Git 提交編號），必要時開啟不可變標籤", "explanation": "正確。明確的標籤讓你知道正在跑哪一版，也能部署回指定的版本。" },
+        { "id": "b", "text": "繼續用 latest，出問題再重新建置", "explanation": "重新建置不一定能做出和上一版一樣的映像檔。" },
+        { "id": "c", "text": "每次部署前刪除所有舊映像檔", "explanation": "這樣更沒辦法回到上一版。" },
+        { "id": "d", "text": "把版本號寫在容器名稱裡", "explanation": "容器名稱和映像檔版本是兩回事。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "containers-004",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 3 }],
+      "unitId": "containers",
+      "difficulty": 2,
+      "question": "團隊想在 AWS 上執行容器化的網頁服務，但不想管理任何 EC2 執行個體。應該怎麼選？",
+      "options": [
+        { "id": "a", "text": "Amazon ECS 搭配 AWS Fargate", "explanation": "正確。Fargate 是無伺服器的運算引擎，不用管理伺服器或規劃容量。" },
+        { "id": "b", "text": "Amazon ECS 搭配自己管理的 EC2 執行個體", "explanation": "這樣要自己選型、管理執行個體。" },
+        { "id": "c", "text": "Amazon ECR", "explanation": "ECR 存放映像檔，不負責執行容器。" },
+        { "id": "d", "text": "Amazon S3", "explanation": "S3 是物件儲存。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "containers-005",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 2 }],
+      "unitId": "containers",
+      "difficulty": 3,
+      "question": "關於在 Fargate 上執行的 ECS 任務，哪些敘述正確？（選兩個）",
+      "options": [
+        { "id": "a", "text": "網路模式一定是 awsvpc，建立服務時要指定子網路和安全群組", "explanation": "正確。每個任務有自己的網路介面。" },
+        { "id": "b", "text": "從私有 ECR 儲存庫拉取映像檔，需要任務執行角色", "explanation": "正確。任務執行角色讓 Fargate 代理程式拉取映像檔、送出日誌。" },
+        { "id": "c", "text": "CPU 和記憶體可以任意組合，例如 256 CPU 搭配 8 GB", "explanation": "只能用規定的組合；256 CPU 只能搭配 512 MiB、1 GB 或 2 GB。" },
+        { "id": "d", "text": "Fargate 任務要先登入到執行個體安裝 Docker", "explanation": "Fargate 沒有讓你管理的執行個體。" }
+      ],
+      "answer": ["a", "b"]
+    },
+    {
+      "id": "containers-006",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "clf-c02", "domain": 3 }],
+      "unitId": "containers",
+      "difficulty": 1,
+      "question": "要在 AWS 上存放私有的容器映像檔，應該使用哪個服務？",
+      "options": [
+        { "id": "a", "text": "Amazon ECR", "explanation": "正確。ECR 是 AWS 的容器映像檔儲存庫。" },
+        { "id": "b", "text": "Amazon ECS", "explanation": "ECS 負責執行容器，不是存放映像檔。" },
+        { "id": "c", "text": "AWS Lambda", "explanation": "Lambda 是無伺服器運算。" },
+        { "id": "d", "text": "Amazon EBS", "explanation": "EBS 是虛擬機用的區塊儲存。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "containers-007",
+      "type": "single",
+      "provider": "aws",
+      "unitId": "containers",
+      "difficulty": 2,
+      "question": "CI 流程昨天推送 ECR 映像檔都正常，今天 docker push 卻出現 no basic auth credentials。最可能的原因是？",
+      "options": [
+        { "id": "a", "text": "ECR 的登入權杖只有 12 小時有效，需要重新執行 get-login-password 登入", "explanation": "正確。權杖過期後要重新取得並交給 docker login。" },
+        { "id": "b", "text": "ECR 儲存庫每天會自動刪除", "explanation": "ECR 儲存庫不會自動刪除。" },
+        { "id": "c", "text": "映像檔太大", "explanation": "訊息說的是認證問題，不是大小。" },
+        { "id": "d", "text": "標籤不可變", "explanation": "標籤不可變的錯誤是 ImageTagAlreadyExistsException 之類的訊息，不是缺少認證。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "containers-008",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 2 }],
+      "unitId": "containers",
+      "difficulty": 2,
+      "question": "一個網頁應用程式要長期執行，並且隨時維持 3 個執行中的容器，有容器停掉就自動補上。在 ECS 應該建立什麼？",
+      "options": [
+        { "id": "a", "text": "服務（service），期望數量設成 3", "explanation": "正確。服務會維持指定數量的任務，任務停掉會補上新的。" },
+        { "id": "b", "text": "直接執行 3 個任務（task）", "explanation": "單獨執行的任務停了就停了，不會自動補上；適合跑完就結束的批次工作。" },
+        { "id": "c", "text": "3 個叢集", "explanation": "叢集是執行的基礎設施，不負責維持數量。" },
+        { "id": "d", "text": "3 個 ECR 儲存庫", "explanation": "儲存庫存放映像檔，和執行數量無關。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "containers-009",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 2 }],
+      "unitId": "containers",
+      "difficulty": 2,
+      "question": "團隊的舊文件寫著把映像檔推送到 gcr.io，但現在推送失敗。Google Cloud 建議改用什麼？",
+      "options": [
+        { "id": "a", "text": "Artifact Registry", "explanation": "正確。Container Registry 已在 2025 年 3 月 18 日停止服務，建議使用 Artifact Registry。" },
+        { "id": "b", "text": "Cloud Storage", "explanation": "Cloud Storage 是物件儲存，不是映像檔儲存庫。" },
+        { "id": "c", "text": "Cloud SQL", "explanation": "Cloud SQL 是關聯式資料庫。" },
+        { "id": "d", "text": "Cloud DNS", "explanation": "Cloud DNS 是 DNS 服務。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "containers-010",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 3 }],
+      "unitId": "containers",
+      "difficulty": 3,
+      "question": "映像檔裡的網頁伺服器聽 80 連接埠。部署到 Cloud Run 時，修訂版一直無法就緒，訊息說容器沒有在 PORT=8080 上回應。應該怎麼修正？",
+      "options": [
+        { "id": "a", "text": "部署時加上 --port=80，讓 Cloud Run 把請求送到容器的 80 連接埠", "explanation": "正確。Cloud Run 預設送到 8080，可以改成容器實際聽的連接埠；或讓程式改聽 PORT 環境變數。" },
+        { "id": "b", "text": "把記憶體加大", "explanation": "問題是連接埠對不上，不是資源不夠。" },
+        { "id": "c", "text": "改用 Container Registry", "explanation": "儲存庫和連接埠無關，而且 Container Registry 已經停止服務。" },
+        { "id": "d", "text": "加上 --allow-unauthenticated", "explanation": "這控制誰可以呼叫服務，不會讓容器開始回應。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "containers-011",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 2 }],
+      "unitId": "containers",
+      "difficulty": 2,
+      "question": "第一次要把映像檔推送到 asia-east1-docker.pkg.dev 的 Artifact Registry 儲存庫。Docker 要怎麼取得認證？",
+      "options": [
+        { "id": "a", "text": "執行 gcloud auth configure-docker asia-east1-docker.pkg.dev，讓 gcloud 當 Docker 的認證工具", "explanation": "正確。之後 docker push 就會帶上你的 Google Cloud 身分。" },
+        { "id": "b", "text": "用 aws ecr get-login-password 取得權杖", "explanation": "那是 Amazon ECR 的登入方式。" },
+        { "id": "c", "text": "把服務帳戶金鑰放進映像檔", "explanation": "把金鑰打包進映像檔非常危險。" },
+        { "id": "d", "text": "不需要任何認證", "explanation": "推送到私有儲存庫需要認證和權限。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "containers-012",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-cdl", "domain": 4 }],
+      "unitId": "containers",
+      "difficulty": 1,
+      "question": "一家公司想把容器化的網頁應用程式放上 Google Cloud，希望不用管理任何叢集或伺服器，依請求自動擴展。最適合的是？",
+      "options": [
+        { "id": "a", "text": "Cloud Run", "explanation": "正確。Cloud Run 直接執行容器，不用管理叢集，依請求自動擴展。" },
+        { "id": "b", "text": "自己在 Compute Engine 上安裝 Docker", "explanation": "這樣要自己管理 VM。" },
+        { "id": "c", "text": "Artifact Registry", "explanation": "Artifact Registry 存放映像檔，不負責執行。" },
+        { "id": "d", "text": "Cloud KMS", "explanation": "Cloud KMS 管理加密金鑰。" }
+      ],
+      "answer": ["a"]
+    }
+  ]
+}
