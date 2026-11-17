@@ -245,6 +245,7 @@ describe("gcloud compute", () => {
       machineType: "e2-micro",
       status: "RUNNING",
       tags: { web: true },
+      labels: {},
       networkInterface: { network: "default", subnet: "default", externalIp: true },
     });
     const listed = sh(r.state, "gcloud compute instances list").out;

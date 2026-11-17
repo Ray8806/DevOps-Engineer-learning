@@ -59,7 +59,10 @@ function instances(ctx: Ctx, args: string[]): number {
   if (action === "attach-disk" || action === "detach-disk") return attachDetach(ctx, action, rest);
   const command = `gcloud.compute.instances.${action}`;
   const parsed = parseArgs(rest, {
-    options: ["--zone", "--machine-type", "--tags", "--image-family", "--image-project", "--image", "--network", "--subnet", "--boot-disk-size", "--project", "--format"],
+    options: [
+      "--zone", "--machine-type", "--tags", "--labels", "--image-family", "--image-project", "--image", "--network", "--subnet", "--boot-disk-size",
+      "--project", "--format",
+    ],
     flags: ["--quiet", "-q", "--no-address"],
   });
   if (parsed.unknown) return error(ctx, command, `unrecognized arguments: ${parsed.unknown}`);
@@ -75,8 +78,22 @@ function instances(ctx: Ctx, args: string[]): number {
     );
     return 0;
   }
-  if (!["create", "stop", "start", "delete", "add-tags", "describe"].includes(action ?? "")) {
-    return error(ctx, "gcloud.compute.instances", `不支援的指令 '${action ?? ""}'。支援 create、list、describe、stop、start、delete、add-tags、attach-disk、detach-disk。`);
+  if (!["create", "stop", "start", "delete", "add-tags", "add-labels", "remove-labels", "describe"].includes(action ?? "")) {
+    return error(
+      ctx,
+      "gcloud.compute.instances",
+      `不支援的指令 '${action ?? ""}'。支援 create、list、describe、stop、start、delete、add-tags、add-labels、remove-labels、attach-disk、detach-disk。`,
+    );
+  }
+  const labelArg = parsed.options.get("--labels");
+  const labels = new Map<string, string>();
+  for (const pair of list(labelArg)) {
+    const [k, v = ""] = pair.split("=");
+    // Keys start with a lowercase letter; keys and values use lowercase letters, digits, _ and -.
+    if (!/^[a-z][a-z0-9_-]{0,62}$/.test(k) || !/^[a-z0-9_-]{0,63}$/.test(v)) {
+      return error(ctx, command, `Invalid value for field 'labels': '${pair}'. 標籤的鍵要以小寫字母開頭，鍵和值只能用小寫字母、數字、底線和連字號。`);
+    }
+    labels.set(k, v);
   }
   const names = parsed.positional;
   if (names.length === 0) return error(ctx, command, "argument INSTANCE_NAMES: Must be specified.");
@@ -95,7 +112,7 @@ function instances(ctx: Ctx, args: string[]): number {
     if (!nic) return 1;
     const externalIp = !parsed.flags.has("--no-address");
     for (const name of names) {
-      gcp.instances.set(name, { zone: zoneArg, machineType, status: "RUNNING", tags: new Set(tags), ...nic, externalIp });
+      gcp.instances.set(name, { zone: zoneArg, machineType, status: "RUNNING", tags: new Set(tags), labels: new Map(labels), ...nic, externalIp });
       ctx.out(`Created [${url(name, zoneArg)}].\n`);
     }
     table(ctx, ["NAME", "ZONE", "MACHINE_TYPE", "STATUS"], names.map((n) => [n, zoneArg, machineType, "RUNNING"]));
@@ -129,6 +146,19 @@ function instances(ctx: Ctx, args: string[]): number {
         reconcileMigs(ctx.state);
         ctx.out(`Deleted [${url(name, instance.zone)}].\n`);
         break;
+      case "add-labels": {
+        if (!labels.size) return error(ctx, command, "argument --labels: Must be specified.（例如 --labels=team=web,env=prod）");
+        for (const [k, v] of labels) instance.labels.set(k, v);
+        if (instance.labels.size > 64) return error(ctx, command, "每個資源最多 64 個標籤。");
+        ctx.out(`Updated [${url(name, instance.zone)}].\n`);
+        break;
+      }
+      case "remove-labels": {
+        if (!labels.size) return error(ctx, command, "argument --labels: Must be specified.（例如 --labels=team）");
+        for (const k of labels.keys()) instance.labels.delete(k);
+        ctx.out(`Updated [${url(name, instance.zone)}].\n`);
+        break;
+      }
       case "add-tags": {
         const tags = list(parsed.options.get("--tags"));
         if (tags.length === 0) return error(ctx, command, "argument --tags: Must be specified.");
@@ -138,7 +168,7 @@ function instances(ctx: Ctx, args: string[]): number {
       }
       default:
         ctx.out(
-          `machineType: ${instance.machineType}\nname: ${name}\nnetworkInterfaces:\n${
+          `${instance.labels.size ? `labels:\n${[...instance.labels].sort().map(([k, v]) => `  ${k}: ${v}\n`).join("")}` : ""}machineType: ${instance.machineType}\nname: ${name}\nnetworkInterfaces:\n${
             instance.externalIp ? "- accessConfigs:\n  - name: External NAT\n    type: ONE_TO_ONE_NAT\n  " : "- "
           }network: ${networkUrl(gcp.project, instance.network)}\n  subnetwork: ${subnetUrl(gcp.project, zoneRegion(instance.zone), instance.subnet)}\nstatus: ${instance.status}\n${
             instance.tags.size ? `tags:\n  items:\n${[...instance.tags].sort().map((t) => `  - ${t}\n`).join("")}` : ""

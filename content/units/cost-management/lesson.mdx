@@ -1,0 +1,161 @@
+## 雲端的帳單為什麼容易失控
+
+雲端隨用隨付，建立資源只要一行指令，帳單也就跟著來。常見的意外：
+
+- 測試用的機器忘了關，或是關了機，**磁碟和 IP 還在收費**。
+- 刪了虛擬機，**卸載的磁碟**、快照還留著。
+- 不知道某個費用是哪個團隊、哪個專案用的，沒有人覺得是自己的責任。
+- 月底收到帳單才發現超支。
+
+成本管理就是要回答四個問題：**錢花在哪裡？是誰花的？超支前會知道嗎？有沒有更便宜的買法？**
+
+## 看懂費用：依服務、依標籤
+
+雲端業者會把每一筆用量記錄下來，你可以依**服務**（虛擬機、資料庫、儲存…）、**區域**、**期間**來分組看。
+
+但「虛擬機花了 400 美元」還不夠，你需要知道是哪個專案、哪個團隊用的。做法是替資源加上**標籤**（AWS 叫 tag，GCP 叫 label），例如 `Project=web`、`team=data`，再依標籤分組看費用。
+
+<Callout title="標籤要一開始就加">
+標籤只能幫你分析「有加標籤之後」的資源。建議團隊先約定好必填的標籤（專案、環境、負責人），建立資源時就加上。
+</Callout>
+
+## 預算與通知
+
+**預算**設定一段期間（通常是每月）的金額，花費超過某個比例時寄通知：
+
+- **實際**花費超過門檻，例如已經花了 80%。
+- **預測**花費超過門檻，例如照目前的速度，月底會超過 100%。預測讓你在真的超支**之前**就收到警告。
+
+要注意兩件事：
+
+1. **預算通知有延遲**：帳單資料不是即時的，從用量發生到收到通知之間可能有一段時間。
+2. **預算本身通常不會擋住花費**：它只負責通知。要自動處理，得另外設定動作，例如收到通知後觸發程式關掉資源。
+
+## 找出浪費
+
+- **閒置的資源**：沒有掛載的磁碟、停止的虛擬機上的磁碟、沒人用的 IP、舊快照。
+- **規格過大**：CPU 長期只用 5% 的大機器，可以換小一點（用「監控與日誌」單元的指標判斷）。
+- **非上班時間**：開發與測試環境晚上和週末可以關掉。
+
+## 用對買法
+
+| 買法 | 適合 | 代價 |
+|---|---|---|
+| 隨用隨付（On-Demand） | 用量不固定、短期 | 單價最高 |
+| 承諾使用 1 年或 3 年 | 長期穩定的用量 | 用不到也要付承諾的金額 |
+| Spot（可被中斷） | 批次處理、資料分析等可以中斷重來的工作 | 雲端業者需要容量時會收回 |
+
+先把浪費清掉、把規格調對，**再**為剩下穩定的用量買承諾方案；不然會承諾到用不到的容量。
+
+## 在兩個平台上怎麼做
+
+<ProviderTabs>
+<Provider name="aws">
+
+### AWS Cost Explorer
+
+- 主控台免費使用；透過 API（`aws ce`）查詢，每次分頁請求收費 0.01 美元。
+- 第一次啟用時會準備當月和過去 13 個月的資料，並計算未來 18 個月的預測；資料至少每 24 小時更新一次。
+- 預測依過去的用量計算，預測區間是 80%；資料不足（例如帳戶還不到一個完整帳單週期）時不提供預測。
+- 時間範圍的開始日**包含**、結束日**不包含**：要查 10 月，寫 `Start=2026-10-01,End=2026-11-01`。
+
+### 成本分配標籤
+
+替資源加上標籤之後，還要在帳單主控台（或用 API）**啟用**成本分配標籤，標籤才會出現在 Cost Explorer。新的標籤最多要 24 小時才會出現在可以啟用的清單，啟用後最多再 24 小時生效。沒啟用的標籤，依標籤分組時所有費用都會落在 `Project$`（空值）這一組。
+
+### AWS Budgets
+
+- 預算類型：成本、用量、RI 使用率、RI 涵蓋率、Savings Plans 使用率、Savings Plans 涵蓋率。
+- 通知可以依**實際**或**預測**金額觸發，寄電子郵件、通知 SNS 主題，或兩者都要。
+- 預算資料一天最多更新三次。
+- **預算動作**：超過門檻時自動執行，例如套用拒絕建立資源的 IAM 政策。
+
+### 折扣與工具
+
+- **Savings Plans**：承諾 1 年或 3 年、每小時固定金額的運算用量，最多可省 72%；Compute Savings Plans 不限執行個體系列、大小、區域，也適用 Fargate 和 Lambda。
+- **Reserved Instances**：承諾特定的執行個體設定（類型、區域）1 年或 3 年。
+- **Spot 執行個體**：用 EC2 的閒置容量，價格比隨需低；EC2 要收回容量時會提前 2 分鐘通知。
+- **AWS Pricing Calculator**：建置前免費估算成本。
+- **EBS 磁碟區**：卸載後仍然會依儲存量收費，要刪除才不會繼續付費。
+
+```bash
+# 10 月依服務分組的費用
+aws ce get-cost-and-usage --time-period Start=2026-10-01,End=2026-11-01 \
+  --granularity MONTHLY --metrics UnblendedCost --group-by Type=DIMENSION,Key=SERVICE
+
+# 啟用成本分配標籤，再依標籤分組
+aws ce update-cost-allocation-tags-status --cost-allocation-tags-status TagKey=Project,Status=Active
+aws ce get-cost-and-usage --time-period Start=2026-10-01,End=2026-11-01 \
+  --granularity MONTHLY --metrics UnblendedCost --group-by Type=TAG,Key=Project
+
+# 本月剩下的預測
+aws ce get-cost-forecast --time-period Start=2026-11-16,End=2026-12-01 \
+  --metric UNBLENDED_COST --granularity MONTHLY
+
+# 建立每月預算與通知
+aws budgets create-budget --account-id 123456789012 \
+  --budget file://budget.json --notifications-with-subscribers file://notifications.json
+```
+
+</Provider>
+<Provider name="gcp">
+
+### Cloud Billing
+
+**Cloud Billing 帳戶**定義由誰付款，一個帳單帳戶可以連結多個**專案**，專案的費用都算在這個帳戶。專案沒有連結到啟用中的帳單帳戶，就不能使用需要付費的服務。
+
+- **帳單報表**：依專案、服務、標籤篩選和分組。
+- **匯出到 BigQuery**：把詳細的帳單資料整天自動匯出到 BigQuery，用 SQL 分析。建議越早啟用越好，才有比較完整的資料。
+
+### 標籤
+
+標籤（label）是鍵值對，標籤資訊會送到帳單系統，可以依標籤拆分費用。每個資源最多 64 個標籤；鍵和值只能用小寫字母、數字、底線和連字號，鍵要以小寫字母開頭。
+
+### 預算與快訊
+
+- 預算可以針對整個帳單帳戶，或篩選特定專案、服務、標籤。
+- 依**實際**或**預測**花費設定門檻；在主控台建立預算時，預設門檻是 50%、90%、100%。
+- 快訊會寄電子郵件，也可以送到 Pub/Sub，用程式自動處理（例如停用專案的帳單）。
+- **只發快訊的預算不會自動擋住花費**；部分服務支援可以設定上限的 spend cap 預算。
+
+### 折扣
+
+- **持續使用折扣**（SUD）：Compute Engine 的資源一個月用超過 25% 的時間，就自動開始折扣；整個月都在跑的 VM 最多折 30%。已經有承諾使用折扣的用量不適用。
+- **承諾使用折扣**（CUD）：承諾 1 年或 3 年的用量或花費換取折扣。
+- **Spot VM**：很多機器類型最多 91% 折扣，但 Compute Engine 隨時可能搶占（停止或刪除）它。
+
+### 閒置資源
+
+- 磁碟依**配置的容量**收費，不論實際用了多少，直到刪除為止。
+- VM 停止之後，仍然要付掛在上面的磁碟、快照和外部 IP 的費用。
+
+```bash
+gcloud billing accounts list
+gcloud billing projects describe my-project
+
+# 每月 300 美元的預算：實際花到 50%、90% 通知，預測會到 100% 也通知
+gcloud billing budgets create --billing-account=0X0X0X-0X0X0X-0X0X0X \
+  --display-name=monthly-budget --budget-amount=300USD \
+  --threshold-rule=percent=0.5 --threshold-rule=percent=0.9 \
+  --threshold-rule=percent=1.0,basis=forecasted-spend
+
+# 加上標籤，之後可以依標籤看費用
+gcloud compute instances add-labels web-1 --zone=asia-east1-b --labels=team=web,env=prod
+```
+
+</Provider>
+</ProviderTabs>
+
+## 兩個平台的差異
+
+<Compare />
+
+做法很接近：用標籤分攤費用、用預算在超支前收到通知、清掉閒置資源、為穩定的用量買承諾方案。差別在細節：AWS 的標籤要另外**啟用**成為成本分配標籤；GCP 的標籤會直接送到帳單系統。GCP 的 Compute Engine 還有自動套用的**持續使用折扣**，不必事先承諾。
+
+## 重點整理
+
+- 雲端費用常常來自忘記的資源：停止的機器上的磁碟、卸載的磁碟、舊快照、閒置的 IP。
+- 用標籤把費用分給專案和團隊；AWS 的成本分配標籤要先啟用。
+- 預算依實際或預測花費發通知，但通常不會自動擋住花費，而且通知有延遲。
+- 先清掉浪費、調整規格，再為穩定的用量買 Savings Plans、Reserved Instances 或 CUD；可以中斷的工作用 Spot。
+- AWS：Cost Explorer、成本分配標籤、Budgets；GCP：Cloud Billing 報表、標籤、預算與快訊、匯出到 BigQuery。
