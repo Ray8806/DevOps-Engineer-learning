@@ -1,0 +1,166 @@
+## 共同責任模型
+
+把系統放上雲端，資安不是全部交給雲端業者，也不是全部自己來，而是**分工**：
+
+| | 雲端業者負責 | 你負責 |
+|---|---|---|
+| AWS 的說法 | 雲端**本身**的安全（security *of* the cloud）：機房、硬體、網路、執行服務的基礎設施 | 雲端**裡面**的安全（security *in* the cloud）：你的資料、帳號與權限、作業系統、網路設定、應用程式 |
+
+你負責的範圍會隨服務而變：用虛擬機，作業系統的更新是你的事；用 Lambda、Cloud Run 這類代管服務，作業系統由雲端業者處理，但**資料、權限、網路設定永遠是你的責任**。
+
+前面幾個單元其實已經在做這些事：
+
+- **身分與權限**：最小權限原則、用角色而不是長期金鑰（「身分與權限管理」單元）。
+- **網路**：安全群組、防火牆規則、私有子網路（「虛擬機」「虛擬網路」單元）。
+- **稽核**：CloudTrail、Cloud Audit Logs 查出誰做了什麼（「監控與日誌」單元）。
+
+這個單元補上兩塊：**加密**和**網頁應用程式防火牆**。
+
+## 加密
+
+- **傳輸中加密**（in transit）：資料在網路上傳送時加密，例如 HTTPS。
+- **靜態加密**（at rest）：資料存在磁碟、資料庫、物件儲存時加密。
+
+兩個平台都會**預設**做靜態加密：
+
+- Amazon S3 從 2023 年 1 月 5 日起，所有新上傳的物件都自動用 SSE-S3（AES-256）加密，不另外收費。
+- Google Cloud 預設用 AES-256 加密靜態資料，金鑰由 Google 擁有和管理。
+
+那為什麼還需要**金鑰管理服務**？因為有時候你需要**自己控制金鑰**：誰能用這把金鑰、什麼時候輪替、要不要停用，並且在稽核記錄裡看到每次使用。有些法規也要求客戶自己管理金鑰。
+
+### 信封加密
+
+加密資料要用金鑰，金鑰本身也要保護。**信封加密**（envelope encryption）的做法是：
+
+1. 用一把**資料金鑰**加密資料。
+2. 再用另一把金鑰（**根金鑰**／**金鑰加密金鑰**）加密資料金鑰，跟資料存在一起。
+3. 最上層的根金鑰交給金鑰管理服務保管，**永遠不會以明文離開服務**。
+
+雲端服務（S3、EBS、Cloud Storage 等）整合金鑰管理服務時，背後就是這樣運作的。
+
+### 輪替與刪除
+
+- **輪替**：定期產生新的金鑰材料。輪替後，新資料用新的金鑰材料加密，舊資料仍然能解密，不需要重新加密。
+- **刪除要非常小心**：金鑰刪掉之後，用它加密的資料就**再也解不開**。所以兩個平台都有**等待期**，期間內可以反悔。
+
+## 網頁應用程式防火牆（WAF）
+
+安全群組和防火牆規則看的是 IP 和連接埠，擋不住「從正常的 443 連接埠送進來的惡意請求」，例如 SQL 注入、跨站指令碼（XSS）。**WAF** 檢查 HTTP 請求的內容：
+
+- 來源 IP、國家。
+- 網址、查詢字串、標頭、本文裡有沒有攻擊的特徵。
+- 同一個來源的請求頻率（擋掉暴力嘗試）。
+
+規則依**優先順序**評估，第一條符合的規則決定要允許、封鎖或只是計數；都不符合時套用**預設動作**。新規則可以先用**計數**（或預覽）模式觀察，確定不會誤擋正常使用者再正式封鎖。
+
+## 在兩個平台上怎麼做
+
+<ProviderTabs>
+<Provider name="aws">
+
+### AWS KMS
+
+KMS 的金鑰由 FIPS 140-3 Level 3 驗證的硬體安全模組（HSM）保護，**不會以明文離開 KMS**。誰能使用金鑰由**金鑰政策**和 IAM 政策控制。
+
+| 金鑰類型 | 誰建立 | 你能管理嗎 | 輪替 |
+|---|---|---|---|
+| 客戶管理的金鑰 | 你 | 可以：政策、啟用停用、輪替、刪除 | 選擇性，預設每 365 天，可設 90 到 2560 天 |
+| AWS 受管金鑰 | AWS 服務在你的帳戶建立 | 只能看 | 每年自動輪替 |
+| AWS 擁有的金鑰 | AWS 服務在它自己的帳戶 | 看不到 | 由該服務管理 |
+
+- **別名**（例如 `alias/app-data`）讓程式不用寫死金鑰 ID。`alias/aws/` 開頭的別名保留給 AWS 受管金鑰。
+- `encrypt` 一次最多 4,096 位元組；更大的資料用信封加密。
+- **刪除**：要先**排程刪除**，等待期 7 到 30 天（預設 30 天）。等待期間金鑰的狀態是 `PendingDeletion`，不能加解密，可以取消。不確定的話，先**停用**金鑰。
+- 輪替和刪除這類管理操作要用**金鑰 ID 或 ARN** 指定金鑰；加解密可以用別名。
+
+```bash
+aws kms create-key --description "app data"
+aws kms create-alias --alias-name alias/app-data --target-key-id 金鑰ID
+aws kms enable-key-rotation --key-id 金鑰ID
+
+# 加密：輸出的密文是 base64，要先解碼成二進位再存
+aws kms encrypt --key-id alias/app-data --plaintext fileb://secret.txt \
+  --output text --query CiphertextBlob | base64 --decode > secret.enc
+
+aws kms schedule-key-deletion --key-id 金鑰ID --pending-window-in-days 7
+```
+
+### AWS WAF 與 Shield
+
+AWS WAF 可以保護 CloudFront、Application Load Balancer、API Gateway REST API、AppSync、Cognito 使用者集區等資源。
+
+- **web ACL**（主控台稱為 protection pack）：一組規則加上**預設動作**（Allow 或 Block）。大部分網站用 Allow 當預設動作，再加規則封鎖惡意請求。
+- **規則**：IP set、地理位置、請求頻率等條件，動作是 Allow、Block 或 Count。
+- **託管規則群組**：AWS 和 AWS Marketplace 賣家寫好、持續維護的規則。例如核心規則集 `AWSManagedRulesCommonRuleSet`，涵蓋 OWASP Top 10 描述的常見弱點；大部分 AWS 託管規則群組不另外收費（Bot Control 等少數例外）。
+
+**AWS Shield**：在 AWS 上的應用程式自動獲得常見網路層 DDoS 攻擊（例如 UDP 反射、SYN flood）的防護，不另外收費；**Shield Advanced** 是付費服務，提供更進一步的偵測和緩解。
+
+```bash
+aws wafv2 create-ip-set --name blocked-ips --scope REGIONAL \
+  --ip-address-version IPV4 --addresses 203.0.113.0/24
+aws wafv2 create-web-acl --name web-acl --scope REGIONAL --default-action Allow={} \
+  --visibility-config SampledRequestsEnabled=true,CloudWatchMetricsEnabled=true,MetricName=web-acl \
+  --rules file://waf-rules.json
+aws wafv2 associate-web-acl --web-acl-arn web-ACL的ARN --resource-arn ALB的ARN
+```
+
+</Provider>
+<Provider name="gcp">
+
+### Cloud KMS
+
+Cloud KMS 的資源有層級：
+
+- **位置**（例如 `asia-east1` 或 `global`）→ **金鑰環**（key ring）→ **金鑰**（key）→ **金鑰版本**（key version）。
+- 資源建立後**不能搬到其他位置**。
+- 對稱加密金鑰有一個**主要版本**，加密時預設用它；解密時用加密當時的版本，只要那個版本是**啟用**狀態。
+
+**輪替**：建議定期自動輪替（例如每 90 天）。輪替會建立新的金鑰版本，但**不會重新加密舊資料，也不會停用舊版本**，舊版本要繼續保留才能解密舊資料。
+
+**銷毀**：銷毀金鑰版本會永久刪除它的金鑰材料，用這個版本加密的資料就再也解不開。版本會先進入「排程銷毀」狀態，預設 30 天，期間內可以還原。確定這個版本已經沒有資料在用，才能銷毀。
+
+**CMEK**（客戶管理的加密金鑰）：讓 Cloud Storage、BigQuery 等服務用你在 Cloud KMS 管理的金鑰加密資料。
+
+```bash
+gcloud kms keyrings create app-ring --location=asia-east1
+gcloud kms keys create app-key --keyring=app-ring --location=asia-east1 \
+  --purpose=encryption --rotation-period=90d --next-rotation-time=2027-01-01T00:00:00Z
+gcloud kms encrypt --key=app-key --keyring=app-ring --location=asia-east1 \
+  --plaintext-file=secret.txt --ciphertext-file=secret.enc
+gcloud kms decrypt --key=app-key --keyring=app-ring --location=asia-east1 \
+  --ciphertext-file=secret.enc --plaintext-file=secret.out
+```
+
+### Cloud Armor
+
+Cloud Armor 協助防護 DDoS 攻擊，以及 XSS、SQL 注入等應用程式攻擊。
+
+- **安全性政策**是一組規則，掛到全域外部 Application Load Balancer（或傳統版）的**後端服務**上。
+- 規則依**優先順序**由小到大評估（0 到 2147483646），第一條符合的規則生效。
+- 每個政策都有一條優先順序 **2147483647** 的**預設規則**，在沒有其他規則符合時套用；它不能刪除，但可以修改動作。例如只想讓公司 IP 連線，就把預設規則改成拒絕，再加一條允許公司 IP 的規則。
+- 動作有 `allow`、`deny-403`、`deny-404`、`deny-502` 等，也有預先設定的 WAF 規則可以偵測 XSS、SQL 注入。
+
+```bash
+gcloud compute security-policies create block-bad --description="block bad IPs"
+gcloud compute security-policies rules create 1000 --security-policy=block-bad \
+  --src-ip-ranges=203.0.113.0/24 --action=deny-403 --description="block 203.0.113.0/24"
+gcloud compute backend-services update web-backend --security-policy=block-bad --global
+```
+
+</Provider>
+</ProviderTabs>
+
+## 兩個平台的差異
+
+<Compare />
+
+兩邊的觀念相同：預設就有靜態加密，需要自己控制時才用金鑰管理服務；WAF 依優先順序評估規則，沒有符合的就用預設動作。差別在組織方式：AWS KMS 的金鑰本身就是管理單位，輪替後金鑰 ID 不變；Cloud KMS 有明確的「金鑰版本」，輪替就是新增版本，銷毀也是針對版本。WAF 方面，AWS WAF 是獨立的服務，可以掛到 CloudFront、ALB 等多種資源；Cloud Armor 的政策掛在負載平衡器的後端服務上。
+
+## 重點整理
+
+- 共同責任模型：雲端業者負責雲端本身的安全，你負責資料、權限、網路設定和應用程式。
+- 兩個平台都預設加密靜態資料；需要自己控制金鑰、看到使用紀錄時，用 KMS／Cloud KMS。
+- 信封加密：資料金鑰加密資料，根金鑰加密資料金鑰，根金鑰不離開金鑰管理服務。
+- 定期輪替金鑰；刪除（AWS）或銷毀（GCP）前要確定沒有資料還在用，兩邊都有等待期可以反悔。
+- WAF 檢查 HTTP 請求的內容，擋住安全群組和防火牆擋不住的應用程式攻擊；新規則先用計數或預覽模式觀察。
+- AWS：KMS、WAF（web ACL、託管規則群組）、Shield；GCP：Cloud KMS、Cloud Armor（安全性政策、預設規則 2147483647）。

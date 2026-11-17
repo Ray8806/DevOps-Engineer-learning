@@ -346,7 +346,7 @@ function backendServices(ctx: Ctx, args: string[]): number {
     const scheme = (parsed.options.get("--load-balancing-scheme") ?? "EXTERNAL").toUpperCase();
     if (scheme !== "EXTERNAL" && scheme !== "EXTERNAL_MANAGED") return error(ctx, command, "這個模擬終端機支援 --load-balancing-scheme=EXTERNAL_MANAGED（全域外部 Application Load Balancer）或 EXTERNAL（傳統版）。");
     // Without --port-name the backend service uses the named port "http".
-    services.set(name, { protocol, portName: parsed.options.get("--port-name") ?? "http", healthCheck: hc, scheme, backends: new Set(), cdn: false, cacheMode: null });
+    services.set(name, { protocol, portName: parsed.options.get("--port-name") ?? "http", healthCheck: hc, scheme, backends: new Set(), cdn: false, cacheMode: null, securityPolicy: null });
     ctx.out(`Created [${url(ctx.state, `global/backendServices/${name}`)}].\n`);
     table(ctx, ["NAME", "BACKENDS", "PROTOCOL"], [[name, "", protocol]]);
     return 0;

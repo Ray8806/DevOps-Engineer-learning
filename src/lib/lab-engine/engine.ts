@@ -20,7 +20,7 @@ export interface ExecResult {
 }
 
 const HELP = `可用的指令：
-  檔案與目錄  pwd  ls  cd  mkdir  touch  cat  echo  cp  mv  rm  rmdir  zip
+  檔案與目錄  pwd  ls  cd  mkdir  touch  cat  echo  cp  mv  rm  rmdir  zip  base64
   Git         git init | status | add | commit | log | branch | switch | checkout | merge
   AWS         aws s3 mb | rb | ls | cp | mv | rm
               aws iam  使用者、群組、角色與政策（輸入 aws iam 看完整清單）
@@ -34,6 +34,8 @@ const HELP = `可用的指令：
               aws logs create-log-group | describe-log-groups | put-retention-policy | filter-log-events | put-metric-filter，aws cloudtrail lookup-events
               aws route53 create-hosted-zone | list-hosted-zones | change-resource-record-sets | list-resource-record-sets | test-dns-answer
               aws cloudfront create-distribution | list-distributions | get-distribution | create-invalidation | list-invalidations
+              aws kms create-key | create-alias | enable-key-rotation | encrypt | decrypt | schedule-key-deletion（輸入 aws kms 看完整清單）
+              aws wafv2 create-ip-set | list-ip-sets | create-web-acl | list-web-acls | get-web-acl | associate-web-acl
   GCP         gcloud storage buckets create | delete | list | describe
               gcloud storage ls | cp | mv | rm | cat      （也支援 gsutil）
               gcloud iam service-accounts create | list | delete
@@ -55,6 +57,8 @@ const HELP = `可用的指令：
               gcloud monitoring uptime create | list-configs | delete，monitoring policies create | list
               gcloud dns managed-zones create | list | describe | delete，dns record-sets create | list | describe | update | delete
               gcloud compute backend-buckets create | list | describe | delete，backend-services update --enable-cdn，url-maps invalidate-cdn-cache
+              gcloud kms keyrings create | list，kms keys create | list | describe，kms keys versions list | create | destroy | restore，kms encrypt | decrypt
+              gcloud compute security-policies create | list | describe | delete，security-policies rules create | update | delete
   其他        clear  help  whoami
 支援 > 與 >> 輸出到檔案、用 && 或 ; 串接指令。按 Tab 補完路徑，上下鍵瀏覽歷史指令。
 `;

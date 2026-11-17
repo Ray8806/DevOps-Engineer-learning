@@ -1,0 +1,193 @@
+{
+  "questions": [
+    {
+      "id": "security-basics-001",
+      "type": "single",
+      "provider": "general",
+      "certs": [{ "id": "clf-c02", "domain": 2 }],
+      "unitId": "security-basics",
+      "difficulty": 1,
+      "question": "公司把網站放在雲端的虛擬機上。依照共同責任模型，下列哪一項是公司自己的責任？",
+      "options": [
+        { "id": "a", "text": "資料中心的門禁與實體保全", "explanation": "實體機房屬於雲端本身的安全，由雲端業者負責。" },
+        { "id": "b", "text": "虛擬機的作業系統更新與防火牆規則設定", "explanation": "正確。使用虛擬機時，作業系統、網路設定、應用程式和資料都是客戶的責任。" },
+        { "id": "c", "text": "執行虛擬機的實體伺服器硬體", "explanation": "硬體屬於雲端業者負責的基礎設施。" },
+        { "id": "d", "text": "連接各個資料中心的骨幹網路", "explanation": "這是雲端本身的基礎設施。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "security-basics-002",
+      "type": "single",
+      "provider": "general",
+      "unitId": "security-basics",
+      "difficulty": 2,
+      "question": "網站已經只開放 443 連接埠，但攻擊者仍然透過網址的查詢字串送出 SQL 注入攻擊。哪一種防護最適合？",
+      "options": [
+        { "id": "a", "text": "再把安全群組或防火牆規則收緊", "explanation": "攻擊走的是正常開放的 443 連接埠，只看 IP 和連接埠的規則分辨不出來。" },
+        { "id": "b", "text": "網頁應用程式防火牆（WAF），檢查 HTTP 請求的內容", "explanation": "正確。WAF 能檢查網址、查詢字串、標頭和本文裡的攻擊特徵。" },
+        { "id": "c", "text": "開啟靜態加密", "explanation": "加密保護存放的資料，不會過濾送進來的請求。" },
+        { "id": "d", "text": "縮短 DNS 的 TTL", "explanation": "DNS 的 TTL 和攻擊請求無關。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "security-basics-003",
+      "type": "single",
+      "provider": "general",
+      "unitId": "security-basics",
+      "difficulty": 2,
+      "question": "團隊想刪除一把看起來已經沒在用的加密金鑰，但不太確定。比較安全的做法是？",
+      "options": [
+        { "id": "a", "text": "立刻刪除，反正資料還在", "explanation": "金鑰刪掉之後，用它加密的資料就再也解不開，資料等於一起消失。" },
+        { "id": "b", "text": "先停用金鑰觀察一段時間；確定沒有東西在用，再排程刪除並利用等待期", "explanation": "正確。停用可以隨時恢復；排程刪除也有等待期可以取消。" },
+        { "id": "c", "text": "把金鑰的別名改名", "explanation": "改別名不能確認有沒有程式還在用這把金鑰。" },
+        { "id": "d", "text": "把金鑰材料下載備份再刪除", "explanation": "金鑰管理服務裡的金鑰不會以明文離開服務，無法這樣備份。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "security-basics-004",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 1 }],
+      "unitId": "security-basics",
+      "difficulty": 2,
+      "question": "合規要求公司自己控制加密金鑰：能決定誰可以使用、能開啟自動輪替，也能在需要時停用金鑰。應該使用哪一種 KMS 金鑰？",
+      "options": [
+        { "id": "a", "text": "AWS 擁有的金鑰", "explanation": "AWS 擁有的金鑰在 AWS 服務自己的帳戶裡，你看不到也不能管理。" },
+        { "id": "b", "text": "AWS 受管金鑰", "explanation": "AWS 受管金鑰在你的帳戶裡，但你不能管理它的政策或停用它，輪替也是 AWS 每年自動做。" },
+        { "id": "c", "text": "客戶管理的金鑰", "explanation": "正確。客戶管理的金鑰由你建立和管理，可以設定金鑰政策、啟用停用、輪替和排程刪除。" },
+        { "id": "d", "text": "把金鑰寫在應用程式的設定檔裡", "explanation": "金鑰寫在設定檔容易外洩，也無法稽核使用紀錄。" }
+      ],
+      "answer": ["c"]
+    },
+    {
+      "id": "security-basics-005",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 1 }],
+      "unitId": "security-basics",
+      "difficulty": 3,
+      "question": "關於 AWS KMS，哪些敘述正確？（選兩個）",
+      "options": [
+        { "id": "a", "text": "排程刪除金鑰時，等待期可以設 7 到 30 天，預設 30 天", "explanation": "正確。等待期間金鑰是 PendingDeletion 狀態，不能加解密，也可以取消刪除。" },
+        { "id": "b", "text": "客戶管理的金鑰開啟自動輪替後，預設每 365 天輪替一次", "explanation": "正確。也可以自訂 90 到 2560 天。" },
+        { "id": "c", "text": "金鑰輪替後，用舊金鑰材料加密的資料就不能解密了", "explanation": "KMS 會自動用當初加密的金鑰材料解密，輪替不影響舊資料。" },
+        { "id": "d", "text": "encrypt 可以直接加密任意大小的檔案", "explanation": "encrypt 一次最多 4,096 位元組，大的資料要用信封加密。" }
+      ],
+      "answer": ["a", "b"]
+    },
+    {
+      "id": "security-basics-006",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 1 }],
+      "unitId": "security-basics",
+      "difficulty": 2,
+      "question": "一個放在 Application Load Balancer 後面的網站，想用最少的維護工作防護 OWASP Top 10 描述的常見網頁攻擊。最適合的做法是？",
+      "options": [
+        { "id": "a", "text": "建立 AWS WAF web ACL，加入 AWS 託管的核心規則集，關聯到 ALB", "explanation": "正確。託管規則群組由 AWS 撰寫和維護，核心規則集涵蓋 OWASP Top 10 描述的常見弱點。" },
+        { "id": "b", "text": "在安全群組加上更多規則", "explanation": "安全群組只看 IP、協定和連接埠，看不到 HTTP 請求的內容。" },
+        { "id": "c", "text": "開啟 AWS Shield 的基本防護", "explanation": "Shield 的基本防護針對網路層的 DDoS 攻擊，不是 SQL 注入、XSS 這類應用程式攻擊。" },
+        { "id": "d", "text": "用 KMS 加密網站的資料", "explanation": "加密保護存放的資料，不會過濾攻擊請求。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "security-basics-007",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "clf-c02", "domain": 2 }],
+      "unitId": "security-basics",
+      "difficulty": 1,
+      "question": "哪一項服務會自動為 AWS 上的應用程式提供常見網路層 DDoS 攻擊的防護，而且不另外收費？",
+      "options": [
+        { "id": "a", "text": "AWS Shield（基本防護）", "explanation": "正確。Shield Advanced 則是付費服務，提供更進一步的偵測與緩解。" },
+        { "id": "b", "text": "AWS KMS", "explanation": "KMS 用來管理加密金鑰。" },
+        { "id": "c", "text": "Amazon CloudWatch", "explanation": "CloudWatch 是監控服務。" },
+        { "id": "d", "text": "AWS CloudTrail", "explanation": "CloudTrail 記錄 API 操作。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "security-basics-008",
+      "type": "single",
+      "provider": "aws",
+      "unitId": "security-basics",
+      "difficulty": 2,
+      "question": "團隊要上線一條新的 WAF 規則，但擔心誤擋正常使用者。比較好的做法是？",
+      "options": [
+        { "id": "a", "text": "先把規則的動作設成 Count，觀察符合的請求，確認沒問題再改成 Block", "explanation": "正確。Count 只計數不影響請求，適合測試新規則。" },
+        { "id": "b", "text": "直接設成 Block，有人抱怨再說", "explanation": "誤擋會直接影響使用者。" },
+        { "id": "c", "text": "把 web ACL 的預設動作改成 Block", "explanation": "這會擋掉所有不符合規則的請求，影響更大。" },
+        { "id": "d", "text": "先關掉網站再測試", "explanation": "不需要停機，Count 動作就能觀察規則的效果。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "security-basics-009",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 4 }],
+      "unitId": "security-basics",
+      "difficulty": 3,
+      "question": "一把 Cloud KMS 金鑰輪替過一次，主要版本變成版本 2。有人為了省錢把版本 1 銷毀了。會發生什麼事？",
+      "options": [
+        { "id": "a", "text": "沒有影響，Cloud KMS 會自動用版本 2 重新加密舊資料", "explanation": "輪替不會重新加密舊資料，舊資料仍然需要版本 1 才能解密。" },
+        { "id": "b", "text": "用版本 1 加密的資料，在版本 1 真正銷毀後就再也無法解密", "explanation": "正確。排程銷毀期間（預設 30 天）還可以還原；之後金鑰材料永久刪除。" },
+        { "id": "c", "text": "版本 2 也會一起被銷毀", "explanation": "銷毀是針對單一版本，不影響其他版本。" },
+        { "id": "d", "text": "整個金鑰環會被刪除", "explanation": "銷毀金鑰版本不會刪除金鑰環。" }
+      ],
+      "answer": ["b"]
+    },
+    {
+      "id": "security-basics-010",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 4 }],
+      "unitId": "security-basics",
+      "difficulty": 2,
+      "question": "網站在全域外部 Application Load Balancer 後面，想封鎖來自 203.0.113.0/24 的請求並回應 403。應該怎麼做？",
+      "options": [
+        { "id": "a", "text": "建立 Cloud Armor 安全性政策，加一條 deny-403 規則比對這個來源範圍，掛到後端服務", "explanation": "正確。Cloud Armor 政策掛在負載平衡器的後端服務上，依優先順序評估規則。" },
+        { "id": "b", "text": "在 Cloud DNS 刪除網站的紀錄", "explanation": "這會讓所有人都連不到網站。" },
+        { "id": "c", "text": "用 Cloud KMS 加密網站的回應", "explanation": "加密不會阻擋請求。" },
+        { "id": "d", "text": "把 VM 的機器類型改大", "explanation": "加大機器不會封鎖惡意來源。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "security-basics-011",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 4 }],
+      "unitId": "security-basics",
+      "difficulty": 3,
+      "question": "一個內部測試用的網站，只允許公司的 IP 範圍連線，其他來源一律拒絕。用 Cloud Armor 應該怎麼設定？",
+      "options": [
+        { "id": "a", "text": "把預設規則（優先順序 2147483647）改成拒絕，再加一條允許公司 IP 範圍的規則", "explanation": "正確。預設規則在沒有其他規則符合時套用，不能刪除但可以修改動作。" },
+        { "id": "b", "text": "刪除預設規則", "explanation": "預設規則不能刪除。" },
+        { "id": "c", "text": "加一條優先順序 2147483647 的新規則", "explanation": "2147483647 保留給預設規則，一般規則的優先順序是 0 到 2147483646。" },
+        { "id": "d", "text": "對每個非公司的 IP 各加一條拒絕規則", "explanation": "不可能列出所有其他 IP；用預設規則拒絕才是正確的做法。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "security-basics-012",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-cdl", "domain": 5 }],
+      "unitId": "security-basics",
+      "difficulty": 1,
+      "question": "一家公司剛把資料放進 Cloud Storage，還沒設定任何加密。這些資料的狀態是？",
+      "options": [
+        { "id": "a", "text": "沒有加密，要自己設定才會加密", "explanation": "Google Cloud 預設就會加密靜態資料。" },
+        { "id": "b", "text": "已經用 AES-256 預設加密，金鑰由 Google 管理；需要自己控制金鑰時再用 Cloud KMS（CMEK）", "explanation": "正確。預設加密不需要任何設定。" },
+        { "id": "c", "text": "只有付費的儲存類別才會加密", "explanation": "預設加密適用於所有靜態資料。" },
+        { "id": "d", "text": "要安裝 Ops Agent 才會加密", "explanation": "Ops Agent 用來收集指標和記錄，和加密無關。" }
+      ],
+      "answer": ["b"]
+    }
+  ]
+}

@@ -68,8 +68,8 @@ function backendBuckets(ctx: Ctx, args: string[]): number {
 /** gcloud compute backend-services update: only the Cloud CDN settings. */
 function updateBackendService(ctx: Ctx, args: string[]): number {
   const command = "gcloud.compute.backend-services.update";
-  const parsed = parseArgs(args, { options: ["--cache-mode", "--project"], flags: ["--enable-cdn", "--no-enable-cdn", "--global"] });
-  if (parsed.unknown) return error(ctx, command, `unrecognized arguments: ${parsed.unknown}（這個模擬終端機的 update 只支援 --enable-cdn、--no-enable-cdn、--cache-mode）`);
+  const parsed = parseArgs(args, { options: ["--cache-mode", "--security-policy", "--project"], flags: ["--enable-cdn", "--no-enable-cdn", "--global"] });
+  if (parsed.unknown) return error(ctx, command, `unrecognized arguments: ${parsed.unknown}（這個模擬終端機的 update 只支援 --enable-cdn、--no-enable-cdn、--cache-mode、--security-policy）`);
   const name = parsed.positional[0];
   if (!name) return error(ctx, command, "argument BACKEND_SERVICE_NAME: Must be specified.");
   if (!parsed.flags.has("--global")) return error(ctx, command, "這個模擬終端機只支援全域後端服務，請加上 --global。");
@@ -79,8 +79,16 @@ function updateBackendService(ctx: Ctx, args: string[]): number {
   if (mode === null) return 1;
   if (parsed.flags.has("--enable-cdn")) service.cdn = true;
   if (parsed.flags.has("--no-enable-cdn")) service.cdn = false;
-  if (!parsed.flags.has("--enable-cdn") && !parsed.flags.has("--no-enable-cdn") && mode === undefined) {
-    return error(ctx, command, "請指定要更新的設定，例如 --enable-cdn。");
+  const policy = parsed.options.get("--security-policy");
+  if (!parsed.flags.has("--enable-cdn") && !parsed.flags.has("--no-enable-cdn") && mode === undefined && policy === undefined) {
+    return error(ctx, command, "請指定要更新的設定，例如 --enable-cdn 或 --security-policy。");
+  }
+  if (policy !== undefined) {
+    // An empty value detaches the policy.
+    if (policy !== "" && !ctx.state.gcp.securityPolicies.has(policy)) {
+      return error(ctx, command, `Could not fetch resource:\n - The resource 'projects/${ctx.state.gcp.project}/global/securityPolicies/${policy}' was not found`);
+    }
+    service.securityPolicy = policy === "" ? null : policy;
   }
   service.cacheMode = service.cdn ? (mode ?? service.cacheMode ?? "CACHE_ALL_STATIC") : null;
   ctx.out(`Updated [${url(ctx, `global/backendServices/${name}`)}].\n`);

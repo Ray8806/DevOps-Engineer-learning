@@ -2,6 +2,7 @@ import { parseArgs, type Ctx } from "./context";
 import { NAME, NAME_RULE, error, list, networkUrl, subnetUrl, table, zoneRegion } from "./gcloud-common";
 import { attachDetach, disks, snapshots } from "./gcloud-disks";
 import { cdn } from "./gcloud-cdn";
+import { cloudArmor } from "./gcloud-security";
 import { loadBalancing, reconcileMigs } from "./gcloud-lb";
 import { networks, routers } from "./gcloud-network";
 
@@ -214,6 +215,8 @@ export function compute(ctx: Ctx, args: string[]): number {
   if (args[0] === "routers") return routers(ctx, args.slice(1));
   if (args[0] === "disks") return disks(ctx, args.slice(1));
   if (args[0] === "snapshots") return snapshots(ctx, args.slice(1));
+  const armor = cloudArmor(ctx, args);
+  if (armor !== null) return armor;
   const cached = cdn(ctx, args);
   if (cached !== null) return cached;
   const lb = loadBalancing(ctx, args);
@@ -221,6 +224,6 @@ export function compute(ctx: Ctx, args: string[]): number {
   return error(
     ctx,
     "gcloud.compute",
-    `不支援 '${args[0] ?? ""}'。這個模擬終端機支援 gcloud compute instances、firewall-rules、networks（含 networks subnets）、routers（含 routers nats）、disks、snapshots、instance-templates、instance-groups、health-checks、backend-services、backend-buckets、url-maps、target-http-proxies、forwarding-rules。`,
+    `不支援 '${args[0] ?? ""}'。這個模擬終端機支援 gcloud compute instances、firewall-rules、networks（含 networks subnets）、routers（含 routers nats）、disks、snapshots、instance-templates、instance-groups、health-checks、backend-services、backend-buckets、url-maps、target-http-proxies、forwarding-rules、security-policies。`,
   );
 }

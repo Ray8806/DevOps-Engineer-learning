@@ -81,6 +81,12 @@ export interface AwsState {
   route53: { zones: Map<string, HostedZone>; created: number };
   /** Distributions by id. */
   cloudfront: { distributions: Map<string, Distribution>; created: number };
+  /** KMS keys by key id; aliases map "alias/name" to a key id. */
+  kms: { keys: Map<string, KmsKey>; aliases: Map<string, string>; created: number };
+  wafv2: {
+    ipSets: Map<string, { id: string; arn: string; scope: string; addresses: string[] }>;
+    webAcls: Map<string, { id: string; arn: string; scope: string; defaultAction: string; rules: WafRule[]; associations: string[] }>;
+  };
   rds: {
     subnetGroups: Map<string, { description: string; subnetIds: string[] }>;
     instances: Map<string, RdsInstance>;
@@ -176,6 +182,33 @@ export interface Distribution {
   defaultRootObject: string;
   /** Every path submitted in an invalidation, in order. */
   invalidations: string[];
+}
+
+export interface KmsKey {
+  description: string;
+  state: "Enabled" | "Disabled" | "PendingDeletion";
+  /** null while automatic rotation is off. */
+  rotationPeriodInDays: number | null;
+  pendingWindowInDays: number | null;
+}
+
+export interface WafRule {
+  name: string;
+  priority: number;
+  /** "managed:AWS/Name", "ipset:name:Block", "geo:CN,RU:Block" or "rate:1000:Block". */
+  summary: string;
+}
+
+export interface GcpKmsKey {
+  purpose: string;
+  /** For example "7776000s"; null without automatic rotation. */
+  rotationPeriod: string | null;
+  nextRotationTime: string | null;
+  /** Version states in order, version 1 first: ENABLED, DISABLED, DESTROY_SCHEDULED. */
+  versions: string[];
+  primary: number;
+  /** Version numbers brought back with `versions restore`. */
+  restored: number[];
 }
 
 export interface TrailEvent {
@@ -335,7 +368,16 @@ export interface GcpState {
   healthChecks: Map<string, { port: number; path: string }>;
   backendServices: Map<
     string,
-    { protocol: string; portName: string; healthCheck: string; scheme: string; backends: Set<string>; cdn: boolean; cacheMode: string | null }
+    {
+      protocol: string;
+      portName: string;
+      healthCheck: string;
+      scheme: string;
+      backends: Set<string>;
+      cdn: boolean;
+      cacheMode: string | null;
+      securityPolicy: string | null;
+    }
   >;
   /** Backend buckets: a Cloud Storage bucket behind the load balancer, optionally with Cloud CDN. */
   backendBuckets: Map<string, { gcsBucket: string; cdn: boolean; cacheMode: string | null }>;
@@ -352,6 +394,10 @@ export interface GcpState {
     buckets: Map<string, { retentionDays: number; locked: boolean }>;
     sinks: Map<string, { destination: string; filter: string }>;
   };
+  /** Key rings keyed "location/name". */
+  kms: { keyRings: Map<string, { keys: Map<string, GcpKmsKey> }> };
+  /** Cloud Armor security policies; rules keyed by priority. */
+  securityPolicies: Map<string, { description: string; rules: Map<number, { action: string; srcIpRanges: string[]; description: string; preview: boolean }> }>;
   /** Cloud DNS managed zones by name; records keyed "name|type". */
   dns: { zones: Map<string, { dnsName: string; description: string; visibility: string; nameServers: string[]; records: Map<string, { ttl: number; rrdatas: string[] }> }> };
   monitoring: {
@@ -508,11 +554,21 @@ function awsFrom(cloud: Record<string, unknown>): AwsState {
     cloudtrail: { events: [] },
     route53: { zones: new Map(), created: 0 },
     cloudfront: { distributions: new Map(), created: 0 },
+    kms: { keys: new Map(), aliases: new Map(), created: 0 },
+    wafv2: { ipSets: new Map(), webAcls: new Map() },
     vpc: { vpcs: new Map(), subnets: new Map(), internetGateways: new Map(), routeTables: new Map() },
     rds: { subnetGroups: new Map(), instances: new Map(), snapshots: new Map() },
   };
   // { logs: { "/app/web": [{ stream, message }] }, cloudtrail: [{ eventName, username, eventSource, resourceName, eventTime }] }
   const awsSeed = isRecord(cloud.aws) ? cloud.aws : {};
+  // { kms: { "alias/name": { description } } }: existing symmetric keys, each with an alias.
+  if (isRecord(awsSeed.kms)) {
+    Object.entries(awsSeed.kms).forEach(([alias, raw], i) => {
+      const id = `0f1e2d3c-4b5a-4978-8796-a5b4c3d2e1${String(i).padStart(2, "0")}`;
+      aws.kms.keys.set(id, { description: isRecord(raw) && typeof raw.description === "string" ? raw.description : "", state: "Enabled", rotationPeriodInDays: null, pendingWindowInDays: null });
+      aws.kms.aliases.set(alias, id);
+    });
+  }
   if (isRecord(awsSeed.logs)) {
     for (const [group, events] of Object.entries(awsSeed.logs)) {
       const list = Array.isArray(events) ? events.filter(isRecord) : [];
@@ -617,6 +673,8 @@ function gcpFrom(cloud: Record<string, unknown>): GcpState {
     },
     monitoring: { uptimeChecks: new Map(), policies: new Map() },
     dns: { zones: new Map() },
+    kms: { keyRings: new Map() },
+    securityPolicies: new Map(),
   };
 }
 
@@ -932,6 +990,29 @@ function awsView(state: LabState) {
         }),
       ),
     },
+    kms: {
+      keyCount: aws.kms.keys.size,
+      aliases: Object.fromEntries(
+        [...aws.kms.aliases].map(([alias, id]) => {
+          const k = aws.kms.keys.get(id)!;
+          return [alias, { description: k.description, state: k.state, rotationPeriodInDays: k.rotationPeriodInDays, pendingWindowInDays: k.pendingWindowInDays }];
+        }),
+      ),
+    },
+    wafv2: {
+      ipSets: Object.fromEntries([...aws.wafv2.ipSets].map(([n, i]) => [n, { scope: i.scope, addresses: keysTrue(i.addresses) }])),
+      webAcls: Object.fromEntries(
+        [...aws.wafv2.webAcls].map(([n, a]) => [
+          n,
+          {
+            scope: a.scope,
+            defaultAction: a.defaultAction,
+            rules: Object.fromEntries(a.rules.map((r) => [r.name, r.summary])),
+            associatedLoadBalancers: keysTrue(a.associations.map((arn) => [...aws.elbv2.loadBalancers].find(([, l]) => l.arn === arn)?.[0] ?? arn)),
+          },
+        ]),
+      ),
+    },
     cloudfront: {
       distributions: Object.fromEntries(
         [...aws.cloudfront.distributions.values()].map((d) => [d.origin, { defaultRootObject: d.defaultRootObject, invalidations: keysTrue(d.invalidations) }]),
@@ -1031,7 +1112,7 @@ function gcpView(state: LabState) {
     backendServices: Object.fromEntries(
       [...gcp.backendServices].map(([n, b]) => [
         n,
-        { portName: b.portName, healthCheck: b.healthCheck, scheme: b.scheme, backends: keysTrue(b.backends), healthyInstances: healthyBackends(state, n).length, cdn: b.cdn, cacheMode: b.cacheMode },
+        { portName: b.portName, healthCheck: b.healthCheck, scheme: b.scheme, backends: keysTrue(b.backends), healthyInstances: healthyBackends(state, n).length, cdn: b.cdn, cacheMode: b.cacheMode, securityPolicy: b.securityPolicy },
       ]),
     ),
     forwardingRules: Object.fromEntries(
@@ -1062,6 +1143,33 @@ function gcpView(state: LabState) {
     backendBuckets: Object.fromEntries([...gcp.backendBuckets].map(([n, b]) => [n, { gcsBucket: b.gcsBucket, cdn: b.cdn, cacheMode: b.cacheMode }])),
     urlMaps: Object.fromEntries(
       [...gcp.urlMaps].map(([n, m]) => [n, { defaultService: m.defaultService, defaultBackendBucket: m.defaultBackendBucket, invalidations: keysTrue(m.invalidations) }]),
+    ),
+    kms: {
+      keyRings: Object.fromEntries(
+        [...gcp.kms.keyRings].map(([id, r]) => [
+          id,
+          {
+            keys: Object.fromEntries(
+              [...r.keys].map(([n, k]) => [
+                n,
+                {
+                  purpose: k.purpose,
+                  rotationPeriod: k.rotationPeriod,
+                  primary: k.primary,
+                  versions: Object.fromEntries(k.versions.map((v, i) => [String(i + 1), v])),
+                  recovered: keysTrue(k.restored.filter((n) => k.versions[n - 1] === "ENABLED").map(String)),
+                },
+              ]),
+            ),
+          },
+        ]),
+      ),
+    },
+    securityPolicies: Object.fromEntries(
+      [...gcp.securityPolicies].map(([n, p]) => [
+        n,
+        { rules: Object.fromEntries([...p.rules].map(([pr, r]) => [String(pr), { action: r.action, srcIpRanges: r.srcIpRanges, preview: r.preview }])) },
+      ]),
     ),
     dns: {
       zones: Object.fromEntries(
@@ -1175,6 +1283,10 @@ function repoView(state: LabState, root: string, repo: GitRepo) {
  *   cloud.gcp.backendBuckets[name].{gcsBucket, cdn, cacheMode}, cloud.gcp.backendServices[name].{cdn, cacheMode},
  *   cloud.gcp.urlMaps[name].{defaultService, defaultBackendBucket, invalidations[path]},
  *   cloud.gcp.dns.zones[name].{dnsName, visibility, records["www.example.com./A"].{ttl, rrdatas, forwardingRule}},
+ *   cloud.aws.kms.{keyCount, aliases["alias/name"].{description, state, rotationPeriodInDays, pendingWindowInDays}},
+ *   cloud.aws.wafv2.ipSets[name].{scope, addresses[cidr]}, cloud.aws.wafv2.webAcls[name].{scope, defaultAction, rules[name], associatedLoadBalancers[name]},
+ *   cloud.gcp.kms.keyRings["location/ring"].keys[name].{purpose, rotationPeriod, primary, versions["1"], recovered["1"]},
+ *   cloud.gcp.securityPolicies[name].rules["1000"].{action, srcIpRanges, preview}, cloud.gcp.backendServices[name].securityPolicy,
  *   cloud.gcp.monitoring.{uptimeChecks[name].{host, path, period}, policies[displayName].{conditionFilter, condition}},
  *   cloud.gcp.sql.instances[name].{databaseVersion, edition, tier, region, availabilityType, backupsEnabled,
  *     deletionProtection, masterInstanceName, databases[name], users[name], backupCount},
