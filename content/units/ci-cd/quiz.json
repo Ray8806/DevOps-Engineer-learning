@@ -1,0 +1,497 @@
+{
+  "questions": [
+    {
+      "id": "ci-cd-001",
+      "type": "single",
+      "provider": "general",
+      "unitId": "ci-cd",
+      "difficulty": 1,
+      "question": "團隊希望每次有人合併程式碼，就自動建置並執行測試，盡早發現問題。這個做法叫做？",
+      "options": [
+        {
+          "id": "a",
+          "text": "持續整合（CI）",
+          "explanation": "正確。每次整合程式碼都自動建置、測試。"
+        },
+        {
+          "id": "b",
+          "text": "持續部署",
+          "explanation": "持續部署是通過檢查後自動部署到正式環境，重點不只是建置和測試。"
+        },
+        {
+          "id": "c",
+          "text": "藍綠部署",
+          "explanation": "藍綠部署是一種切換版本的部署方式。"
+        },
+        {
+          "id": "d",
+          "text": "偏移偵測",
+          "explanation": "偏移偵測比對 IaC 和實際資源。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "ci-cd-002",
+      "type": "single",
+      "provider": "general",
+      "unitId": "ci-cd",
+      "difficulty": 2,
+      "question": "持續交付（Continuous Delivery）和持續部署（Continuous Deployment）最主要的差別是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "持續部署不需要人工介入，通過所有檢查就自動部署到正式環境；持續交付在部署到正式環境前可能還要有人核准",
+          "explanation": "正確。"
+        },
+        {
+          "id": "b",
+          "text": "持續交付不執行測試",
+          "explanation": "兩者都會執行自動化的建置和測試。"
+        },
+        {
+          "id": "c",
+          "text": "持續部署只能用在測試環境",
+          "explanation": "持續部署就是自動部署到正式環境。"
+        },
+        {
+          "id": "d",
+          "text": "兩者完全一樣",
+          "explanation": "差別在部署到正式環境前是否需要人工步驟。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "ci-cd-003",
+      "type": "single",
+      "provider": "general",
+      "unitId": "ci-cd",
+      "difficulty": 2,
+      "question": "外部的 CI 工具要部署到雲端。下列哪個做法最安全？",
+      "options": [
+        {
+          "id": "a",
+          "text": "用 OIDC 權杖換取短期的雲端憑證，不保存長期金鑰",
+          "explanation": "正確。Google Cloud 用 Workload Identity Federation，AWS 用 IAM 的 OIDC 身分提供者。"
+        },
+        {
+          "id": "b",
+          "text": "把管理員的存取金鑰寫在建置設定檔裡",
+          "explanation": "設定檔放在儲存庫中，金鑰會外洩，而且權限過大。"
+        },
+        {
+          "id": "c",
+          "text": "建立一個永不過期的服務帳戶金鑰，貼到 CI 工具的設定",
+          "explanation": "長期金鑰需要自己保管和輪替，外洩風險高。"
+        },
+        {
+          "id": "d",
+          "text": "讓建置流程使用你的個人帳號登入",
+          "explanation": "個人帳號權限通常過大，離職或改密碼就會中斷。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "ci-cd-004",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "unitId": "ci-cd",
+      "difficulty": 1,
+      "question": "在 AWS 上，哪個服務是代管的建置服務，會依 buildspec.yml 編譯原始碼、執行測試並產生成品？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS CodeBuild",
+          "explanation": "正確。"
+        },
+        {
+          "id": "b",
+          "text": "AWS CodePipeline",
+          "explanation": "CodePipeline 串起整個發布流程，建置的工作通常交給 CodeBuild。"
+        },
+        {
+          "id": "c",
+          "text": "AWS CloudFormation",
+          "explanation": "CloudFormation 用範本管理基礎架構。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon ECR",
+          "explanation": "ECR 存放容器映像檔。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "ci-cd-005",
+      "type": "single",
+      "provider": "aws",
+      "unitId": "ci-cd",
+      "difficulty": 2,
+      "question": "CodeBuild 建置映像檔時失敗，日誌顯示 Cannot connect to the Docker daemon at unix:/var/run/docker.sock。最可能的原因是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "建置專案沒有開啟特權模式（privilegedMode）",
+          "explanation": "正確。建置 Docker 映像檔需要開啟特權模式。"
+        },
+        {
+          "id": "b",
+          "text": "ECR 儲存庫不存在",
+          "explanation": "儲存庫不存在會在推送時失敗，錯誤訊息不同。"
+        },
+        {
+          "id": "c",
+          "text": "buildspec.yml 缺少 version",
+          "explanation": "格式錯誤會在讀取 buildspec 時就失敗。"
+        },
+        {
+          "id": "d",
+          "text": "服務角色沒有 S3 權限",
+          "explanation": "那會在下載原始碼時失敗。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "ci-cd-006",
+      "type": "single",
+      "provider": "aws",
+      "unitId": "ci-cd",
+      "difficulty": 2,
+      "question": "同一個環境變數 IMAGE_TAG 同時設定在 buildspec.yml 的 env、建置專案，以及啟動建置的呼叫中。建置時會用哪一個值？",
+      "options": [
+        {
+          "id": "a",
+          "text": "啟動建置時指定的值",
+          "explanation": "正確。優先順序是：啟動建置的呼叫 > 建置專案 > buildspec。"
+        },
+        {
+          "id": "b",
+          "text": "buildspec.yml 裡的值",
+          "explanation": "buildspec 的優先順序最低。"
+        },
+        {
+          "id": "c",
+          "text": "建置專案的值",
+          "explanation": "建置專案的值會被啟動建置時指定的值覆寫。"
+        },
+        {
+          "id": "d",
+          "text": "建置會失敗，因為變數重複",
+          "explanation": "重複設定不會失敗，會依優先順序取值。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "ci-cd-007",
+      "type": "single",
+      "provider": "aws",
+      "unitId": "ci-cd",
+      "difficulty": 2,
+      "question": "buildspec.yml 的某個階段裡，有一個清理指令即使前面的指令失敗也必須執行。應該把它放在哪裡？",
+      "options": [
+        {
+          "id": "a",
+          "text": "這個階段的 finally 區塊",
+          "explanation": "正確。finally 的指令在 commands 失敗時也會執行。"
+        },
+        {
+          "id": "b",
+          "text": "commands 的第一個指令",
+          "explanation": "放在前面會在主要工作之前就執行。"
+        },
+        {
+          "id": "c",
+          "text": "另一個建置專案",
+          "explanation": "不需要另外建立專案。"
+        },
+        {
+          "id": "d",
+          "text": "env 區塊",
+          "explanation": "env 用來設定變數，不執行指令。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "ci-cd-008",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 2
+        }
+      ],
+      "unitId": "ci-cd",
+      "difficulty": 2,
+      "question": "一家公司的 CodePipeline 要在部署到正式環境前，讓變更管理人員確認。應該怎麼做？",
+      "options": [
+        {
+          "id": "a",
+          "text": "在部署階段之前加入手動核准動作，並發通知到 SNS 主題",
+          "explanation": "正確。管線會停在核准動作，等有權限的人核准或拒絕。"
+        },
+        {
+          "id": "b",
+          "text": "在 buildspec.yml 加入 sleep 指令",
+          "explanation": "等待不等於核准，也沒有人能拒絕。"
+        },
+        {
+          "id": "c",
+          "text": "把正式環境的部署改成手動執行指令",
+          "explanation": "這樣失去了自動化，也沒有紀錄。"
+        },
+        {
+          "id": "d",
+          "text": "關閉管線的來源觸發",
+          "explanation": "這會讓整條管線都不會自動執行。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "ci-cd-009",
+      "type": "single",
+      "provider": "aws",
+      "unitId": "ci-cd",
+      "difficulty": 3,
+      "question": "CodePipeline 的手動核准動作，如果七天內都沒有人核准或拒絕，會發生什麼事？",
+      "options": [
+        {
+          "id": "a",
+          "text": "視同動作失敗，這次執行不會繼續",
+          "explanation": "正確。拒絕或逾時，結果都和動作失敗一樣。"
+        },
+        {
+          "id": "b",
+          "text": "自動核准並繼續部署",
+          "explanation": "不會自動核准。"
+        },
+        {
+          "id": "c",
+          "text": "管線會被刪除",
+          "explanation": "管線不會被刪除。"
+        },
+        {
+          "id": "d",
+          "text": "無限期等待",
+          "explanation": "核准動作有七天的期限。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "ci-cd-010",
+      "type": "multiple",
+      "provider": "aws",
+      "unitId": "ci-cd",
+      "difficulty": 3,
+      "question": "關於 AWS CodePipeline，哪些敘述正確？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "管線由依序的階段組成，階段裡有動作",
+          "explanation": "正確。"
+        },
+        {
+          "id": "b",
+          "text": "動作之間用成品傳遞資料，成品放在管線的成品儲存區",
+          "explanation": "正確。"
+        },
+        {
+          "id": "c",
+          "text": "一個階段可以同時處理多次執行",
+          "explanation": "一個階段同一時間只處理一次執行。"
+        },
+        {
+          "id": "d",
+          "text": "執行失敗後，會略過失敗的階段繼續部署",
+          "explanation": "執行失敗就會停下來，不會繼續後面的階段。"
+        }
+      ],
+      "answer": [
+        "a",
+        "b"
+      ]
+    },
+    {
+      "id": "ci-cd-011",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 4
+        }
+      ],
+      "unitId": "ci-cd",
+      "difficulty": 1,
+      "question": "在 Google Cloud 上，要依照 cloudbuild.yaml 的步驟建置映像檔並部署，應該使用哪個服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud Build",
+          "explanation": "正確。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud Scheduler",
+          "explanation": "Cloud Scheduler 定時執行工作。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud Monitoring",
+          "explanation": "Cloud Monitoring 是監控服務。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud DNS",
+          "explanation": "Cloud DNS 是 DNS 服務。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "ci-cd-012",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "unitId": "ci-cd",
+      "difficulty": 2,
+      "question": "cloudbuild.yaml 用 ${_SERVICE} 決定要部署的 Cloud Run 服務名稱。要用同一份設定部署到測試環境的服務 web-staging，最簡單的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "gcloud builds submit --substitutions=_SERVICE=web-staging .",
+          "explanation": "正確。--substitutions 會覆寫設定檔裡的預設值。"
+        },
+        {
+          "id": "b",
+          "text": "複製一份 cloudbuild-staging.yaml，把名稱寫死",
+          "explanation": "可以但難以維護，替代變數就是為了避免這種重複。"
+        },
+        {
+          "id": "c",
+          "text": "gcloud builds submit --substitutions=SERVICE=web-staging .",
+          "explanation": "自訂的替代變數要以底線開頭。"
+        },
+        {
+          "id": "d",
+          "text": "gcloud builds submit --substitutions=PROJECT_ID=web-staging .",
+          "explanation": "$PROJECT_ID 是內建的替代變數，而且不能覆寫。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "ci-cd-013",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "unitId": "ci-cd",
+      "difficulty": 2,
+      "question": "Cloud Build 的建置要把服務部署到 Cloud Run。建置使用的服務帳戶至少需要哪一組角色？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud Run 管理員和服務帳戶使用者",
+          "explanation": "正確。推送映像檔還需要 Artifact Registry 寫入者。"
+        },
+        {
+          "id": "b",
+          "text": "只要 Logs 寫入者",
+          "explanation": "這只能寫日誌。"
+        },
+        {
+          "id": "c",
+          "text": "專案擁有者",
+          "explanation": "權限過大，不符合最小權限原則。"
+        },
+        {
+          "id": "d",
+          "text": "不需要任何角色",
+          "explanation": "部署需要相應的權限。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "ci-cd-014",
+      "type": "single",
+      "provider": "gcp",
+      "unitId": "ci-cd",
+      "difficulty": 3,
+      "question": "團隊想讓同一個版本依序部署到測試、正式等多個 Cloud Run 環境，並建立持續交付管線。可以使用哪個服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud Deploy",
+          "explanation": "正確。"
+        },
+        {
+          "id": "b",
+          "text": "Artifact Registry",
+          "explanation": "Artifact Registry 存放映像檔，不負責部署流程。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud Armor",
+          "explanation": "Cloud Armor 是網頁應用程式防火牆。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud KMS",
+          "explanation": "Cloud KMS 管理加密金鑰。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    }
+  ]
+}

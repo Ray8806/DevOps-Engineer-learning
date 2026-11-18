@@ -20,6 +20,8 @@ export interface ExecResult {
   lines: OutputLine[];
   /** True when the screen should be cleared (`clear`). */
   clear: boolean;
+  /** Exit status of the last command that ran, as `$?` would show. */
+  exitCode: number;
 }
 
 const HELP = `可用的指令：
@@ -48,6 +50,7 @@ const HELP = `可用的指令：
               aws ecs create-cluster | register-task-definition | create-service | describe-services | update-service | list-tasks
               aws eks create-cluster | describe-cluster | create-nodegroup | update-nodegroup-config | update-kubeconfig
               aws cloudformation validate-template | create-stack | describe-stacks | create-change-set | execute-change-set | detect-stack-drift | delete-stack（輸入 aws cloudformation 看完整清單）
+              aws codebuild create-project | update-project | list-projects | start-build | batch-get-builds | list-builds-for-project
   GCP         gcloud storage buckets create | delete | list | describe
               gcloud storage ls | cp | mv | rm | cat      （也支援 gsutil）
               gcloud iam service-accounts create | list | delete
@@ -74,6 +77,7 @@ const HELP = `可用的指令：
               gcloud billing accounts list，billing projects describe | link | unlink，billing budgets create | list | delete
               gcloud artifacts repositories create | list | describe | delete，artifacts docker images list，auth configure-docker
               gcloud container clusters create-auto | create | list | describe | get-credentials | resize | delete
+              gcloud builds submit --config=cloudbuild.yaml [--substitutions=_KEY=value] [--region=…] | list | log | describe
   其他        clear  help  whoami
 支援 > 與 >> 輸出到檔案、用 | 把輸出交給下一個指令（cat、base64、docker login --password-stdin 會讀取）、用 && 或 ; 串接指令。按 Tab 補完路徑，上下鍵瀏覽歷史指令。
 `;
@@ -97,7 +101,7 @@ function splitLines(text: string, error: boolean): OutputLine[] {
 /** Runs one input line against the state and returns the new state and output. */
 export function execute(state: LabState, line: string): ExecResult {
   const parsed = parseLine(line);
-  if (!parsed.ok) return { state, lines: [{ text: `bash: ${parsed.error}`, error: true }], clear: false };
+  if (!parsed.ok) return { state, lines: [{ text: `bash: ${parsed.error}`, error: true }], clear: false, exitCode: 2 };
 
   const draft = cloneState(state);
   const lines: OutputLine[] = [];
@@ -161,7 +165,7 @@ export function execute(state: LabState, line: string): ExecResult {
     } else if (pipesOut) piped = stdout;
   }
 
-  return { state: draft, lines, clear };
+  return { state: draft, lines, clear, exitCode: lastCode };
 }
 
 /** Shell prompt for the current directory. */

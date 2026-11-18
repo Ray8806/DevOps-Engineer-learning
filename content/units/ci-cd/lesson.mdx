@@ -1,0 +1,152 @@
+## 為什麼要 CI/CD
+
+前面的單元裡，我們都是自己下指令建置映像檔、推送、部署。只有一個人、一天部署一次還好；當團隊每天合併幾十次程式碼，手動流程就會出問題：
+
+- 每個人建置的方式不一樣，「在我的電腦上可以跑」。
+- 忘了跑測試就部署，問題到了正式環境才被發現。
+- 部署步驟只有某個人知道，他請假就沒辦法發布。
+
+**CI/CD** 把這些步驟交給自動化的流程：
+
+- **持續整合**（Continuous Integration，CI）：每次推送或合併程式碼，就自動建置並執行測試，盡早發現問題。
+- **持續交付**（Continuous Delivery）：通過測試的版本隨時可以部署，部署到正式環境前可能還要有人按下核准。
+- **持續部署**（Continuous Deployment）：通過所有檢查就自動部署到正式環境，不需要人工介入。
+
+## 管線：把發布流程寫下來
+
+CI/CD 的流程通常叫做**管線**（pipeline），由幾個依序執行的**階段**組成，例如：
+
+1. **來源**：偵測到程式碼有新的提交（commit）。
+2. **建置**：編譯程式、建置容器映像檔、執行單元測試。
+3. **測試**：部署到測試環境，執行整合測試。
+4. **核准**：需要的話，由負責的人確認後才繼續。
+5. **部署**：部署到正式環境。
+
+每個階段產生的東西（建置好的程式、映像檔、範本）叫做**成品**（artifact），會交給下一個階段使用。任何一個階段失敗，後面的階段就不會執行，有問題的版本不會被部署出去。
+
+<Callout title="建置設定也是程式碼">
+建置步驟寫在儲存庫裡的設定檔（例如 `buildspec.yml`、`cloudbuild.yaml`），跟程式碼一起做版本控制、一起審查。要改建置方式，就像改程式一樣開 pull request。
+</Callout>
+
+## 建置環境的權限
+
+自動化的流程代替你存取雲端資源：讀取原始碼、推送映像檔、部署服務。所以要給它一個身分，並且只給需要的權限：
+
+- 建置服務使用**服務角色**或**服務帳戶**，不要把個人的存取金鑰放進建置設定。
+- 外部的 CI 工具（例如 GitHub Actions）可以用 **OIDC**（OpenID Connect）權杖換取短期的雲端憑證，不必保存長期的金鑰。Google Cloud 叫做 **Workload Identity Federation**；AWS 則是在 IAM 建立 **OIDC 身分提供者**，讓外部身分取得 IAM 角色。
+
+## 在兩個平台上怎麼做
+
+<ProviderTabs>
+<Provider name="aws">
+
+### AWS CodeBuild
+
+CodeBuild 是代管的建置服務：在**建置專案**指定的環境（容器映像檔、運算大小）裡，執行原始碼根目錄的 `buildspec.yml`。
+
+```yaml
+version: 0.2
+
+env:
+  variables:
+    IMAGE_REPO_NAME: "hello-web"
+    IMAGE_TAG: "latest"
+
+phases:
+  pre_build:
+    commands:
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+  build:
+    commands:
+      - echo Build started on `date`
+      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+  post_build:
+    commands:
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+```
+
+- **階段**：`install`、`pre_build`、`build`、`post_build`。每個階段的指令依序執行；一個指令失敗，這個階段就失敗。
+- `finally` 區塊裡的指令即使 `commands` 失敗也會執行，適合做清理。
+- **環境變數**：CodeBuild 內建 `AWS_DEFAULT_REGION`、`CODEBUILD_BUILD_ID` 等。同一個變數在三個地方都有設定時，優先順序是：啟動建置時指定的 > 建置專案的設定 > buildspec 的 `env`。
+- **特權模式**（privilegedMode）：建置環境要執行 Docker daemon 才能建置映像檔。沒有開啟時，執行 Docker 指令會失敗，日誌出現 `Cannot connect to the Docker daemon`。只有要建置映像檔的專案才開啟。
+- **服務角色**：CodeBuild 用建置專案的 IAM 角色存取 S3、ECR、CloudWatch Logs 等。
+- 建置日誌送到 **CloudWatch Logs**，`batch-get-builds` 的 `logs` 欄位告訴你在哪個日誌群組。
+
+```bash
+aws codebuild create-project --cli-input-json file://project.json
+aws codebuild start-build --project-name hello-web-build
+aws codebuild batch-get-builds --ids <建置 id>
+aws codebuild update-project --name hello-web-build \
+  --environment type=LINUX_CONTAINER,image=aws/codebuild/standard:5.0,computeType=BUILD_GENERAL1_SMALL,privilegedMode=true
+```
+
+### AWS CodePipeline
+
+CodePipeline 把整個發布流程串起來。一條**管線**由依序的**階段**（stage）組成，每個階段裡有**動作**（action）：
+
+- 動作的類型有 `source`、`build`、`test`、`deploy`、`approval`、`invoke`。例如來源動作偵測儲存庫的變更，建置動作交給 CodeBuild。
+- 動作之間用**成品**傳遞資料，成品放在管線的成品儲存區（S3 bucket）。
+- 一個階段同一時間只處理一次執行；某次執行失敗，它就停下來，不會繼續後面的階段。
+- **手動核准**：在階段裡加入核准動作，管線會停在那裡，等有權限的人核准或拒絕。可以發通知到 SNS 主題提醒核准的人。拒絕、或七天內沒有人回應，就和動作失敗一樣，執行不會繼續。
+
+</Provider>
+<Provider name="gcp">
+
+### Cloud Build
+
+Cloud Build 依照建置設定檔（`cloudbuild.yaml`）執行一連串**步驟**。每個步驟在一個容器裡執行：`name` 是這個步驟用的映像檔，`args` 是傳給它的參數。
+
+```yaml
+substitutions:
+  _REGION: asia-east1
+  _SERVICE: hello-web
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', '${_REGION}-docker.pkg.dev/$PROJECT_ID/web-repo/hello-web:$BUILD_ID', '.']
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', '${_REGION}-docker.pkg.dev/$PROJECT_ID/web-repo/hello-web:$BUILD_ID']
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: gcloud
+  args: ['run', 'deploy', '${_SERVICE}', '--image', '${_REGION}-docker.pkg.dev/$PROJECT_ID/web-repo/hello-web:$BUILD_ID', '--region', '${_REGION}']
+images:
+- '${_REGION}-docker.pkg.dev/$PROJECT_ID/web-repo/hello-web:$BUILD_ID'
+```
+
+- 步驟預設在同一台機器上依序執行（可以用 `waitFor` 讓步驟同時執行）；一個步驟失敗，建置就失敗，後面的步驟不會執行。
+- `images` 列出的映像檔會在建置成功後推送到 Artifact Registry。
+- **替代變數**：內建的有 `$PROJECT_ID`、`$BUILD_ID`、`$PROJECT_NUMBER`；由觸發條件啟動的建置還有 `$COMMIT_SHA`、`$BRANCH_NAME` 等。自訂的替代變數要以底線開頭、只用大寫字母和數字（例如 `_SERVICE`）。可以在設定檔的 `substitutions` 給預設值，再用 `--substitutions` 覆寫。`$PROJECT_ID` 和 `$BUILD_ID` 不能覆寫。
+- 寫成 `${_SERVICE}` 時，變數後面可以直接接文字，例如 `${_REGION}-docker.pkg.dev`。
+- **權限**：Cloud Build 用一個服務帳戶執行建置。要部署到 Cloud Run，這個服務帳戶需要 Cloud Run 管理員、服務帳戶使用者等角色，推送映像檔需要 Artifact Registry 寫入者角色。
+
+```bash
+gcloud builds submit --config=cloudbuild.yaml --region=asia-east1 .
+gcloud builds submit --config=cloudbuild.yaml --substitutions=_SERVICE=hello-web-staging .
+gcloud builds list
+gcloud builds log <建置 ID>
+```
+
+### 觸發條件與持續部署
+
+- **觸發條件**（trigger）：原始碼有變更時自動啟動建置，也可以設定只在符合條件的變更（例如推送到特定分支）時才啟動。可以連接 GitHub、Bitbucket 等儲存庫。
+- Cloud Run 的主控台可以直接設定從 GitHub 等儲存庫持續部署：背後就是一個 Cloud Build 觸發條件，每次推送新的提交就建置並部署。
+- 要把同一個版本依序部署到多個環境（例如測試、正式），可以用 **Cloud Deploy** 建立持續交付管線。
+
+</Provider>
+</ProviderTabs>
+
+## 兩個平台的差異
+
+<Compare />
+
+CodeBuild 的一次建置是在同一個建置環境裡依序執行各階段的指令；Cloud Build 則是每個步驟各用一個容器映像檔，所以要用 Docker 就用 docker 步驟、要用 gcloud 就用 Cloud SDK 的映像檔。CodeBuild 建置映像檔需要開啟特權模式；Cloud Build 的 docker 步驟可以直接建置。
+
+## 重點整理
+
+- CI：每次提交都自動建置、測試；CD：通過的版本隨時可部署（持續交付），或自動部署（持續部署）。
+- 管線由階段組成，階段之間傳遞成品；任何階段失敗，有問題的版本就不會往下走。
+- 建置設定檔放在儲存庫裡，跟程式碼一起版本控制。
+- 建置服務用服務角色／服務帳戶存取雲端，只給需要的權限；外部 CI 用 OIDC 換短期憑證，不要保存長期金鑰。
+- CodeBuild：`buildspec.yml` 的階段、環境變數的優先順序、建置映像檔要開特權模式、日誌在 CloudWatch Logs。
+- CodePipeline：階段、動作、成品、手動核准（七天沒回應等於失敗）。
+- Cloud Build：`cloudbuild.yaml` 的步驟和 `images`、以 `_` 開頭的自訂替代變數、觸發條件；多環境部署用 Cloud Deploy。

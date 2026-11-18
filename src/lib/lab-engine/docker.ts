@@ -54,6 +54,13 @@ export function parseTarget(ref: string): Target {
 }
 
 /** The image id stored in a cloud registry for this reference, if any. */
+/** The fully qualified name Docker prints: registry hosts stay, Docker Hub names get docker.io[/library]. */
+function canonical(ref: string): string {
+  const first = ref.split("/")[0];
+  if (ref.includes("/") && /[.:]|^localhost$/.test(first)) return ref;
+  return ref.includes("/") ? `docker.io/${ref}` : `docker.io/library/${ref}`;
+}
+
 export function remoteImage(state: LabState, ref: string): string | null {
   const t = parseTarget(ref);
   if (t.kind === "ecr") {
@@ -160,7 +167,7 @@ function build(ctx: Ctx, args: string[]): number {
   ctx.out(
     `[+] Building 4.2s (${total + 3}/${total + 3}) FINISHED\n => [internal] load build definition from ${basename(dockerfilePath)}\n => [internal] load metadata for ${base}\n => [1/${total}] FROM ${base}\n${steps
       .map((s, i) => ` => [${i + 2}/${total}] ${s}\n`)
-      .join("")} => exporting to image\n => => writing image sha256:${id}${hash(id)}\n${tagArg ? ` => => naming to docker.io/library/${normalise(tagArg)}\n` : ""}`,
+      .join("")} => exporting to image\n => => writing image sha256:${id}${hash(id)}\n${tagArg ? ` => => naming to ${canonical(normalise(tagArg))}\n` : ""}`,
   );
   if (tagArg) ctx.state.docker.images.set(normalise(tagArg), image);
   else ctx.state.docker.images.set(`<none>:${id}`, image);

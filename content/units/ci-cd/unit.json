@@ -1,0 +1,24 @@
+{
+  "id": "ci-cd",
+  "title": "CI/CD",
+  "summary": "每次把程式碼推上去，就自動建置、測試、部署：用建置服務把原始碼變成映像檔，再用管線把它一路送到正式環境。",
+  "stage": 3,
+  "prerequisites": ["git-basics", "containers", "iam-basics"],
+  "providers": {
+    "aws": { "services": ["CodeBuild", "CodePipeline"] },
+    "gcp": { "services": ["Cloud Build", "Cloud Deploy"] }
+  },
+  "compare": [
+    { "aspect": "代管的建置服務", "aws": "AWS CodeBuild：在建置專案指定的環境裡執行 buildspec.yml", "gcp": "Cloud Build：依 cloudbuild.yaml 的步驟，每個步驟在一個容器裡執行" },
+    { "aspect": "建置設定檔", "aws": "buildspec.yml：install、pre_build、build、post_build 階段，每個階段一串指令", "gcp": "cloudbuild.yaml：steps（name 是步驟用的容器映像檔，args 是參數）和 images" },
+    { "aspect": "建置中可用的變數", "aws": "環境變數：內建的 AWS_DEFAULT_REGION、CODEBUILD_BUILD_ID 等，加上 buildspec 和專案設定的變數", "gcp": "替代變數：內建的 $PROJECT_ID、$BUILD_ID 等，自訂的要以 _ 開頭" },
+    { "aspect": "建置映像檔", "aws": "建置環境要開啟特權模式（privilegedMode）才能執行 Docker", "gcp": "用 gcr.io/cloud-builders/docker 步驟，images 欄位列出的映像檔在建置成功後推送" },
+    { "aspect": "建置的權限", "aws": "建置專案的服務角色（IAM 角色）", "gcp": "Cloud Build 使用的服務帳戶" },
+    { "aspect": "建置日誌", "aws": "CloudWatch Logs（batch-get-builds 的 logs 欄位）", "gcp": "gcloud builds log；日誌存放在 Cloud Storage 或 Cloud Logging" },
+    { "aspect": "串起整個發布流程", "aws": "AWS CodePipeline：stages、actions、手動核准", "gcp": "Cloud Build 觸發條件；部署到多個環境用 Cloud Deploy" },
+    { "aspect": "外部 CI（例如 GitHub Actions）登入雲端", "aws": "IAM OIDC 身分提供者 + IAM 角色", "gcp": "Workload Identity Federation" },
+    { "aspect": "命令列工具", "aws": "aws codebuild、aws codepipeline", "gcp": "gcloud builds" }
+  ],
+  "certDomains": ["clf-c02:3", "saa-c03:2", "gcp-cdl:4", "gcp-ace:2"],
+  "estimatedMinutes": 50
+}
