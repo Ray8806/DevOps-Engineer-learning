@@ -1,0 +1,172 @@
+## 為什麼要把基礎架構寫成程式碼
+
+到目前為止，我們都是一行一行下指令建立資源。這在學習時很好，但在實際工作中會遇到問題：
+
+- **很難重現**：測試環境和正式環境要一模一樣，靠手動很容易漏掉一個設定。
+- **沒有紀錄**：誰在什麼時候改了防火牆？為什麼這樣設定？
+- **不能審查**：改動在按下 Enter 的那一刻就生效了，沒有人能先看過。
+
+**基礎架構即程式碼**（Infrastructure as Code，IaC）把雲端資源寫成檔案：
+
+- 檔案放進 Git，就有版本紀錄，也能用 pull request 讓同事審查。
+- 同一份設定可以部署很多次，做出一樣的開發、測試、正式環境。
+- 工具會先告訴你「接下來會建立、修改、刪除什麼」，確認後才動手。
+
+## 宣告式：描述結果，不是步驟
+
+IaC 工具大多是**宣告式**的：你寫的是「最後要有一個名為 X、在台灣的 bucket」，而不是「執行 create bucket」。工具會比較**想要的狀態**和**目前的狀態**，算出要做哪些事：
+
+- 還沒有 → 建立。
+- 有了但設定不同 → 修改；有些屬性（例如名稱、位置）改了只能**刪掉重建**。
+- 設定檔裡拿掉了 → 刪除。
+- 完全一樣 → 什麼都不做。所以同一份設定可以放心地重複套用。
+
+<Callout title="不要再手動改">
+資源交給 IaC 管理之後，就不要再到主控台或用指令手動修改。手動的改動會讓實際狀態和程式碼不一致（稱為**偏移**，drift），下次套用時可能被改回去，或讓部署失敗。
+</Callout>
+
+## Terraform
+
+Terraform 是 HashiCorp 的 IaC 工具，透過 **provider**（外掛程式）操作各家雲端和其他 API，所以同一套語法可以管理 AWS、Google Cloud 等。設定檔副檔名是 `.tf`，同一個目錄裡的設定檔構成一個**根模組**。
+
+```hcl
+variable "region" {
+  default = "asia-east1"
+}
+
+resource "google_storage_bucket" "site" {
+  name          = "my-project-tf-site"
+  location      = var.region
+  storage_class = "STANDARD"
+}
+
+output "bucket_url" {
+  value = google_storage_bucket.site.url
+}
+```
+
+- `resource "類型" "名稱"`：一個資源。用 `類型.名稱.屬性` 引用它，例如 `google_storage_bucket.site.url`。
+- `variable`：輸入變數，用 `var.名稱` 引用，可以用 `-var` 在指令上覆寫。
+- `output`：套用後要顯示的值。
+- 命名慣例：名稱用底線分隔單字（`web_server`），不用連字號。
+
+### 基本流程
+
+```bash
+terraform init      # 下載 provider，每個目錄做一次；會產生 .terraform.lock.hcl
+terraform plan      # 產生執行計畫：會新增、修改、刪除什麼
+terraform apply     # 執行計畫（會再顯示一次計畫，要輸入 yes 確認）
+terraform output    # 顯示 output
+terraform destroy   # 刪除這份設定管理的所有資源
+terraform fmt       # 整理成標準格式
+terraform validate  # 檢查設定是否正確
+```
+
+Google Cloud 的最佳做法建議：**永遠先產生計畫**，由負責的人確認後再執行。`.terraform.lock.hcl` 記錄選用的 provider 版本，要一起放進版本控制。
+
+### 狀態檔
+
+Terraform 套用後會產生**狀態檔**：一個 JSON 檔，記錄設定檔裡的資源對應到雲端上的哪個實際資源。Terraform 靠它判斷要建立、修改還是刪除。
+
+- 預設存在本機的 `terraform.tfstate`。多人同時使用時，每台電腦各有一份，很容易出問題。
+- 團隊應該使用**遠端狀態**（backend），例如存在開啟物件版本控制的 Cloud Storage bucket。
+- 已經手動建立的資源，可以用 `terraform import` 納入管理。
+
+## 在兩個平台上怎麼做
+
+<ProviderTabs>
+<Provider name="aws">
+
+### AWS CloudFormation
+
+CloudFormation 用**範本**（YAML 或 JSON）描述 AWS 資源，依範本建立的一組資源叫做**堆疊**（stack）。
+
+```yaml
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  EnvName:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, prod]
+Resources:
+  AppBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain          # 刪除堆疊時保留這個 bucket
+    Properties:
+      BucketName: !Sub lab-app-${EnvName}-${AWS::AccountId}
+  AppLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /app/${EnvName}
+      RetentionInDays: 30
+Outputs:
+  BucketArn:
+    Value: !GetAtt AppBucket.Arn
+```
+
+| 函式 | 作用 |
+|---|---|
+| `!Ref` | 參數的值，或資源的代表值（例如 S3 bucket 的名稱） |
+| `!GetAtt 資源.屬性` | 資源的某個屬性，例如 `Arn` |
+| `!Sub` | 把 `${...}` 換成參數、資源或虛擬參數（例如 `${AWS::AccountId}`） |
+
+- **變更集**（change set）：更新堆疊前，先預覽會新增、修改、移除哪些資源，以及修改是否需要**取代**（重建）。確認後再執行。
+- **建立失敗**：預設會回復（roll back）已經建立的資源，堆疊停在 `ROLLBACK_COMPLETE`，要刪除後重新建立；也可以選擇保留成功建立的資源，修正後從失敗的地方繼續。
+- **偏移偵測**：比對範本預期的設定和資源實際的設定。資源的狀態是 `IN_SYNC`、`MODIFIED`（被改過）或 `DELETED`（被刪掉）；有任何資源偏移，堆疊就是 `DRIFTED`。
+- **DeletionPolicy**：沒有設定時，刪除堆疊會刪除資源；設成 `Retain` 就會保留。
+
+```bash
+aws cloudformation validate-template --template-body file://app.yaml
+aws cloudformation create-stack --stack-name lab-dev --template-body file://app.yaml
+aws cloudformation describe-stacks --stack-name lab-dev
+
+aws cloudformation create-change-set --stack-name lab-dev \
+  --change-set-name v2 --template-body file://app-v2.yaml
+aws cloudformation describe-change-set --stack-name lab-dev --change-set-name v2
+aws cloudformation execute-change-set --stack-name lab-dev --change-set-name v2
+
+aws cloudformation detect-stack-drift --stack-name lab-dev
+aws cloudformation describe-stack-resource-drifts --stack-name lab-dev
+aws cloudformation delete-stack --stack-name lab-dev
+```
+
+Terraform 也可以管理 AWS（`aws_s3_bucket` 等資源），跨雲的團隊常用同一套 Terraform。
+
+</Provider>
+<Provider name="gcp">
+
+### Terraform on Google Cloud
+
+Terraform 是在 Google Cloud 上最常用來佈建和自動化基礎架構的工具，用 Google Cloud provider 就能以相同的宣告式語法管理所有 Google Cloud 資源。Google Cloud 也提供可以直接部署的模組（blueprints）。
+
+```bash
+cd infra
+terraform init
+terraform plan
+terraform apply -auto-approve       # 在自動化流程中跳過互動確認
+terraform plan -var storage_class=NEARLINE
+```
+
+**遠端狀態**：用 `backend "gcs"` 把狀態存在 Cloud Storage bucket，並開啟物件版本控制保留歷史紀錄。
+
+### Infrastructure Manager
+
+Infrastructure Manager 是代管的服務：用 Terraform 設定（也叫 blueprints）部署和管理 Google Cloud 資源，設定可以放在 Cloud Storage、Git 儲存庫或本機目錄；支援先建立**預覽部署**看變更的影響，並整合 Cloud Build 做自動化。它管理的是基礎架構，不負責把應用程式部署到資源上。
+
+</Provider>
+</ProviderTabs>
+
+## 兩個平台的差異
+
+<Compare />
+
+CloudFormation 是 AWS 專屬、由 AWS 代管狀態（就是堆疊本身）；Terraform 跨雲，狀態要自己保管（本機檔案或遠端 backend）。預覽變更的方式也不同：CloudFormation 用變更集，Terraform 用 `plan`。發現偏移時，CloudFormation 有專門的偏移偵測；Terraform 在每次 `plan` 時就會比對實際的資源。
+
+## 重點整理
+
+- IaC 把基礎架構寫成檔案：可以版本控制、審查、重複部署出一樣的環境。
+- 宣告式：描述想要的結果，工具計算要建立、修改、刪除什麼；有些屬性改了只能重建。
+- 永遠先看計畫（`terraform plan`、變更集）再套用。
+- Terraform 的狀態檔記錄資源的對應關係；團隊要用遠端狀態，`.terraform.lock.hcl` 要放進版本控制。
+- 資源交給 IaC 之後不要手動改；用偏移偵測或 `terraform plan` 發現程式碼以外的變更。
+- CloudFormation：範本、堆疊、`!Ref`／`!GetAtt`／`!Sub`、變更集、建立失敗預設回復、`DeletionPolicy: Retain`。

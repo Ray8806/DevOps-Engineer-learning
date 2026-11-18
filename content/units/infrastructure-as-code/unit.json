@@ -1,0 +1,24 @@
+{
+  "id": "infrastructure-as-code",
+  "title": "基礎架構即程式碼",
+  "summary": "把雲端資源寫成程式碼：用 Terraform 或 CloudFormation 宣告想要的基礎架構，先看計畫再套用，並用狀態追蹤實際的資源、發現有人在程式碼之外改了東西。",
+  "stage": 3,
+  "prerequisites": ["object-storage", "git-basics", "monitoring-logging"],
+  "providers": {
+    "aws": { "services": ["CloudFormation", "Terraform"] },
+    "gcp": { "services": ["Terraform", "Infrastructure Manager"] }
+  },
+  "compare": [
+    { "aspect": "雲端業者自己的工具", "aws": "AWS CloudFormation：範本（YAML 或 JSON）→ 堆疊", "gcp": "Infrastructure Manager：代管的 Terraform 工具鏈" },
+    { "aspect": "跨雲的工具", "aws": "Terraform（AWS provider）", "gcp": "Terraform（Google Cloud provider），Google Cloud 文件中最常用的 IaC 工具" },
+    { "aspect": "描述想要的狀態", "aws": "範本的 Resources、Parameters、Outputs", "gcp": "Terraform 設定檔（.tf）的 resource、variable、output" },
+    { "aspect": "套用前先看會發生什麼", "aws": "變更集（change set）", "gcp": "terraform plan；Infrastructure Manager 的預覽部署" },
+    { "aspect": "記錄目前管理哪些資源", "aws": "堆疊本身（CloudFormation 代管）", "gcp": "Terraform 狀態檔（預設本機的 terraform.tfstate；團隊用 Cloud Storage 遠端狀態）" },
+    { "aspect": "發現程式碼以外的變更", "aws": "偏移偵測（drift detection）：IN_SYNC、MODIFIED、DELETED", "gcp": "terraform plan 會比對實際的資源，顯示在 Terraform 之外被改掉或刪除的部分" },
+    { "aspect": "建立失敗時", "aws": "預設回復已建立的資源（也可以選擇保留成功的資源）", "gcp": "Terraform 保留已成功建立的資源並記錄在狀態裡，修正後再 apply" },
+    { "aspect": "刪除時保留資源", "aws": "DeletionPolicy: Retain", "gcp": "lifecycle { prevent_destroy = true } 防止被刪除" },
+    { "aspect": "命令列工具", "aws": "aws cloudformation；terraform", "gcp": "terraform" }
+  ],
+  "certDomains": ["clf-c02:3", "saa-c03:2", "gcp-cdl:4", "gcp-ace:2"],
+  "estimatedMinutes": 55
+}

@@ -1,0 +1,192 @@
+{
+  "questions": [
+    {
+      "id": "infrastructure-as-code-001",
+      "type": "single",
+      "provider": "general",
+      "unitId": "infrastructure-as-code",
+      "difficulty": 1,
+      "question": "團隊想讓開發、測試、正式三個環境的雲端資源設定一模一樣，而且每次變更都能被審查和追蹤。最適合的做法是？",
+      "options": [
+        { "id": "a", "text": "把基礎架構寫成程式碼（IaC），放進版本控制，用 pull request 審查", "explanation": "正確。同一份設定可以重複部署，變更有紀錄也能先審查。" },
+        { "id": "b", "text": "寫一份詳細的操作手冊，每次照著在主控台點選", "explanation": "手動操作很容易漏步驟，也很難確認三個環境真的一樣。" },
+        { "id": "c", "text": "只建立一個環境，大家共用", "explanation": "測試的改動會直接影響正式環境。" },
+        { "id": "d", "text": "每次變更後截圖存檔", "explanation": "截圖不能重現環境，也不能事先審查。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "infrastructure-as-code-002",
+      "type": "single",
+      "provider": "general",
+      "unitId": "infrastructure-as-code",
+      "difficulty": 2,
+      "question": "資源已經交給 IaC 管理。有人為了救急，直接在主控台把某個設定改掉了。這會造成什麼問題？",
+      "options": [
+        { "id": "a", "text": "實際狀態和程式碼不一致（偏移），下次套用可能被改回去或讓部署失敗", "explanation": "正確。改動要寫回程式碼，或用偏移偵測／plan 找出來處理。" },
+        { "id": "b", "text": "不會有任何問題，IaC 工具會自動把程式碼改成新的設定", "explanation": "IaC 工具以程式碼為準，不會自動修改你的設定檔。" },
+        { "id": "c", "text": "雲端業者會拒絕手動修改", "explanation": "雲端業者不會擋，有權限就能改，所以團隊要約定好流程。" },
+        { "id": "d", "text": "資源會被自動刪除", "explanation": "手動修改不會讓資源被刪除。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "infrastructure-as-code-003",
+      "type": "single",
+      "provider": "general",
+      "unitId": "infrastructure-as-code",
+      "difficulty": 2,
+      "question": "用宣告式的 IaC 工具套用同一份沒有改過的設定兩次，第二次會發生什麼事？",
+      "options": [
+        { "id": "a", "text": "什麼都不做，因為想要的狀態和目前的狀態已經一樣", "explanation": "正確。宣告式工具比較兩種狀態，只做需要的變更。" },
+        { "id": "b", "text": "再建立一份一樣的資源", "explanation": "宣告式工具描述的是結果，不是「再執行一次建立」。" },
+        { "id": "c", "text": "先刪除所有資源再重建", "explanation": "沒有差異就不會刪除或重建。" },
+        { "id": "d", "text": "一定會失敗", "explanation": "重複套用是安全的，這是宣告式的好處。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "infrastructure-as-code-004",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 2 }],
+      "unitId": "infrastructure-as-code",
+      "difficulty": 2,
+      "question": "要更新一個正式環境的 CloudFormation 堆疊，團隊想先知道哪些資源會被修改、哪些會被重建。應該怎麼做？",
+      "options": [
+        { "id": "a", "text": "建立變更集（change set），檢視內容後再執行", "explanation": "正確。變更集列出新增、修改、移除的資源，以及修改是否需要取代。" },
+        { "id": "b", "text": "直接刪除堆疊再重新建立", "explanation": "這會造成停機，而且資料可能遺失。" },
+        { "id": "c", "text": "執行偏移偵測", "explanation": "偏移偵測比對的是實際資源和目前範本，不是預覽新範本的變更。" },
+        { "id": "d", "text": "用 describe-stacks 看輸出", "explanation": "這只顯示目前堆疊的狀態。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "infrastructure-as-code-005",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 2 }],
+      "unitId": "infrastructure-as-code",
+      "difficulty": 2,
+      "question": "刪除 CloudFormation 堆疊時，裡面存放重要資料的 S3 bucket 要保留下來。範本應該怎麼寫？",
+      "options": [
+        { "id": "a", "text": "在 bucket 資源加上 DeletionPolicy: Retain", "explanation": "正確。沒有設定 DeletionPolicy 時，刪除堆疊會一起刪除資源。" },
+        { "id": "b", "text": "在 Outputs 輸出 bucket 名稱", "explanation": "輸出只顯示值，不會影響刪除。" },
+        { "id": "c", "text": "把 bucket 名稱寫成參數", "explanation": "參數不影響刪除時的行為。" },
+        { "id": "d", "text": "刪除前先執行偏移偵測", "explanation": "偏移偵測不會保留資源。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "infrastructure-as-code-006",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 2 }],
+      "unitId": "infrastructure-as-code",
+      "difficulty": 3,
+      "question": "關於 AWS CloudFormation，哪些敘述正確？（選兩個）",
+      "options": [
+        { "id": "a", "text": "範本可以用 YAML 或 JSON 撰寫", "explanation": "正確。" },
+        { "id": "b", "text": "偏移偵測可以找出在 CloudFormation 以外被修改（MODIFIED）或刪除（DELETED）的資源", "explanation": "正確。有任何資源偏移，堆疊的狀態就是 DRIFTED。" },
+        { "id": "c", "text": "建立堆疊失敗時，預設會保留已建立的資源，不會回復", "explanation": "預設會回復已建立的資源；保留成功的資源是可以另外選擇的選項。" },
+        { "id": "d", "text": "!Ref 只能引用參數，不能引用資源", "explanation": "!Ref 也能引用資源，例如 S3 bucket 會回傳它的名稱。" }
+      ],
+      "answer": ["a", "b"]
+    },
+    {
+      "id": "infrastructure-as-code-007",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "clf-c02", "domain": 3 }],
+      "unitId": "infrastructure-as-code",
+      "difficulty": 1,
+      "question": "哪個 AWS 服務可以用範本描述 AWS 資源，並以「堆疊」為單位建立和管理它們？",
+      "options": [
+        { "id": "a", "text": "AWS CloudFormation", "explanation": "正確。" },
+        { "id": "b", "text": "AWS CloudTrail", "explanation": "CloudTrail 記錄 API 操作。" },
+        { "id": "c", "text": "Amazon CloudWatch", "explanation": "CloudWatch 是監控服務。" },
+        { "id": "d", "text": "AWS Config", "explanation": "AWS Config 記錄資源的設定變化，不是用範本建立資源。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "infrastructure-as-code-008",
+      "type": "single",
+      "provider": "aws",
+      "unitId": "infrastructure-as-code",
+      "difficulty": 3,
+      "question": "一個 CloudFormation 堆疊建立失敗，狀態停在 ROLLBACK_COMPLETE。修好範本之後，接下來應該怎麼做？",
+      "options": [
+        { "id": "a", "text": "刪除這個堆疊，再用修正後的範本重新建立", "explanation": "正確。停在 ROLLBACK_COMPLETE 的堆疊不能更新。" },
+        { "id": "b", "text": "對這個堆疊建立變更集", "explanation": "ROLLBACK_COMPLETE 的堆疊不能更新，變更集也不行。" },
+        { "id": "c", "text": "等它自動恢復", "explanation": "它不會自己恢復。" },
+        { "id": "d", "text": "到主控台手動建立失敗的資源", "explanation": "手動建立的資源不屬於堆疊，還可能讓下一次建立撞名。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "infrastructure-as-code-009",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 2 }],
+      "unitId": "infrastructure-as-code",
+      "difficulty": 1,
+      "question": "第一次在一個新的 Terraform 目錄工作，要先執行哪個指令，Terraform 才會下載需要的 provider？",
+      "options": [
+        { "id": "a", "text": "terraform init", "explanation": "正確。每個目錄做一次，會產生 .terraform.lock.hcl 記錄 provider 版本。" },
+        { "id": "b", "text": "terraform apply", "explanation": "還沒 init 就沒有 provider，無法產生計畫。" },
+        { "id": "c", "text": "terraform destroy", "explanation": "這會刪除資源。" },
+        { "id": "d", "text": "terraform fmt", "explanation": "fmt 只整理格式。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "infrastructure-as-code-010",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 2 }],
+      "unitId": "infrastructure-as-code",
+      "difficulty": 2,
+      "question": "三位工程師在各自的電腦上對同一份 Terraform 設定執行 apply，狀態檔都存在本機的 terraform.tfstate。這有什麼問題？建議怎麼做？",
+      "options": [
+        { "id": "a", "text": "每台電腦各有一份狀態，會互相不知道對方做了什麼；改用存在 Cloud Storage bucket 的遠端狀態", "explanation": "正確。Google Cloud 建議用 Cloud Storage 遠端狀態，並開啟物件版本控制保留歷史。" },
+        { "id": "b", "text": "沒有問題，Terraform 會自動同步三台電腦的狀態檔", "explanation": "本機狀態檔不會自動同步。" },
+        { "id": "c", "text": "把 terraform.tfstate 刪掉就好", "explanation": "沒有狀態檔，Terraform 就不知道哪些資源是它管理的。" },
+        { "id": "d", "text": "改成每個人用不同的 provider 版本", "explanation": "這和狀態檔不同步無關，還可能造成更多問題。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "infrastructure-as-code-011",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 2 }],
+      "unitId": "infrastructure-as-code",
+      "difficulty": 3,
+      "question": "terraform plan 顯示 google_storage_bucket.site must be replaced，location 那一行標示 # forces replacement。這代表什麼？",
+      "options": [
+        { "id": "a", "text": "改變 location 無法就地修改，Terraform 會刪除舊的 bucket 再建立新的", "explanation": "正確。重建會影響裡面的資料，套用前要特別確認。" },
+        { "id": "b", "text": "只會修改 bucket 的標籤", "explanation": "就地修改會標示 update in-place，不是 must be replaced。" },
+        { "id": "c", "text": "Terraform 會建立第二個 bucket，舊的保留", "explanation": "取代是先刪除舊的再建立新的。" },
+        { "id": "d", "text": "plan 失敗了，不能套用", "explanation": "plan 成功產生了計畫，只是這個變更需要重建。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "infrastructure-as-code-012",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-cdl", "domain": 4 }],
+      "unitId": "infrastructure-as-code",
+      "difficulty": 2,
+      "question": "一家公司想用 Terraform 管理 Google Cloud 資源，但希望由 Google 代管執行 Terraform 的工具鏈，並在套用前建立預覽。可以使用哪個服務？",
+      "options": [
+        { "id": "a", "text": "Infrastructure Manager", "explanation": "正確。它用 Terraform 設定部署和管理資源，支援預覽部署。" },
+        { "id": "b", "text": "Cloud Monitoring", "explanation": "Cloud Monitoring 是監控服務。" },
+        { "id": "c", "text": "Artifact Registry", "explanation": "Artifact Registry 存放套件和映像檔。" },
+        { "id": "d", "text": "Cloud DNS", "explanation": "Cloud DNS 是 DNS 服務。" }
+      ],
+      "answer": ["a"]
+    }
+  ]
+}
