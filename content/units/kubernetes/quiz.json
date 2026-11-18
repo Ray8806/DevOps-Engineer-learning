@@ -1,0 +1,191 @@
+{
+  "questions": [
+    {
+      "id": "kubernetes-001",
+      "type": "single",
+      "provider": "general",
+      "unitId": "kubernetes",
+      "difficulty": 1,
+      "question": "一個 Deployment 設定 replicas: 3。其中一個 Pod 所在的節點突然故障，Kubernetes 會怎麼做？",
+      "options": [
+        { "id": "a", "text": "在其他節點建立新的 Pod，把數量補回 3 個", "explanation": "正確。Kubernetes 持續比對想要的狀態（3 個）和實際狀態，自動補上差距。" },
+        { "id": "b", "text": "等節點修好後，原本的 Pod 會回來", "explanation": "Pod 是用完即丟的，取而代之的是新的 Pod。" },
+        { "id": "c", "text": "什麼都不做，要管理員手動處理", "explanation": "維持副本數量正是 Deployment 的工作。" },
+        { "id": "d", "text": "把 replicas 改成 2", "explanation": "Kubernetes 不會修改你宣告的想要狀態。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "kubernetes-002",
+      "type": "single",
+      "provider": "general",
+      "unitId": "kubernetes",
+      "difficulty": 2,
+      "question": "Service 建好了，kubectl describe service 卻顯示 Endpoints: <none>，Pod 都是 Running。最可能的原因是？",
+      "options": [
+        { "id": "a", "text": "Service 的 selector 和 Pod 的標籤對不上", "explanation": "正確。Pod 必須有 selector 裡列出的所有標籤，才會成為 Service 的後端。" },
+        { "id": "b", "text": "Service 的類型一定要是 LoadBalancer", "explanation": "任何類型的 Service 都用 selector 找 Pod；類型只決定誰連得到。" },
+        { "id": "c", "text": "replicas 太少", "explanation": "只要有一個符合條件的 Running Pod，就會出現在 Endpoints。" },
+        { "id": "d", "text": "叢集沒有命名空間", "explanation": "叢集一定有 default 命名空間。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "kubernetes-003",
+      "type": "single",
+      "provider": "general",
+      "unitId": "kubernetes",
+      "difficulty": 2,
+      "question": "新版本上線後錯誤率升高，團隊想盡快回到上一個版本。用 kubectl 應該怎麼做？",
+      "options": [
+        { "id": "a", "text": "kubectl rollout undo deployment/web", "explanation": "正確。回到上一個版本；也可以用 --to-revision 指定版本。" },
+        { "id": "b", "text": "kubectl delete deployment web", "explanation": "這會刪掉整個應用程式，服務直接中斷。" },
+        { "id": "c", "text": "kubectl scale deployment web --replicas 0", "explanation": "這會讓服務停止，不是回到上一版。" },
+        { "id": "d", "text": "把所有 Pod 一個一個刪掉", "explanation": "Deployment 會用目前（有問題）的版本補上新的 Pod。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "kubernetes-004",
+      "type": "multiple",
+      "provider": "general",
+      "unitId": "kubernetes",
+      "difficulty": 3,
+      "question": "關於 Kubernetes 的 Service，哪些敘述正確？（選兩個）",
+      "options": [
+        { "id": "a", "text": "Service 提供穩定的 IP，Pod 換掉、IP 改變時也不受影響", "explanation": "正確。客戶端連 Service 的 IP，不用知道 Pod 的 IP。" },
+        { "id": "b", "text": "ClusterIP 是預設類型，只能從叢集裡面連線", "explanation": "正確。要從叢集外連線，用 LoadBalancer 或 NodePort 等類型。" },
+        { "id": "c", "text": "一個 Service 只能對應到一個 Pod", "explanation": "Service 會把請求負載平衡到所有符合 selector 的 Pod。" },
+        { "id": "d", "text": "Service 會自動把 Pod 的映像檔更新到最新版", "explanation": "更新映像檔是 Deployment 的工作。" }
+      ],
+      "answer": ["a", "b"]
+    },
+    {
+      "id": "kubernetes-005",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 2 }],
+      "unitId": "kubernetes",
+      "difficulty": 2,
+      "question": "剛建好的 EKS 叢集（標準模式），套用 Deployment 之後，所有 Pod 都停在 Pending。最可能缺了什麼？",
+      "options": [
+        { "id": "a", "text": "叢集還沒有節點，例如還沒建立受管節點群組", "explanation": "正確。標準模式下 AWS 只管理控制平面，Pod 需要節點才能排程執行。" },
+        { "id": "b", "text": "還沒建立 ECR 儲存庫", "explanation": "映像檔有問題會是 ImagePullBackOff 之類的狀態，而且這裡用的可能是公開映像檔。" },
+        { "id": "c", "text": "Service 沒有設定成 LoadBalancer", "explanation": "Service 類型不影響 Pod 能不能排程。" },
+        { "id": "d", "text": "kubectl 版本太新", "explanation": "指令都成功送到叢集了，問題在叢集裡面。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "kubernetes-006",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 2 }],
+      "unitId": "kubernetes",
+      "difficulty": 2,
+      "question": "建立 EKS 叢集時，--resources-vpc-config 只填了兩個都在 us-east-1a 的子網路，建立失敗。為什麼？",
+      "options": [
+        { "id": "a", "text": "EKS 要求至少兩個位於不同可用區的子網路", "explanation": "正確。這讓叢集能撐過單一可用區的問題。" },
+        { "id": "b", "text": "EKS 只能用一個子網路", "explanation": "相反，至少要兩個，而且在不同可用區。" },
+        { "id": "c", "text": "子網路一定要是私有子網路", "explanation": "失敗的原因是可用區，不是公有或私有。" },
+        { "id": "d", "text": "us-east-1a 不支援 EKS", "explanation": "問題是兩個子網路在同一個可用區。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "kubernetes-007",
+      "type": "single",
+      "provider": "aws",
+      "unitId": "kubernetes",
+      "difficulty": 1,
+      "question": "EKS 叢集建好後，要讓自己電腦上的 kubectl 連到這個叢集，應該執行什麼？",
+      "options": [
+        { "id": "a", "text": "aws eks update-kubeconfig --name 叢集名稱", "explanation": "正確。它會在 kubeconfig 新增或更新這個叢集的內容，並設為目前的內容。" },
+        { "id": "b", "text": "aws ecr get-login-password", "explanation": "這是讓 Docker 登入 ECR。" },
+        { "id": "c", "text": "kubectl create cluster", "explanation": "kubectl 沒有這個指令；叢集用 aws eks 建立。" },
+        { "id": "d", "text": "aws configure", "explanation": "這設定 AWS CLI 本身的憑證，不會設定 kubectl。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "kubernetes-008",
+      "type": "single",
+      "provider": "aws",
+      "certs": [{ "id": "saa-c03", "domain": 3 }],
+      "unitId": "kubernetes",
+      "difficulty": 2,
+      "question": "團隊想用 EKS，但希望連節點的佈建、執行個體選擇都交給 AWS 管理。應該選哪個？",
+      "options": [
+        { "id": "a", "text": "EKS Auto Mode", "explanation": "正確。Auto Mode 把管理範圍延伸到節點，自動佈建基礎設施。" },
+        { "id": "b", "text": "自行管理的節點", "explanation": "這需要最多的手動維護。" },
+        { "id": "c", "text": "Amazon ECR", "explanation": "ECR 存放映像檔。" },
+        { "id": "d", "text": "EKS 混合節點", "explanation": "混合節點是把自己機房的機器加入叢集。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "kubernetes-009",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 2 }],
+      "unitId": "kubernetes",
+      "difficulty": 2,
+      "question": "團隊想在 GKE 上跑正式環境的應用程式，但不想管理節點、節點的擴展和安全設定。應該建立哪種叢集？",
+      "options": [
+        { "id": "a", "text": "Autopilot 叢集（gcloud container clusters create-auto）", "explanation": "正確。Autopilot 由 Google 管理節點、擴展、安全性等設定。" },
+        { "id": "b", "text": "Standard 叢集，節點數量設成 0", "explanation": "沒有節點，Pod 就沒地方跑。" },
+        { "id": "c", "text": "直接用 Compute Engine 安裝 Kubernetes", "explanation": "這要自己管理整個 Kubernetes。" },
+        { "id": "d", "text": "Cloud Run functions", "explanation": "這是無伺服器函式，不是 Kubernetes 叢集。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "kubernetes-010",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 3 }],
+      "unitId": "kubernetes",
+      "difficulty": 2,
+      "question": "GKE 上的應用程式需要從 3 個副本擴展到 6 個。下列哪個指令正確？",
+      "options": [
+        { "id": "a", "text": "kubectl scale deployment my-app --replicas 6", "explanation": "正確。也可以修改 YAML 的 replicas 後再 kubectl apply。" },
+        { "id": "b", "text": "gcloud container clusters resize my-app --num-nodes 6", "explanation": "這調整的是 Standard 叢集的節點數量，不是 Pod 的副本數。" },
+        { "id": "c", "text": "kubectl expose deployment my-app --replicas 6", "explanation": "expose 用來建立 Service。" },
+        { "id": "d", "text": "kubectl rollout undo deployment my-app", "explanation": "這會回到上一個版本，不會改變副本數。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "kubernetes-011",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-ace", "domain": 3 }],
+      "unitId": "kubernetes",
+      "difficulty": 3,
+      "question": "容器裡的程式聽 8080 連接埠，想讓網際網路上的使用者用 http://外部IP（80 連接埠）連線。kubectl expose 應該怎麼寫？",
+      "options": [
+        { "id": "a", "text": "kubectl expose deployment hello --type LoadBalancer --port 80 --target-port 8080", "explanation": "正確。--port 是 Service 的連接埠，--target-port 是容器的連接埠。" },
+        { "id": "b", "text": "kubectl expose deployment hello --type ClusterIP --port 8080", "explanation": "ClusterIP 只能從叢集裡面連。" },
+        { "id": "c", "text": "kubectl expose deployment hello --type LoadBalancer --port 8080 --target-port 80", "explanation": "兩個連接埠寫反了：容器聽的是 8080。" },
+        { "id": "d", "text": "kubectl scale deployment hello --port 80", "explanation": "scale 沒有 --port，也不會建立 Service。" }
+      ],
+      "answer": ["a"]
+    },
+    {
+      "id": "kubernetes-012",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [{ "id": "gcp-cdl", "domain": 4 }],
+      "unitId": "kubernetes",
+      "difficulty": 1,
+      "question": "一家公司已經用 Kubernetes 管理容器，想把它搬到 Google Cloud，並由 Google 代管 Kubernetes 的控制平面。應該使用哪個服務？",
+      "options": [
+        { "id": "a", "text": "Google Kubernetes Engine（GKE）", "explanation": "正確。GKE 是 Google Cloud 的代管 Kubernetes。" },
+        { "id": "b", "text": "Cloud Storage", "explanation": "Cloud Storage 是物件儲存。" },
+        { "id": "c", "text": "Cloud DNS", "explanation": "Cloud DNS 是 DNS 服務。" },
+        { "id": "d", "text": "Cloud KMS", "explanation": "Cloud KMS 管理加密金鑰。" }
+      ],
+      "answer": ["a"]
+    }
+  ]
+}

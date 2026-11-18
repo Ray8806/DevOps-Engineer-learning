@@ -42,7 +42,8 @@
       "title": "自動化",
       "description": "容器、Kubernetes、基礎架構即程式碼與 CI/CD。",
       "units": [
-        "containers"
+        "containers",
+        "kubernetes"
       ]
     },
     {

@@ -1,0 +1,23 @@
+{
+  "id": "kubernetes",
+  "title": "Kubernetes",
+  "summary": "用宣告式的 YAML 描述應用程式應該長什麼樣子，讓 Kubernetes 維持副本數量、自動替換故障的 Pod、透過 Service 分流，並且可以滾動更新與回復。",
+  "stage": 3,
+  "prerequisites": ["containers", "load-balancing"],
+  "providers": {
+    "aws": { "services": ["EKS"] },
+    "gcp": { "services": ["GKE"] }
+  },
+  "compare": [
+    { "aspect": "代管的 Kubernetes", "aws": "Amazon EKS", "gcp": "Google Kubernetes Engine（GKE）" },
+    { "aspect": "雲端業者管理的範圍", "aws": "EKS 標準模式：AWS 管理控制平面；EKS Auto Mode：連節點也一起管理", "gcp": "Standard：Google 管理控制平面，你管理節點；Autopilot：Google 也管理節點、擴展與安全設定" },
+    { "aspect": "執行 Pod 的節點", "aws": "EKS 受管節點群組、Auto Mode、自行管理的節點、Fargate、混合節點", "gcp": "Standard 的節點集區，或由 Autopilot 依資訊清單自動佈建" },
+    { "aspect": "建立叢集", "aws": "aws eks create-cluster：要指定叢集 IAM 角色，以及至少兩個不同可用區的子網路", "gcp": "gcloud container clusters create-auto（Autopilot）或 create（Standard）" },
+    { "aspect": "讓 kubectl 連到叢集", "aws": "aws eks update-kubeconfig --name 叢集", "gcp": "gcloud container clusters get-credentials 叢集 --location 位置" },
+    { "aspect": "從叢集外連到服務", "aws": "LoadBalancer Service 搭配 AWS Load Balancer Controller", "gcp": "LoadBalancer Service 會建立網路負載平衡器" },
+    { "aspect": "什麼時候不需要 Kubernetes", "aws": "只是要跑幾個容器，用 ECS 搭配 Fargate 比較簡單", "gcp": "只是要跑 HTTP 容器，用 Cloud Run 比較簡單" },
+    { "aspect": "命令列工具", "aws": "aws eks、kubectl", "gcp": "gcloud container、kubectl" }
+  ],
+  "certDomains": ["saa-c03:2", "saa-c03:3", "gcp-cdl:4", "gcp-ace:2", "gcp-ace:3"],
+  "estimatedMinutes": 60
+}

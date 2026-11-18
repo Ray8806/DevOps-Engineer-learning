@@ -156,9 +156,9 @@ const StateCheckSchema = z
     (c) => (c.exists === undefined) !== (c.equals === undefined),
     "set exactly one of `exists` or `equals`",
   )
-  .refine((c) => ["files", "dirs", "cwd", "cloud", "git", "docker"].includes(c.path[0]), {
+  .refine((c) => ["files", "dirs", "cwd", "cloud", "git", "docker", "kube"].includes(c.path[0]), {
     path: ["path"],
-    message: 'path must start with "files", "dirs", "cwd", "cloud", "git" or "docker"',
+    message: 'path must start with "files", "dirs", "cwd", "cloud", "git", "docker" or "kube"',
   });
 
 /** Local paths in lab files are written from the home directory or the root. */

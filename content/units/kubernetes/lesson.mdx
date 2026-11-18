@@ -1,0 +1,182 @@
+## 為什麼需要 Kubernetes
+
+上一個單元把應用程式做成容器。當容器多到幾十、幾百個，就會遇到新的問題：
+
+- 這些容器要放在哪幾台機器上？機器壞了，上面的容器怎麼辦？
+- 流量變大，要多開幾份；新版本上線，要一份一份換掉而不中斷服務。
+- 容器的 IP 一直在變，其他服務要怎麼找到它？
+
+**Kubernetes** 是處理這些問題的**容器協調平台**。它的核心想法是**宣告式**：你描述「想要的狀態」（例如「這個網站要跑 3 份」），Kubernetes 會持續比對實際狀態，自動補上差距。容器掛了，它會再開一個；機器壞了，它會把容器搬到別台。
+
+## 叢集的組成
+
+- **控制平面**（control plane）：叢集的大腦，接收指令、記錄想要的狀態、決定 Pod 要放在哪個節點。
+- **節點**（node）：實際執行容器的機器。每個節點上有容器執行環境、`kubelet`（確保容器健康地在跑）和 `kube-proxy`（維護 Pod 的網路規則）。
+
+我們用 **kubectl** 這個命令列工具和叢集溝通。kubectl 的連線設定存在 **kubeconfig**，裡面的每個**內容**（context）對應一個叢集；目前的內容就是 kubectl 預設操作的叢集。
+
+## 主要的物件
+
+### Pod
+
+Pod 是 Kubernetes 執行的最小單位，裡面有一個或多個容器，共用網路。Pod 是**用完即丟**的：它被刪掉或所在的節點壞了，就不會回來，取而代之的是一個新的 Pod（新名字、新 IP）。所以我們很少直接建立 Pod，而是交給 Deployment 管。
+
+### Deployment
+
+Deployment 描述「用哪個映像檔、要幾份（replicas）」。它會：
+
+- **維持副本數量**：Pod 少了就補上（背後由 ReplicaSet 負責）。
+- **擴展**：改 replicas 就能增減。
+- **滾動更新**：換映像檔時，新的 Pod 逐步取代舊的，服務不中斷；出問題可以**回復**（rollout undo）到上一個版本。
+
+### Service
+
+Pod 會換、IP 會變。**Service** 提供一個**穩定的 IP 和名稱**，並且把請求**負載平衡**到後面的 Pod。Service 用 **selector**（標籤選擇器）找到它的 Pod：Pod 必須有 selector 裡列出的**所有標籤**。
+
+| 類型 | 誰連得到 |
+|---|---|
+| `ClusterIP`（預設） | 只有叢集裡面 |
+| `NodePort` | 透過節點的 IP 和指定的連接埠 |
+| `LoadBalancer` | 透過雲端的負載平衡器，叢集外也連得到 |
+
+### Namespace
+
+**命名空間**（namespace）把叢集裡的資源分組，例如不同團隊或環境。每個叢集預設有 `default`、`kube-system`、`kube-public`、`kube-node-lease`。kubectl 指令加上 `-n 命名空間` 指定要操作哪一個，沒加就是 `default`。
+
+## YAML 資訊清單
+
+實務上，物件寫成 YAML 檔（資訊清單，manifest），用 `kubectl apply -f 檔案` 套用。之後修改檔案再 apply 一次，Kubernetes 就會把叢集調整成新的樣子。
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web          # 這個 Deployment 管理有 app=web 標籤的 Pod
+  template:             # Pod 的範本
+    metadata:
+      labels:
+        app: web        # 一定要符合上面的 selector
+    spec:
+      containers:
+      - name: nginx
+        image: public.ecr.aws/nginx/nginx:1.23
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+spec:
+  type: LoadBalancer
+  selector:
+    app: web            # 把流量送給有 app=web 標籤的 Pod
+  ports:
+  - port: 80            # Service 的連接埠
+    targetPort: 80      # Pod 裡容器的連接埠
+```
+
+### 常用的 kubectl 指令
+
+```bash
+kubectl apply -f web.yaml                      # 建立或更新 YAML 裡的物件
+kubectl get pods                               # 列出 Pod（get all 列出 Pod、Service、Deployment）
+kubectl describe service web                   # 詳細資訊，Endpoints 是後面 Pod 的位址
+kubectl scale deployment web --replicas 5      # 擴展
+kubectl set image deployment/web nginx=public.ecr.aws/nginx/nginx:1.24   # 換映像檔（滾動更新）
+kubectl rollout status deployment/web          # 看更新進度
+kubectl rollout undo deployment/web            # 回到上一個版本
+kubectl delete pod 某個Pod                       # Deployment 會補上一個新的
+```
+
+不寫 YAML 的快速做法：`kubectl create deployment` 建立 Deployment，`kubectl expose deployment` 建立 Service。
+
+<Callout title="Service 的 Endpoints 是空的？">
+最常見的原因是 selector 和 Pod 的標籤對不上（拼錯、少一個），或是 Pod 還不是 Running。用 `kubectl describe service` 看 Endpoints，用 `kubectl get pods` 看 Pod 的狀態。
+</Callout>
+
+## 在兩個平台上怎麼做
+
+<ProviderTabs>
+<Provider name="aws">
+
+### Amazon EKS
+
+EKS 是全代管的 Kubernetes 服務，有兩種主要用法：
+
+- **EKS 標準模式**：AWS 管理 Kubernetes 的控制平面，節點由你選擇和管理。
+- **EKS Auto Mode**：AWS 連節點（資料平面）一起管理，自動佈建基礎設施、選擇執行個體。
+
+Pod 可以跑在：Auto Mode 管理的節點、**EKS 受管節點群組**、自行管理的節點、**AWS Fargate**、混合節點（自己機房的機器）。節點要和叢集在同一個 VPC。
+
+**建立叢集**要指定：
+
+- 叢集的 **IAM 角色**，讓 EKS 代你呼叫其他 AWS 服務。
+- VPC 和**至少兩個不同可用區的子網路**。
+
+標準模式下，叢集建好後還沒有節點，Pod 會停在 **Pending**，要建立節點群組才會開始執行。
+
+**從叢集外連線**：Service 預設的 IP 只能在叢集裡面連；要從叢集外連到服務，部署 **AWS Load Balancer Controller**，讓它幫 Service 或 Ingress 建立負載平衡器。
+
+```bash
+aws eks create-cluster --name lab-eks \
+  --role-arn arn:aws:iam::123456789012:role/eksClusterRole \
+  --resources-vpc-config subnetIds=subnet-a,subnet-b
+aws eks update-kubeconfig --name lab-eks
+aws eks create-nodegroup --cluster-name lab-eks --nodegroup-name lab-nodes \
+  --node-role arn:aws:iam::123456789012:role/eksNodeRole \
+  --subnets subnet-a subnet-b --scaling-config minSize=1,maxSize=3,desiredSize=2
+kubectl get nodes
+```
+
+</Provider>
+<Provider name="gcp">
+
+### Google Kubernetes Engine（GKE）
+
+GKE 有兩種運作模式：
+
+- **Autopilot**：Google 管理基礎設施設定，包括**節點**、擴展、安全性和預先設定的最佳做法，依你的資訊清單佈建運算資源。適合大部分的正式工作負載。
+- **Standard**：Google 管理控制平面，節點集區由你設定和管理。
+
+用 gcloud 管理叢集，用 kubectl 在叢集裡部署應用程式。
+
+```bash
+# 建立 Autopilot 叢集（會自動產生 kubeconfig 的內容）
+gcloud container clusters create-auto hello-cluster --location=us-east4
+# 在別的電腦上，取得連線設定
+gcloud container clusters get-credentials hello-cluster --location us-east4
+
+kubectl create deployment hello-server \
+  --image=us-docker.pkg.dev/google-samples/containers/gke/hello-app:1.0
+# LoadBalancer Service：外部 80 連接埠送到容器的 8080
+kubectl expose deployment hello-server --type LoadBalancer --port 80 --target-port 8080
+kubectl get service hello-server     # EXTERNAL-IP 出現後就能從瀏覽器連線
+```
+
+`LoadBalancer` 類型的 Service 會讓用戶端把請求送到網路負載平衡器的 IP。
+
+</Provider>
+</ProviderTabs>
+
+## 兩個平台的差異
+
+<Compare />
+
+Kubernetes 的部分（YAML、kubectl、Deployment、Service）在 EKS 和 GKE 上幾乎一樣，這也是 Kubernetes 的好處：學一次，兩邊都能用。差別在叢集本身：EKS 標準模式要自己建立節點群組，Pod 才有地方跑；GKE Autopilot 會依 Pod 的需求自動準備節點。連線設定則分別用 `aws eks update-kubeconfig` 和 `gcloud container clusters get-credentials`。
+
+如果只是要跑幾個容器，前一個單元的 ECS（搭配 Fargate）或 Cloud Run 通常更簡單；需要 Kubernetes 的生態系、可攜性或更細的控制時，再選 EKS 或 GKE。
+
+## 重點整理
+
+- Kubernetes 是宣告式的：描述想要的狀態，它會持續把實際狀態調整成那樣。
+- Pod 用完即丟；Deployment 維持副本數量、滾動更新、可以回復。
+- Service 提供穩定的 IP 並負載平衡，用 selector 比對 Pod 的標籤；LoadBalancer 類型讓叢集外連得到。
+- 用 YAML 描述物件，`kubectl apply -f` 套用；`-n` 指定命名空間。
+- EKS：叢集要 IAM 角色和兩個可用區的子網路，標準模式要建立節點群組；`aws eks update-kubeconfig` 設定 kubectl。
+- GKE：Autopilot 連節點都由 Google 管理；`gcloud container clusters get-credentials` 設定 kubectl。
