@@ -1,4 +1,5 @@
 import { parseArgs, type Ctx } from "./context";
+import { parseTarget, remoteImage } from "./docker";
 import { NAME, NAME_RULE, error, list, table } from "./gcloud-common";
 import type { CloudRunService } from "./state";
 
@@ -61,9 +62,17 @@ function configure(ctx: Ctx, command: string, base: CloudRunService, opts: Map<s
     }
     return n;
   };
+  const port = int("--port", 1, 65535);
+  if (port === null) return null;
+  if (port !== undefined) next.port = port;
   const image = opts.get("--image");
   if (image !== undefined) {
     if (!IMAGE.test(image)) return fail(`argument --image: '${image}' 不是容器映像檔的位址，格式像 us-docker.pkg.dev/cloudrun/container/hello。`);
+    // Images in this project's Artifact Registry must have been pushed first.
+    const target = parseTarget(image);
+    if (target.kind === "ar" && target.project === ctx.state.gcp.project && !remoteImage(ctx.state, image)) {
+      return fail(`Image '${image}' not found.（先用 docker push 把映像檔推送到 Artifact Registry）`);
+    }
     next.image = image;
   }
   const memory = opts.get("--memory");
@@ -159,10 +168,21 @@ function deploy(ctx: Ctx, args: string[]): number {
     minInstances: 0,
     maxInstances: 100,
     env: {},
+    port: 8080,
     revisions: [],
   };
   const next = configure(ctx, command, base, parsed.options, parsed.flags);
   if (!next) return 1;
+  // An image built here that exposes other ports will not answer on the port Cloud Run uses.
+  const built = remoteImage(ctx.state, next.image);
+  const local = built ? [...ctx.state.docker.images.values()].find((i) => i.id === built) : undefined;
+  if (local?.exposed.length && !local.exposed.includes(next.port)) {
+    return error(
+      ctx,
+      command,
+      `Revision '${name}-${String(next.revisions.length + 1).padStart(5, "0")}' is not ready and cannot serve traffic. The user-provided container failed to start and listen on the port defined provided by the PORT=${next.port} environment variable.\n（映像檔裡的程式聽的是 ${local.exposed.join("、")} 連接埠；用 --port 告訴 Cloud Run 要送到哪個連接埠）`,
+    );
+  }
   const revision = `${name}-${String(next.revisions.length + 1).padStart(5, "0")}-${suffix(++run.revisionsCreated)}`;
   next.revisions.push(revision);
   run.services.set(name, next);

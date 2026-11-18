@@ -127,6 +127,10 @@ const touch: Command = (ctx, args) => {
 
 const cat: Command = (ctx, args) => {
   if (args.length === 0) {
+    if (ctx.stdin !== undefined) {
+      ctx.out(ctx.stdin);
+      return 0;
+    }
     ctx.err("cat: 這個模擬終端機需要指定檔名");
     return 1;
   }
@@ -149,16 +153,21 @@ const base64: Command = (ctx, args) => {
   const parsed = parseArgs(args, { flags: ["-d", "--decode"] });
   if (usageError(ctx, "base64", parsed)) return 1;
   const target = parsed.positional[0];
+  let content: string;
   if (target === undefined) {
-    ctx.err("base64: 這個模擬終端機需要指定檔名，例如 base64 -d secret.b64 > secret.enc");
-    return 1;
+    if (ctx.stdin === undefined) {
+      ctx.err("base64: 這個模擬終端機需要指定檔名，或用管線輸入，例如 base64 -d secret.b64 > secret.enc");
+      return 1;
+    }
+    content = ctx.stdin;
+  } else {
+    const abs = resolvePath(ctx.state.cwd, target);
+    if (!isFile(ctx.state, abs)) {
+      ctx.err(`base64: ${target}: ${isDir(ctx.state, abs) ? "Is a directory" : "No such file or directory"}`);
+      return 1;
+    }
+    content = ctx.state.files.get(abs)!;
   }
-  const abs = resolvePath(ctx.state.cwd, target);
-  if (!isFile(ctx.state, abs)) {
-    ctx.err(`base64: ${target}: ${isDir(ctx.state, abs) ? "Is a directory" : "No such file or directory"}`);
-    return 1;
-  }
-  const content = ctx.state.files.get(abs)!;
   if (parsed.flags.has("-d") || parsed.flags.has("--decode")) {
     const decoded = fromBase64(content);
     if (decoded === null) {

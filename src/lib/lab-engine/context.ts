@@ -5,6 +5,8 @@ export interface Ctx {
   state: LabState;
   out(text: string): void;
   err(text: string): void;
+  /** Output of the previous command in a pipeline; undefined when nothing is piped in. */
+  stdin?: string;
 }
 
 /** A command returns its exit code: 0 for success. */

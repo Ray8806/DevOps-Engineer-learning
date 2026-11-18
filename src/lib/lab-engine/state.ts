@@ -4,6 +4,7 @@
  */
 import { healthyBackends, ruleServing } from "./gcloud-lb";
 import { notificationLabel } from "./aws-cost";
+import { taskProblem } from "./aws-ecs";
 import { aliasTarget } from "./aws-dns-cdn";
 
 export const HOME = "/home/learner";
@@ -84,6 +85,14 @@ export interface AwsState {
   cloudfront: { distributions: Map<string, Distribution>; created: number };
   /** KMS keys by key id; aliases map "alias/name" to a key id. */
   kms: { keys: Map<string, KmsKey>; aliases: Map<string, string>; created: number };
+  ecr: { repositories: Map<string, { mutability: "MUTABLE" | "IMMUTABLE"; scanOnPush: boolean; images: Map<string, string> }> };
+  ecs: {
+    clusters: Set<string>;
+    /** Revisions per family, revision 1 first. */
+    taskDefinitions: Map<string, EcsTaskDefinition[]>;
+    /** Keyed "cluster/service". */
+    services: Map<string, { taskDefinition: string; desiredCount: number; launchType: string; subnets: string[]; assignPublicIp: string }>;
+  };
   /** Cost Explorer data (seeded by the lab) and cost allocation tag status. */
   ce: { costs: CostItem[]; tagStatus: Map<string, "Active" | "Inactive">; queries: Set<string>; forecasts: number };
   budgets: Map<string, Budget>;
@@ -186,6 +195,15 @@ export interface Distribution {
   defaultRootObject: string;
   /** Every path submitted in an invalidation, in order. */
   invalidations: string[];
+}
+
+export interface EcsTaskDefinition {
+  cpu: string;
+  memory: string;
+  networkMode: string;
+  compatibilities: string[];
+  executionRoleArn: string | null;
+  containers: { name: string; image: string; ports: number[]; essential: boolean }[];
 }
 
 export interface CostItem {
@@ -320,6 +338,8 @@ export interface CloudRunService {
   minInstances: number;
   maxInstances: number;
   env: Record<string, string>;
+  /** Port requests are sent to inside the container (PORT); 8080 by default. */
+  port: number;
   /** Revision names, oldest first; the last one serves all traffic. */
   revisions: string[];
 }
@@ -424,6 +444,8 @@ export interface GcpState {
     buckets: Map<string, { retentionDays: number; locked: boolean }>;
     sinks: Map<string, { destination: string; filter: string }>;
   };
+  /** Artifact Registry repositories keyed "location/name"; images keyed "image:tag" -> image id. */
+  artifacts: { repositories: Map<string, { format: string; description: string; immutableTags: boolean; images: Map<string, string> }> };
   /** The billing account linked to the project and its budgets (by display name). */
   billing: { accountId: string; accountName: string; linked: boolean; budgets: Map<string, GcpBudget> };
   /** Key rings keyed "location/name". */
@@ -449,8 +471,26 @@ export interface LabState {
   gcs: Map<string, Bucket>;
   /** Git repositories by the absolute path of their working directory. */
   git: Map<string, GitRepo>;
+  /** The local Docker engine: images by "repository:tag", containers by name, registries logged in to. */
+  docker: DockerState;
   aws: AwsState;
   gcp: GcpState;
+}
+
+export interface DockerImage {
+  id: string;
+  base: string;
+  exposed: number[];
+  cmd: string;
+  sizeMb: number;
+  /** Content of an index.html copied into the image, served by `curl` against a running container. */
+  index: string | null;
+}
+
+export interface DockerState {
+  images: Map<string, DockerImage>;
+  containers: Map<string, { image: string; ports: string[]; status: "running" | "exited" }>;
+  logins: Set<string>;
 }
 
 export interface InitialState {
@@ -562,6 +602,7 @@ export function createLabState(initial: InitialState = {}): LabState {
     s3: bucketsFrom(cloud, "s3", DEFAULT_S3_REGION),
     gcs: bucketsFrom(cloud, "gcs", DEFAULT_GCS_LOCATION),
     git: new Map(),
+    docker: { images: new Map(), containers: new Map(), logins: new Set() },
     aws: awsFrom(cloud),
     gcp: gcpFrom(cloud),
   };
@@ -588,6 +629,8 @@ function awsFrom(cloud: Record<string, unknown>): AwsState {
     cloudfront: { distributions: new Map(), created: 0 },
     kms: { keys: new Map(), aliases: new Map(), created: 0 },
     ce: { costs: [], tagStatus: new Map(), queries: new Set(), forecasts: 0 },
+    ecr: { repositories: new Map() },
+    ecs: { clusters: new Set(), taskDefinitions: new Map(), services: new Map() },
     budgets: new Map(),
     wafv2: { ipSets: new Map(), webAcls: new Map() },
     vpc: { vpcs: new Map(), subnets: new Map(), internetGateways: new Map(), routeTables: new Map() },
@@ -772,6 +815,7 @@ function gcpFrom(cloud: Record<string, unknown>): GcpState {
     dns: { zones: new Map() },
     kms: { keyRings: new Map() },
     securityPolicies: new Map(),
+    artifacts: { repositories: new Map() },
     billing: {
       accountId: isRecord(gcp.billingAccount) && typeof gcp.billingAccount.id === "string" ? gcp.billingAccount.id : "0X0X0X-0X0X0X-0X0X0X",
       accountName: isRecord(gcp.billingAccount) && typeof gcp.billingAccount.name === "string" ? gcp.billingAccount.name : "My Billing Account",
@@ -799,6 +843,7 @@ export function cloneState(state: LabState): LabState {
     gcs: cloneBuckets(state.gcs),
     git: new Map([...state.git].map(([root, repo]) => [root, cloneRepo(repo)])),
     // Plain data made of Maps, Sets, arrays and primitives.
+    docker: structuredClone(state.docker),
     aws: structuredClone(state.aws),
     gcp: structuredClone(state.gcp),
   };
@@ -1093,6 +1138,29 @@ function awsView(state: LabState) {
         }),
       ),
     },
+    ecr: {
+      repositories: Object.fromEntries(
+        [...aws.ecr.repositories].map(([n, r]) => [n, { mutability: r.mutability, scanOnPush: r.scanOnPush, images: Object.fromEntries(r.images) }]),
+      ),
+    },
+    ecs: {
+      clusters: keysTrue(aws.ecs.clusters),
+      taskDefinitions: Object.fromEntries(
+        [...aws.ecs.taskDefinitions].flatMap(([family, revs]) =>
+          revs.map((d, i) => [
+            `${family}:${i + 1}`,
+            { cpu: d.cpu, memory: d.memory, networkMode: d.networkMode, executionRole: d.executionRoleArn !== null, images: d.containers.map((c) => c.image) },
+          ]),
+        ),
+      ),
+      services: Object.fromEntries(
+        [...aws.ecs.services].map(([k, s]) => {
+          const [family, rev] = s.taskDefinition.split(":");
+          const def = aws.ecs.taskDefinitions.get(family)![Number(rev) - 1];
+          return [k, { taskDefinition: s.taskDefinition, desiredCount: s.desiredCount, runningCount: taskProblem(state, def) ? 0 : s.desiredCount, launchType: s.launchType }];
+        }),
+      ),
+    },
     ce: {
       queries: keysTrue(aws.ce.queries),
       forecastCount: aws.ce.forecasts,
@@ -1284,6 +1352,9 @@ function gcpView(state: LabState) {
         ]),
       ),
     },
+    artifacts: {
+      repositories: Object.fromEntries([...gcp.artifacts.repositories].map(([k, r]) => [k, { format: r.format, images: Object.fromEntries(r.images) }])),
+    },
     billing: {
       linked: gcp.billing.linked,
       budgets: Object.fromEntries(
@@ -1424,6 +1495,10 @@ function repoView(state: LabState, root: string, repo: GitRepo) {
  *   cloud.aws.budgets[name].{limit: "500 USD", timeUnit, notifications["ACTUAL > 80%"][subscriber]},
  *   cloud.gcp.billing.{linked, budgets[displayName].{amount, thresholds["90%"] = basis, filterLabels, filterProjects}},
  *   cloud.gcp.instances[name].labels,
+ *   docker.{images["name:tag"].{id, base, exposed}, containers[name].{image, ports, status}, logins[registry]},
+ *   cloud.aws.ecr.repositories[name].{mutability, scanOnPush, images[tag] = image id},
+ *   cloud.aws.ecs.{clusters[name], taskDefinitions["family:1"].{cpu, memory, networkMode, executionRole, images}, services["cluster/name"].{taskDefinition, desiredCount, runningCount, launchType}},
+ *   cloud.gcp.artifacts.repositories["location/name"].{format, images["image:tag"] = image id},
  *   cloud.gcp.monitoring.{uptimeChecks[name].{host, path, period}, policies[displayName].{conditionFilter, condition}},
  *   cloud.gcp.sql.instances[name].{databaseVersion, edition, tier, region, availabilityType, backupsEnabled,
  *     deletionProtection, masterInstanceName, databases[name], users[name], backupCount},
@@ -1442,5 +1517,10 @@ export function checkView(state: LabState): Record<string, unknown> {
       gcp: gcpView(state),
     },
     git: Object.fromEntries([...state.git].map(([root, repo]) => [displayPath(root), repoView(state, root, repo)])),
+    docker: {
+      images: Object.fromEntries([...state.docker.images].map(([ref, i]) => [ref, { id: i.id, base: i.base, exposed: i.exposed }])),
+      containers: Object.fromEntries([...state.docker.containers].map(([n, c]) => [n, { image: c.image, ports: c.ports, status: c.status }])),
+      logins: keysTrue(state.docker.logins),
+    },
   };
 }
