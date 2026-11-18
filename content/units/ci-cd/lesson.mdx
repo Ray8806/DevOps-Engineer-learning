@@ -24,6 +24,10 @@ CI/CD 的流程通常叫做**管線**（pipeline），由幾個依序執行的**
 
 每個階段產生的東西（建置好的程式、映像檔、範本）叫做**成品**（artifact），會交給下一個階段使用。任何一個階段失敗，後面的階段就不會執行，有問題的版本不會被部署出去。
 
+<Flow id="pipeline" />
+
+<Flow id="pipeline-failure" />
+
 <Callout title="建置設定也是程式碼">
 建置步驟寫在儲存庫裡的設定檔（例如 `buildspec.yml`、`cloudbuild.yaml`），跟程式碼一起做版本控制、一起審查。要改建置方式，就像改程式一樣開 pull request。
 </Callout>
@@ -73,6 +77,8 @@ phases:
 - **服務角色**：CodeBuild 用建置專案的 IAM 角色存取 S3、ECR、CloudWatch Logs 等。
 - 建置日誌送到 **CloudWatch Logs**，`batch-get-builds` 的 `logs` 欄位告訴你在哪個日誌群組。
 
+<Flow id="codebuild-run" />
+
 ```bash
 aws codebuild create-project --cli-input-json file://project.json
 aws codebuild start-build --project-name hello-web-build
@@ -118,6 +124,8 @@ images:
 - **替代變數**：內建的有 `$PROJECT_ID`、`$BUILD_ID`、`$PROJECT_NUMBER`；由觸發條件啟動的建置還有 `$COMMIT_SHA`、`$BRANCH_NAME` 等。自訂的替代變數要以底線開頭、只用大寫字母和數字（例如 `_SERVICE`）。可以在設定檔的 `substitutions` 給預設值，再用 `--substitutions` 覆寫。`$PROJECT_ID` 和 `$BUILD_ID` 不能覆寫。
 - 寫成 `${_SERVICE}` 時，變數後面可以直接接文字，例如 `${_REGION}-docker.pkg.dev`。
 - **權限**：Cloud Build 用一個服務帳戶執行建置。要部署到 Cloud Run，這個服務帳戶需要 Cloud Run 管理員、服務帳戶使用者等角色，推送映像檔需要 Artifact Registry 寫入者角色。
+
+<Flow id="cloud-build-run" />
 
 ```bash
 gcloud builds submit --config=cloudbuild.yaml --region=asia-east1 .

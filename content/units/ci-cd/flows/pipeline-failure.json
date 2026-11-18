@@ -1,0 +1,64 @@
+{
+  "id": "pipeline-failure",
+  "title": "建置失敗時，管線停在哪裡",
+  "nodes": [
+    {
+      "id": "dev",
+      "label": "開發者",
+      "col": 0,
+      "row": 0
+    },
+    {
+      "id": "repo",
+      "label": "Git 儲存庫",
+      "col": 1,
+      "row": 0
+    },
+    {
+      "id": "build",
+      "label": "建置",
+      "detail": "編譯、單元測試",
+      "col": 2,
+      "row": 0
+    },
+    {
+      "id": "staging",
+      "label": "測試環境",
+      "col": 3,
+      "row": 0
+    },
+    {
+      "id": "prod",
+      "label": "正式環境",
+      "detail": "仍是上一版",
+      "col": 4,
+      "row": 0
+    }
+  ],
+  "steps": [
+    {
+      "from": "dev",
+      "to": "repo",
+      "text": "開發者推送了一個有問題的提交。"
+    },
+    {
+      "from": "repo",
+      "to": "build",
+      "text": "管線啟動，原始碼進入建置階段。"
+    },
+    {
+      "from": "build",
+      "to": "staging",
+      "text": "單元測試失敗，建置階段失敗：成品不會交給下一個階段，管線停在這裡。",
+      "status": "fail"
+    },
+    {
+      "from": "prod",
+      "text": "正式環境完全沒有被動到，還是上一個正常的版本。"
+    },
+    {
+      "from": "dev",
+      "text": "開發者收到失敗通知，看建置日誌找出原因，修正後再推送一次。"
+    }
+  ]
+}

@@ -190,6 +190,48 @@ export const LabSchema = z.strictObject({
 });
 export type Lab = z.infer<typeof LabSchema>;
 
+// ------------------------------------------- units/<id>/flows/<flow-id>.json
+
+/**
+ * A step-by-step animated diagram shown in a lesson with <Flow id="…" />.
+ * Nodes sit on a small grid (desktop: col across, row down; narrow screens
+ * swap the two), and each step moves a token from one node to another or
+ * highlights a single node.
+ */
+export const FLOW_MAX_COL = 4;
+export const FLOW_MAX_ROW = 2;
+
+export const FlowSchema = z.strictObject({
+  id: slug,
+  title: z.string().min(1),
+  nodes: z
+    .array(
+      z.strictObject({
+        id: slug,
+        /** Short name shown in the box (keep it to about 8 full-width characters). */
+        label: z.string().min(1).max(12),
+        /** Optional smaller second line. */
+        detail: z.string().min(1).max(20).optional(),
+        col: z.number().int().min(0).max(FLOW_MAX_COL),
+        row: z.number().int().min(0).max(FLOW_MAX_ROW),
+      }),
+    )
+    .min(2),
+  steps: z
+    .array(
+      z.strictObject({
+        from: slug,
+        /** Leave out to highlight `from` alone. */
+        to: slug.optional(),
+        text: z.string().min(1),
+        /** "fail" draws the step in the danger color. */
+        status: z.enum(["ok", "fail"]).default("ok"),
+      }),
+    )
+    .min(2),
+});
+export type Flow = z.infer<typeof FlowSchema>;
+
 // ------------------------------------------------------ certs/<id>/cert.json
 
 /**
