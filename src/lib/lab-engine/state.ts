@@ -90,6 +90,8 @@ export interface AwsState {
   ecr: { repositories: Map<string, { mutability: "MUTABLE" | "IMMUTABLE"; scanOnPush: boolean; images: Map<string, string> }> };
   /** Stacks by name; deleted stacks stay with status DELETE_COMPLETE. */
   cloudformation: { stacks: Map<string, CfnStack> };
+  /** CodeBuild projects by name and builds by id ("project:uuid"). */
+  codebuild: { projects: Map<string, CodeBuildProject>; builds: Map<string, { project: string } & BuildRecord>; counter: number };
   eks: {
     clusters: Map<
       string,
@@ -171,6 +173,22 @@ export interface CloudWatchAlarm {
   /** SNS topic names notified when the alarm goes to ALARM. */
   alarmActions: string[];
   state: "OK" | "ALARM" | "INSUFFICIENT_DATA";
+}
+
+export interface CodeBuildProject {
+  /** "bucket/key.zip" */
+  source: string;
+  image: string;
+  privileged: boolean;
+  env: Record<string, string>;
+  serviceRole: string;
+}
+
+export interface BuildRecord {
+  status: "SUCCEEDED" | "FAILED" | "SUCCESS" | "FAILURE";
+  /** CodeBuild phases or Cloud Build steps, with their status. */
+  steps: { name: string; status: string }[];
+  log: string[];
 }
 
 export interface LogGroup {
@@ -489,6 +507,8 @@ export interface GcpState {
   gke: { clusters: Map<string, { location: string; mode: "autopilot" | "standard"; numNodes: number; k8s: K8sObjects }> };
   /** Artifact Registry repositories keyed "location/name"; images keyed "image:tag" -> image id. */
   artifacts: { repositories: Map<string, { format: string; description: string; immutableTags: boolean; images: Map<string, string> }> };
+  /** Cloud Build builds by id. */
+  cloudbuild: { builds: Map<string, BuildRecord>; counter: number };
   /** The billing account linked to the project and its budgets (by display name). */
   billing: { accountId: string; accountName: string; linked: boolean; budgets: Map<string, GcpBudget> };
   /** Key rings keyed "location/name". */
@@ -706,6 +726,7 @@ function awsFrom(cloud: Record<string, unknown>): AwsState {
     ce: { costs: [], tagStatus: new Map(), queries: new Set(), forecasts: 0 },
     ecr: { repositories: new Map() },
     cloudformation: { stacks: new Map() },
+    codebuild: { projects: new Map(), builds: new Map(), counter: 0 },
     ecs: { clusters: new Set(), taskDefinitions: new Map(), services: new Map() },
     eks: { clusters: new Map() },
     budgets: new Map(),
@@ -893,6 +914,7 @@ function gcpFrom(cloud: Record<string, unknown>): GcpState {
     kms: { keyRings: new Map() },
     securityPolicies: new Map(),
     artifacts: { repositories: new Map() },
+    cloudbuild: { builds: new Map(), counter: 0 },
     gke: { clusters: new Map() },
     billing: {
       accountId: isRecord(gcp.billingAccount) && typeof gcp.billingAccount.id === "string" ? gcp.billingAccount.id : "0X0X0X-0X0X0X-0X0X0X",
@@ -1223,6 +1245,15 @@ function awsView(state: LabState) {
         [...aws.ecr.repositories].map(([n, r]) => [n, { mutability: r.mutability, scanOnPush: r.scanOnPush, images: Object.fromEntries(r.images) }]),
       ),
     },
+    codebuild: {
+      projects: Object.fromEntries(
+        [...aws.codebuild.projects].map(([n, p]) => {
+          const runs = [...aws.codebuild.builds.values()].filter((b) => b.project === n);
+          return [n, { source: p.source, image: p.image, privilegedMode: p.privileged, lastBuild: runs.at(-1)?.status ?? null, failedBuilds: runs.filter((b) => b.status === "FAILED").length }];
+        }),
+      ),
+      builds: Object.fromEntries([...aws.codebuild.builds].map(([id, b]) => [id, { project: b.project, status: b.status, phases: Object.fromEntries(b.steps.map((x) => [x.name, x.status])) }])),
+    },
     cloudformation: {
       stacks: Object.fromEntries(
         [...aws.cloudformation.stacks].map(([n, s]) => [
@@ -1474,6 +1505,11 @@ function gcpView(state: LabState) {
     artifacts: {
       repositories: Object.fromEntries([...gcp.artifacts.repositories].map(([k, r]) => [k, { format: r.format, images: Object.fromEntries(r.images) }])),
     },
+    cloudbuild: {
+      builds: Object.fromEntries([...gcp.cloudbuild.builds].map(([id, b]) => [id, { status: b.status, steps: b.steps.map((x) => x.status) }])),
+      lastBuild: [...gcp.cloudbuild.builds.values()].at(-1)?.status ?? null,
+      failedBuilds: [...gcp.cloudbuild.builds.values()].filter((b) => b.status === "FAILURE").length,
+    },
     billing: {
       linked: gcp.billing.linked,
       budgets: Object.fromEntries(
@@ -1620,6 +1656,7 @@ function repoView(state: LabState, root: string, repo: GitRepo) {
  *   cloud.gcp.artifacts.repositories["location/name"].{format, images["image:tag"] = image id},
  *   kube.currentContext, terraform["~/dir"].{initialized, resources[address], outputs, driftRepairs, applies},
  *   cloud.aws.cloudformation.stacks[name].{status, resources[logicalId] = physical id, outputs, parameters, drift, retained[logicalId]},
+ *   cloud.aws.codebuild.projects[name].{source, image, privilegedMode, lastBuild, failedBuilds}, cloud.gcp.cloudbuild.{lastBuild, failedBuilds, builds[id].{status, steps}},
  *   cloud.aws.eks.clusters[name].{status, nodegroups[name].{desired, min, max}, k8s}, cloud.gcp.gke.clusters[name].{location, mode, k8s},
  *     k8s = {namespaces[name], deployments["ns/name"].{replicas, readyReplicas, images, revision}, services["ns/name"].{type, port, targetPort, endpoints, externalIp}},
  *   cloud.gcp.monitoring.{uptimeChecks[name].{host, path, period}, policies[displayName].{conditionFilter, condition}},

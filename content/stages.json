@@ -44,7 +44,8 @@
       "units": [
         "containers",
         "kubernetes",
-        "infrastructure-as-code"
+        "infrastructure-as-code",
+        "ci-cd"
       ]
     },
     {

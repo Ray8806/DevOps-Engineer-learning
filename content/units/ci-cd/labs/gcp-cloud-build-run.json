@@ -1,0 +1,61 @@
+{
+  "id": "gcp-cloud-build-run",
+  "title": "用 Cloud Build 建置映像檔並部署到 Cloud Run",
+  "description": "用 cloudbuild.yaml 定義建置步驟：建置映像檔、推送到 Artifact Registry、部署到 Cloud Run。從建置日誌找出失敗的步驟並修正，再用替代變數把同一份設定部署到另一個環境。",
+  "provider": "gcp",
+  "estimatedMinutes": 25,
+  "initialState": {
+    "files": {
+      "~/app/Dockerfile": "FROM public.ecr.aws/amazonlinux/amazonlinux:latest\n# Install the Apache web server\nRUN yum update -y && \\\n    yum install -y httpd\nCOPY index.html /var/www/html/index.html\nEXPOSE 80\nCMD /usr/sbin/httpd -D FOREGROUND\n",
+      "~/app/index.html": "<h1>Hello from Cloud Build!</h1>\n",
+      "~/app/cloudbuild.yaml": "substitutions:\n  _REGION: asia-east1\n  _SERVICE: hello-web\nsteps:\n- name: 'gcr.io/cloud-builders/docker'\n  args: ['build', '-t', '${_REGION}-docker.pkg.dev/$PROJECT_ID/web-repo/hello-web:$BUILD_ID', '.']\n- name: 'gcr.io/cloud-builders/docker'\n  args: ['push', '${_REGION}-docker.pkg.dev/$PROJECT_ID/web-repo/hello-web:$BUILD_ID']\n- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'\n  entrypoint: gcloud\n  args:\n  - 'run'\n  - 'deploy'\n  - '${_SERVICE}'\n  - '--image'\n  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/web-repo/hello-web:$BUILD_ID'\n  - '--region'\n  - '${_REGION}'\n  - '--port'\n  - '80'\n  - '--allow-unauthenticated'\nimages:\n- '${_REGION}-docker.pkg.dev/$PROJECT_ID/web-repo/hello-web:$BUILD_ID'\n"
+    },
+    "cloud": {}
+  },
+  "steps": [
+    {
+      "instruction": "進入 ~/app，用 cat 看看 cloudbuild.yaml：有哪幾個步驟？$PROJECT_ID、$BUILD_ID、${_REGION} 是什麼？然後用 gcloud builds submit 提交建置。",
+      "hint": "cd app，cat cloudbuild.yaml，gcloud builds submit --config=cloudbuild.yaml --region=asia-east1 .",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "cloudbuild",
+          "lastBuild"
+        ],
+        "equals": "FAILURE"
+      }
+    },
+    {
+      "instruction": "建置失敗了。用 gcloud builds list 找到這次建置的 ID，再用 gcloud builds log 看是哪個步驟、為什麼失敗。修正問題（建立需要的儲存庫）後再提交一次，讓服務 hello-web 部署成功。",
+      "hint": "gcloud builds list，gcloud builds log <建置 ID>，gcloud artifacts repositories create web-repo --repository-format=docker --location=asia-east1，gcloud builds submit --config=cloudbuild.yaml --region=asia-east1 .",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "run",
+          "services",
+          "hello-web"
+        ],
+        "exists": true
+      }
+    },
+    {
+      "instruction": "同一份建置設定也要部署一個測試環境。不用改檔案，用 --substitutions 把 _SERVICE 換成 hello-web-staging 再提交一次，然後用 gcloud run services list 確認兩個服務都在。",
+      "hint": "gcloud builds submit --config=cloudbuild.yaml --region=asia-east1 --substitutions=_SERVICE=hello-web-staging .，gcloud run services list",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "run",
+          "services",
+          "hello-web-staging"
+        ],
+        "exists": true
+      }
+    }
+  ]
+}
