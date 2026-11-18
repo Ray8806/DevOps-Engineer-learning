@@ -153,7 +153,8 @@ export function LabRunner({ unitId, unitTitle, lab }: { unitId: string; unitTitl
                       i + 1
                     )}
                   </span>
-                  <div className="min-w-0">
+                  {/* Long ARNs and resource IDs have no spaces; let them wrap inside the card. */}
+                  <div className="min-w-0 [overflow-wrap:anywhere]">
                     <p>
                       <span className="sr-only">{status === "done" ? "已完成：" : status === "current" ? "目前步驟：" : ""}</span>
                       {step.instruction}

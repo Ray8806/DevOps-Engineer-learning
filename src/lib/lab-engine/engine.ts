@@ -3,6 +3,7 @@ import type { Command, Ctx } from "./context";
 import { gcloud, gsutil } from "./gcloud";
 import { curl, docker } from "./docker";
 import { git } from "./git";
+import { kubectl } from "./kubectl";
 import { linuxCommands } from "./linux";
 import { parseLine } from "./parse";
 import { cloneState, dirname, displayPath, listDir, resolvePath, type LabState } from "./state";
@@ -24,6 +25,7 @@ const HELP = `可用的指令：
   檔案與目錄  pwd  ls  cd  mkdir  touch  cat  echo  cp  mv  rm  rmdir  zip  base64
   Git         git init | status | add | commit | log | branch | switch | checkout | merge
   Docker      docker build | images | tag | run | ps | stop | rm | rmi | login | push | pull，curl http://localhost:連接埠
+  Kubernetes  kubectl apply -f | create | expose | get | describe | scale | set image | rollout status | history | undo | delete | config
   AWS         aws s3 mb | rb | ls | cp | mv | rm
               aws iam  使用者、群組、角色與政策（輸入 aws iam 看完整清單）
               aws ec2  安全群組、執行個體、啟動範本、EBS 磁碟區與快照、VPC、子網路、閘道與路由表（輸入 aws ec2 看完整清單）
@@ -42,6 +44,7 @@ const HELP = `可用的指令：
               aws budgets create-budget | describe-budgets | delete-budget
               aws ecr create-repository | describe-repositories | describe-images | delete-repository | get-login-password
               aws ecs create-cluster | register-task-definition | create-service | describe-services | update-service | list-tasks
+              aws eks create-cluster | describe-cluster | create-nodegroup | update-nodegroup-config | update-kubeconfig
   GCP         gcloud storage buckets create | delete | list | describe
               gcloud storage ls | cp | mv | rm | cat      （也支援 gsutil）
               gcloud iam service-accounts create | list | delete
@@ -67,6 +70,7 @@ const HELP = `可用的指令：
               gcloud compute security-policies create | list | describe | delete，security-policies rules create | update | delete
               gcloud billing accounts list，billing projects describe | link | unlink，billing budgets create | list | delete
               gcloud artifacts repositories create | list | describe | delete，artifacts docker images list，auth configure-docker
+              gcloud container clusters create-auto | create | list | describe | get-credentials | resize | delete
   其他        clear  help  whoami
 支援 > 與 >> 輸出到檔案、用 | 把輸出交給下一個指令（cat、base64、docker login --password-stdin 會讀取）、用 && 或 ; 串接指令。按 Tab 補完路徑，上下鍵瀏覽歷史指令。
 `;
@@ -76,7 +80,7 @@ const help: Command = (ctx) => {
   return 0;
 };
 
-const commands: Record<string, Command> = { ...linuxCommands, aws, gcloud, gsutil, git, docker, curl, help };
+const commands: Record<string, Command> = { ...linuxCommands, aws, gcloud, gsutil, git, docker, curl, kubectl, help };
 
 export const COMMAND_NAMES = [...Object.keys(commands), "clear"].sort();
 

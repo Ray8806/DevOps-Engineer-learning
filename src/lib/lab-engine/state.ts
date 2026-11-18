@@ -5,6 +5,7 @@
 import { healthyBackends, ruleServing } from "./gcloud-lb";
 import { notificationLabel } from "./aws-cost";
 import { taskProblem } from "./aws-ecs";
+import { k8sView } from "./kubectl";
 import { aliasTarget } from "./aws-dns-cdn";
 
 export const HOME = "/home/learner";
@@ -86,6 +87,18 @@ export interface AwsState {
   /** KMS keys by key id; aliases map "alias/name" to a key id. */
   kms: { keys: Map<string, KmsKey>; aliases: Map<string, string>; created: number };
   ecr: { repositories: Map<string, { mutability: "MUTABLE" | "IMMUTABLE"; scanOnPush: boolean; images: Map<string, string> }> };
+  eks: {
+    clusters: Map<
+      string,
+      {
+        roleArn: string;
+        subnets: string[];
+        version: string;
+        nodegroups: Map<string, { nodeRole: string; subnets: string[]; min: number; max: number; desired: number; instanceTypes: string[] }>;
+        k8s: K8sObjects;
+      }
+    >;
+  };
   ecs: {
     clusters: Set<string>;
     /** Revisions per family, revision 1 first. */
@@ -444,6 +457,8 @@ export interface GcpState {
     buckets: Map<string, { retentionDays: number; locked: boolean }>;
     sinks: Map<string, { destination: string; filter: string }>;
   };
+  /** GKE clusters by name. */
+  gke: { clusters: Map<string, { location: string; mode: "autopilot" | "standard"; numNodes: number; k8s: K8sObjects }> };
   /** Artifact Registry repositories keyed "location/name"; images keyed "image:tag" -> image id. */
   artifacts: { repositories: Map<string, { format: string; description: string; immutableTags: boolean; images: Map<string, string> }> };
   /** The billing account linked to the project and its budgets (by display name). */
@@ -473,6 +488,8 @@ export interface LabState {
   git: Map<string, GitRepo>;
   /** The local Docker engine: images by "repository:tag", containers by name, registries logged in to. */
   docker: DockerState;
+  /** kubectl's kubeconfig: contexts point at an EKS or GKE cluster. */
+  kube: { contexts: Map<string, { provider: "aws" | "gcp"; cluster: string }>; current: string | null };
   aws: AwsState;
   gcp: GcpState;
 }
@@ -485,6 +502,32 @@ export interface DockerImage {
   sizeMb: number;
   /** Content of an index.html copied into the image, served by `curl` against a running container. */
   index: string | null;
+}
+
+export interface K8sDeployment {
+  labels: Record<string, string>;
+  selector: Record<string, string>;
+  templateLabels: Record<string, string>;
+  containers: { name: string; image: string; ports: number[] }[];
+  replicas: number;
+  /** Container specs (as JSON) per rollout revision, oldest first; the last is current. */
+  history: { revision: number; spec: string }[];
+  /** Bumped when a Pod is deleted, so the replacement gets a new name. */
+  restarts: number;
+}
+
+export interface K8sService {
+  type: "ClusterIP" | "NodePort" | "LoadBalancer";
+  selector: Record<string, string>;
+  ports: { port: number; targetPort: number; nodePort: number | null }[];
+  clusterIP: string;
+}
+
+/** Kubernetes objects inside one cluster; keys are "namespace/name". */
+export interface K8sObjects {
+  namespaces: Set<string>;
+  deployments: Map<string, K8sDeployment>;
+  services: Map<string, K8sService>;
 }
 
 export interface DockerState {
@@ -603,6 +646,7 @@ export function createLabState(initial: InitialState = {}): LabState {
     gcs: bucketsFrom(cloud, "gcs", DEFAULT_GCS_LOCATION),
     git: new Map(),
     docker: { images: new Map(), containers: new Map(), logins: new Set() },
+    kube: { contexts: new Map(), current: null },
     aws: awsFrom(cloud),
     gcp: gcpFrom(cloud),
   };
@@ -631,6 +675,7 @@ function awsFrom(cloud: Record<string, unknown>): AwsState {
     ce: { costs: [], tagStatus: new Map(), queries: new Set(), forecasts: 0 },
     ecr: { repositories: new Map() },
     ecs: { clusters: new Set(), taskDefinitions: new Map(), services: new Map() },
+    eks: { clusters: new Map() },
     budgets: new Map(),
     wafv2: { ipSets: new Map(), webAcls: new Map() },
     vpc: { vpcs: new Map(), subnets: new Map(), internetGateways: new Map(), routeTables: new Map() },
@@ -816,6 +861,7 @@ function gcpFrom(cloud: Record<string, unknown>): GcpState {
     kms: { keyRings: new Map() },
     securityPolicies: new Map(),
     artifacts: { repositories: new Map() },
+    gke: { clusters: new Map() },
     billing: {
       accountId: isRecord(gcp.billingAccount) && typeof gcp.billingAccount.id === "string" ? gcp.billingAccount.id : "0X0X0X-0X0X0X-0X0X0X",
       accountName: isRecord(gcp.billingAccount) && typeof gcp.billingAccount.name === "string" ? gcp.billingAccount.name : "My Billing Account",
@@ -844,6 +890,7 @@ export function cloneState(state: LabState): LabState {
     git: new Map([...state.git].map(([root, repo]) => [root, cloneRepo(repo)])),
     // Plain data made of Maps, Sets, arrays and primitives.
     docker: structuredClone(state.docker),
+    kube: structuredClone(state.kube),
     aws: structuredClone(state.aws),
     gcp: structuredClone(state.gcp),
   };
@@ -1143,6 +1190,18 @@ function awsView(state: LabState) {
         [...aws.ecr.repositories].map(([n, r]) => [n, { mutability: r.mutability, scanOnPush: r.scanOnPush, images: Object.fromEntries(r.images) }]),
       ),
     },
+    eks: {
+      clusters: Object.fromEntries(
+        [...aws.eks.clusters].map(([n, c]) => [
+          n,
+          {
+            status: "ACTIVE",
+            nodegroups: Object.fromEntries([...c.nodegroups].map(([g, x]) => [g, { desired: x.desired, min: x.min, max: x.max }])),
+            k8s: k8sView(state, { context: n, objects: c.k8s, nodes: [...c.nodegroups.values()].reduce((s, g) => s + g.desired, 0), provider: "aws" }),
+          },
+        ]),
+      ),
+    },
     ecs: {
       clusters: keysTrue(aws.ecs.clusters),
       taskDefinitions: Object.fromEntries(
@@ -1352,6 +1411,18 @@ function gcpView(state: LabState) {
         ]),
       ),
     },
+    gke: {
+      clusters: Object.fromEntries(
+        [...gcp.gke.clusters].map(([n, c]) => [
+          n,
+          {
+            location: c.location,
+            mode: c.mode,
+            k8s: k8sView(state, { context: n, objects: c.k8s, nodes: c.mode === "autopilot" ? Infinity : c.numNodes, provider: "gcp" }),
+          },
+        ]),
+      ),
+    },
     artifacts: {
       repositories: Object.fromEntries([...gcp.artifacts.repositories].map(([k, r]) => [k, { format: r.format, images: Object.fromEntries(r.images) }])),
     },
@@ -1499,6 +1570,9 @@ function repoView(state: LabState, root: string, repo: GitRepo) {
  *   cloud.aws.ecr.repositories[name].{mutability, scanOnPush, images[tag] = image id},
  *   cloud.aws.ecs.{clusters[name], taskDefinitions["family:1"].{cpu, memory, networkMode, executionRole, images}, services["cluster/name"].{taskDefinition, desiredCount, runningCount, launchType}},
  *   cloud.gcp.artifacts.repositories["location/name"].{format, images["image:tag"] = image id},
+ *   kube.currentContext,
+ *   cloud.aws.eks.clusters[name].{status, nodegroups[name].{desired, min, max}, k8s}, cloud.gcp.gke.clusters[name].{location, mode, k8s},
+ *     k8s = {namespaces[name], deployments["ns/name"].{replicas, readyReplicas, images, revision}, services["ns/name"].{type, port, targetPort, endpoints, externalIp}},
  *   cloud.gcp.monitoring.{uptimeChecks[name].{host, path, period}, policies[displayName].{conditionFilter, condition}},
  *   cloud.gcp.sql.instances[name].{databaseVersion, edition, tier, region, availabilityType, backupsEnabled,
  *     deletionProtection, masterInstanceName, databases[name], users[name], backupCount},
@@ -1522,5 +1596,6 @@ export function checkView(state: LabState): Record<string, unknown> {
       containers: Object.fromEntries([...state.docker.containers].map(([n, c]) => [n, { image: c.image, ports: c.ports, status: c.status }])),
       logins: keysTrue(state.docker.logins),
     },
+    kube: { currentContext: state.kube.current },
   };
 }

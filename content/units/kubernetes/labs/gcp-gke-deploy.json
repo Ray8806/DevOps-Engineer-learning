@@ -1,0 +1,116 @@
+{
+  "id": "gcp-gke-deploy",
+  "title": "在 GKE Autopilot 部署應用程式",
+  "description": "建立 GKE Autopilot 叢集，用 kubectl 建立 Deployment 和 LoadBalancer Service，擴展、刪除 Pod 看它自動補上，最後滾動更新並回復到上一個版本。",
+  "provider": "gcp",
+  "estimatedMinutes": 25,
+  "initialState": {
+    "files": {},
+    "cloud": {}
+  },
+  "steps": [
+    {
+      "instruction": "在 us-east4 建立 Autopilot 叢集 hello-cluster，再用 get-credentials 取得 kubectl 的連線設定，用 kubectl get namespaces 確認連得上。",
+      "hint": "gcloud container clusters create-auto hello-cluster --location=us-east4，gcloud container clusters get-credentials hello-cluster --location us-east4，kubectl get namespaces",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "gke",
+          "clusters",
+          "hello-cluster",
+          "mode"
+        ],
+        "equals": "autopilot"
+      }
+    },
+    {
+      "instruction": "建立 Deployment hello-server，映像檔是 us-docker.pkg.dev/google-samples/containers/gke/hello-app:1.0。用 kubectl get pods 看看。",
+      "hint": "kubectl create deployment hello-server --image=us-docker.pkg.dev/google-samples/containers/gke/hello-app:1.0",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "gke",
+          "clusters",
+          "hello-cluster",
+          "k8s",
+          "deployments",
+          "default/hello-server",
+          "readyReplicas"
+        ],
+        "equals": 1
+      }
+    },
+    {
+      "instruction": "這個範例程式聽 8080 連接埠。建立 LoadBalancer 類型的 Service，外部用 80 連接埠，轉到容器的 8080。用 kubectl get service hello-server 看 EXTERNAL-IP。",
+      "hint": "kubectl expose deployment hello-server --type LoadBalancer --port 80 --target-port 8080",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "gke",
+          "clusters",
+          "hello-cluster",
+          "k8s",
+          "services",
+          "default/hello-server"
+        ],
+        "equals": {
+          "type": "LoadBalancer",
+          "port": 80,
+          "targetPort": 8080,
+          "endpoints": 1,
+          "externalIp": true
+        }
+      }
+    },
+    {
+      "instruction": "把 hello-server 擴展到 3 個副本。接著用 kubectl delete pod 刪掉其中一個 Pod，再 kubectl get pods 看看發生什麼事。",
+      "hint": "kubectl scale deployment hello-server --replicas 3，kubectl get pods，kubectl delete pod 其中一個 Pod 的名稱，kubectl get pods",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "gke",
+          "clusters",
+          "hello-cluster",
+          "k8s",
+          "deployments",
+          "default/hello-server",
+          "readyReplicas"
+        ],
+        "equals": 3
+      }
+    },
+    {
+      "instruction": "把容器 hello-app 換成 us-docker.pkg.dev/google-samples/containers/gke/hello-app:2.0，假設新版有問題，用 kubectl rollout undo 回到上一個版本。用 rollout history 看版本紀錄。",
+      "hint": "kubectl set image deployment/hello-server hello-app=us-docker.pkg.dev/google-samples/containers/gke/hello-app:2.0，kubectl rollout undo deployment/hello-server，kubectl rollout history deployment/hello-server",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "gke",
+          "clusters",
+          "hello-cluster",
+          "k8s",
+          "deployments",
+          "default/hello-server"
+        ],
+        "equals": {
+          "replicas": 3,
+          "readyReplicas": 3,
+          "images": [
+            "us-docker.pkg.dev/google-samples/containers/gke/hello-app:1.0"
+          ],
+          "revision": 3
+        }
+      }
+    }
+  ]
+}

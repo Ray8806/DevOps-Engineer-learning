@@ -1,0 +1,149 @@
+{
+  "id": "aws-eks-deploy",
+  "title": "在 EKS 部署應用程式",
+  "description": "建立 EKS 叢集並設定 kubectl，部署 EKS 範例的 Deployment，看 Pod 因為沒有節點而停在 Pending，建立節點群組後讓它們跑起來，再建立 Service 並滾動更新映像檔。",
+  "provider": "aws",
+  "estimatedMinutes": 30,
+  "initialState": {
+    "files": {
+      "~/k8s/eks-sample-deployment.yaml": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: eks-sample-linux-deployment\n  namespace: eks-sample-app\n  labels:\n    app: eks-sample-linux-app\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: eks-sample-linux-app\n  template:\n    metadata:\n      labels:\n        app: eks-sample-linux-app\n    spec:\n      containers:\n      - name: nginx\n        image: public.ecr.aws/nginx/nginx:1.23\n        ports:\n        - name: http\n          containerPort: 80\n",
+      "~/k8s/eks-sample-service.yaml": "apiVersion: v1\nkind: Service\nmetadata:\n  name: eks-sample-linux-service\n  namespace: eks-sample-app\n  labels:\n    app: eks-sample-linux-app\nspec:\n  selector:\n    app: eks-sample-linux-app\n  ports:\n    - protocol: TCP\n      port: 80\n      targetPort: 80\n"
+    },
+    "cloud": {
+      "aws": {
+        "vpcs": {
+          "vpc-0f3c2a1b9d8e7c6b5": {
+            "cidr": "10.0.0.0/16",
+            "internetGateway": true,
+            "subnets": {
+              "subnet-0a1b2c3d4e5f60718": {
+                "cidr": "10.0.1.0/24",
+                "availabilityZone": "us-east-1a"
+              },
+              "subnet-0b2c3d4e5f6071829": {
+                "cidr": "10.0.2.0/24",
+                "availabilityZone": "us-east-1b"
+              },
+              "subnet-0c3d4e5f607182930": {
+                "cidr": "10.0.3.0/24",
+                "availabilityZone": "us-east-1a"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "steps": [
+    {
+      "instruction": "用 aws ec2 describe-subnets 看看有哪些子網路。建立 EKS 叢集 lab-eks，叢集角色是 arn:aws:iam::123456789012:role/eksClusterRole。先試試用 subnet-0a1b2c3d4e5f60718 和 subnet-0c3d4e5f607182930 兩個子網路，為什麼失敗？再換成兩個不同可用區的子網路。",
+      "hint": "aws eks create-cluster --name lab-eks --role-arn arn:aws:iam::123456789012:role/eksClusterRole --resources-vpc-config subnetIds=subnet-0a1b2c3d4e5f60718,subnet-0b2c3d4e5f6071829",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "eks",
+          "clusters",
+          "lab-eks",
+          "status"
+        ],
+        "equals": "ACTIVE"
+      }
+    },
+    {
+      "instruction": "讓 kubectl 連到 lab-eks，用 kubectl config current-context 確認，再用 kubectl get nodes 看看叢集裡有幾個節點。",
+      "hint": "aws eks update-kubeconfig --name lab-eks，kubectl config current-context，kubectl get nodes",
+      "check": {
+        "type": "state",
+        "path": [
+          "kube",
+          "currentContext"
+        ],
+        "equals": "arn:aws:eks:us-east-1:123456789012:cluster/lab-eks"
+      }
+    },
+    {
+      "instruction": "建立命名空間 eks-sample-app，用 cat 看看 ~/k8s/eks-sample-deployment.yaml，再用 kubectl apply 部署。用 kubectl get pods -n eks-sample-app 看看 Pod 的狀態，用 describe pod 找出原因。",
+      "hint": "kubectl create namespace eks-sample-app，cd k8s，kubectl apply -f eks-sample-deployment.yaml，kubectl get pods -n eks-sample-app",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "eks",
+          "clusters",
+          "lab-eks",
+          "k8s",
+          "deployments",
+          "eks-sample-app/eks-sample-linux-deployment",
+          "replicas"
+        ],
+        "equals": 3
+      }
+    },
+    {
+      "instruction": "Pod 停在 Pending，因為叢集還沒有節點。建立節點群組 lab-nodes：節點角色 arn:aws:iam::123456789012:role/eksNodeRole，放在 subnet-0a1b2c3d4e5f60718 和 subnet-0b2c3d4e5f6071829，最少 1、最多 3、期望 2 個節點。再看一次 Pod。",
+      "hint": "aws eks create-nodegroup --cluster-name lab-eks --nodegroup-name lab-nodes --node-role arn:aws:iam::123456789012:role/eksNodeRole --subnets subnet-0a1b2c3d4e5f60718 subnet-0b2c3d4e5f6071829 --scaling-config minSize=1,maxSize=3,desiredSize=2",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "eks",
+          "clusters",
+          "lab-eks",
+          "k8s",
+          "deployments",
+          "eks-sample-app/eks-sample-linux-deployment",
+          "readyReplicas"
+        ],
+        "equals": 3
+      }
+    },
+    {
+      "instruction": "套用 ~/k8s/eks-sample-service.yaml，用 kubectl get all -n eks-sample-app 看所有資源，再用 describe service 看 Endpoints 有幾個 Pod 的位址。",
+      "hint": "kubectl apply -f eks-sample-service.yaml，kubectl get all -n eks-sample-app，kubectl -n eks-sample-app describe service eks-sample-linux-service",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "eks",
+          "clusters",
+          "lab-eks",
+          "k8s",
+          "services",
+          "eks-sample-app/eks-sample-linux-service",
+          "endpoints"
+        ],
+        "equals": 3
+      }
+    },
+    {
+      "instruction": "把容器 nginx 的映像檔換成 public.ecr.aws/nginx/nginx:1.24（滾動更新），用 kubectl rollout status 和 rollout history 看結果。",
+      "hint": "kubectl set image deployment/eks-sample-linux-deployment nginx=public.ecr.aws/nginx/nginx:1.24 -n eks-sample-app，kubectl rollout status deployment/eks-sample-linux-deployment -n eks-sample-app",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "eks",
+          "clusters",
+          "lab-eks",
+          "k8s",
+          "deployments",
+          "eks-sample-app/eks-sample-linux-deployment"
+        ],
+        "equals": {
+          "replicas": 3,
+          "readyReplicas": 3,
+          "images": [
+            "public.ecr.aws/nginx/nginx:1.24"
+          ],
+          "revision": 2
+        }
+      }
+    }
+  ]
+}
