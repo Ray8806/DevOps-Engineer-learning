@@ -1,0 +1,85 @@
+{
+  "id": "gcp-terraform-basics",
+  "title": "用 Terraform 管理 Cloud Storage bucket",
+  "description": "初始化 Terraform、看執行計畫、建立 bucket 並查看狀態檔，用變數做就地修改，處理有人在 Terraform 之外刪掉 bucket 的偏移，最後用 destroy 清除。",
+  "provider": "gcp",
+  "estimatedMinutes": 25,
+  "initialState": {
+    "files": {
+      "~/infra/main.tf": "terraform {\n  required_providers {\n    google = {\n      source = \"hashicorp/google\"\n    }\n  }\n}\n\nprovider \"google\" {\n  project = \"my-project\"\n  region  = var.region\n}\n\nvariable \"region\" {\n  default = \"asia-east1\"\n}\n\nvariable \"storage_class\" {\n  default = \"STANDARD\"\n}\n\nresource \"google_storage_bucket\" \"site\" {\n  name          = \"my-project-tf-site\"\n  location      = var.region\n  storage_class = var.storage_class\n  force_destroy = true\n}\n\noutput \"bucket_url\" {\n  value = google_storage_bucket.site.url\n}\n"
+    },
+    "cloud": {}
+  },
+  "steps": [
+    {
+      "instruction": "進入 ~/infra，用 cat 看看 main.tf。先直接執行 terraform plan 看看會怎樣，再用 terraform init 初始化（會下載 provider、產生 .terraform.lock.hcl）。",
+      "hint": "cd infra，cat main.tf，terraform plan，terraform init",
+      "check": {
+        "type": "state",
+        "path": [
+          "terraform",
+          "~/infra",
+          "initialized"
+        ],
+        "equals": true
+      }
+    },
+    {
+      "instruction": "執行 terraform plan 看計畫，再用 terraform apply 建立 bucket（模擬終端機不能輸入 yes，要加 -auto-approve）。用 terraform output 和 cat terraform.tfstate 看看結果。",
+      "hint": "terraform plan，terraform apply -auto-approve，terraform output，cat terraform.tfstate",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcs",
+          "buckets",
+          "my-project-tf-site",
+          "storageClass"
+        ],
+        "equals": "STANDARD"
+      }
+    },
+    {
+      "instruction": "這個 bucket 很少讀取，改成 NEARLINE 比較省錢。用 -var storage_class=NEARLINE 看計畫：是就地修改還是重建？確認後套用。",
+      "hint": "terraform plan -var storage_class=NEARLINE，terraform apply -auto-approve -var storage_class=NEARLINE",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcs",
+          "buckets",
+          "my-project-tf-site",
+          "storageClass"
+        ],
+        "equals": "NEARLINE"
+      }
+    },
+    {
+      "instruction": "有人在 Terraform 之外用 gcloud 把 bucket 刪掉了。模擬這件事，再用 terraform plan（記得加上同樣的 -var）看 Terraform 發現了什麼，然後 apply 把它建回來。",
+      "hint": "gcloud storage buckets delete gs://my-project-tf-site，terraform plan -var storage_class=NEARLINE，terraform apply -auto-approve -var storage_class=NEARLINE",
+      "check": {
+        "type": "state",
+        "path": [
+          "terraform",
+          "~/infra",
+          "driftRepairs"
+        ],
+        "equals": 1
+      }
+    },
+    {
+      "instruction": "用 terraform state list 看 Terraform 管理哪些資源，再用 terraform destroy 把它們全部刪除。",
+      "hint": "terraform state list，terraform destroy -auto-approve",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcs",
+          "buckets",
+          "my-project-tf-site"
+        ],
+        "exists": false
+      }
+    }
+  ]
+}

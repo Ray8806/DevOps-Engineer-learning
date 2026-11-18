@@ -1,0 +1,107 @@
+{
+  "id": "aws-cloudformation-stack",
+  "title": "CloudFormation 堆疊、變更集與偏移偵測",
+  "description": "用範本建立堆疊，看建立失敗時的自動回復，用變更集預覽並套用更新，偵測有人在範本以外做的修改，最後刪除堆疊並保留重要的 bucket。",
+  "provider": "aws",
+  "estimatedMinutes": 30,
+  "initialState": {
+    "files": {
+      "~/cfn/app.yaml": "AWSTemplateFormatVersion: \"2010-09-09\"\nDescription: Storage, alerts and logs for one environment of the app\nParameters:\n  EnvName:\n    Type: String\n    Default: dev\n    AllowedValues: [dev, prod]\n    Description: Environment name\nResources:\n  AppBucket:\n    Type: AWS::S3::Bucket\n    DeletionPolicy: Retain\n    Properties:\n      BucketName: !Sub lab-app-${EnvName}-${AWS::AccountId}\n  AlertsTopic:\n    Type: AWS::SNS::Topic\n    Properties:\n      TopicName: !Sub app-alerts-${EnvName}\n  AppLogs:\n    Type: AWS::Logs::LogGroup\n    Properties:\n      LogGroupName: !Sub /app/${EnvName}\n      RetentionInDays: 30\nOutputs:\n  BucketName:\n    Value: !Ref AppBucket\n  BucketArn:\n    Value: !GetAtt AppBucket.Arn\n  TopicArn:\n    Value: !Ref AlertsTopic\n",
+      "~/cfn/app-v2.yaml": "AWSTemplateFormatVersion: \"2010-09-09\"\nDescription: Storage, alerts and logs for one environment of the app\nParameters:\n  EnvName:\n    Type: String\n    Default: dev\n    AllowedValues: [dev, prod]\n    Description: Environment name\nResources:\n  AppBucket:\n    Type: AWS::S3::Bucket\n    DeletionPolicy: Retain\n    Properties:\n      BucketName: !Sub lab-app-${EnvName}-${AWS::AccountId}\n  AlertsTopic:\n    Type: AWS::SNS::Topic\n    Properties:\n      TopicName: !Sub app-alerts-${EnvName}\n  AppLogs:\n    Type: AWS::Logs::LogGroup\n    Properties:\n      LogGroupName: !Sub /app/${EnvName}\n      RetentionInDays: 90\nOutputs:\n  BucketName:\n    Value: !Ref AppBucket\n  BucketArn:\n    Value: !GetAtt AppBucket.Arn\n  TopicArn:\n    Value: !Ref AlertsTopic\n"
+    },
+    "cloud": {
+      "s3": {
+        "buckets": {
+          "lab-app-prod-123456789012": {
+            "objects": {
+              "README.txt": "created by hand before IaC\n"
+            }
+          }
+        }
+      }
+    }
+  },
+  "steps": [
+    {
+      "instruction": "進入 ~/cfn，用 cat 看看 app.yaml 的參數、資源和輸出，用 validate-template 檢查範本，再用它建立堆疊 lab-dev（使用預設的 EnvName）。用 describe-stacks 看狀態和 Outputs。",
+      "hint": "cd cfn，aws cloudformation validate-template --template-body file://app.yaml，aws cloudformation create-stack --stack-name lab-dev --template-body file://app.yaml，aws cloudformation describe-stacks --stack-name lab-dev",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "cloudformation",
+          "stacks",
+          "lab-dev",
+          "status"
+        ],
+        "equals": "CREATE_COMPLETE"
+      }
+    },
+    {
+      "instruction": "用同一份範本建立正式環境的堆疊 lab-prod（EnvName=prod）。它會失敗：用 describe-stack-events 找出原因（有人在導入 IaC 之前手動建立了同名的 bucket）。停在 ROLLBACK_COMPLETE 的堆疊不能更新，把它刪除。",
+      "hint": "aws cloudformation create-stack --stack-name lab-prod --template-body file://app.yaml --parameters ParameterKey=EnvName,ParameterValue=prod，aws cloudformation describe-stack-events --stack-name lab-prod，aws cloudformation delete-stack --stack-name lab-prod",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "cloudformation",
+          "stacks",
+          "lab-prod",
+          "status"
+        ],
+        "equals": "DELETE_COMPLETE"
+      }
+    },
+    {
+      "instruction": "app-v2.yaml 把記錄的保留期限改成 90 天。為 lab-dev 建立變更集 v2，用 describe-change-set 看會修改哪個資源、需不需要取代（Replacement），確認後執行。",
+      "hint": "aws cloudformation create-change-set --stack-name lab-dev --change-set-name v2 --template-body file://app-v2.yaml，aws cloudformation describe-change-set --stack-name lab-dev --change-set-name v2，aws cloudformation execute-change-set --stack-name lab-dev --change-set-name v2",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "logs",
+          "groups",
+          "/app/dev",
+          "retentionInDays"
+        ],
+        "equals": 90
+      }
+    },
+    {
+      "instruction": "同事直接用指令把 /app/dev 的保留期限改成 7 天。模擬這件事，再對 lab-dev 做偏移偵測，用 describe-stack-resource-drifts 看哪個資源、哪個屬性被改了。",
+      "hint": "aws logs put-retention-policy --log-group-name /app/dev --retention-in-days 7，aws cloudformation detect-stack-drift --stack-name lab-dev，aws cloudformation describe-stack-resource-drifts --stack-name lab-dev",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "cloudformation",
+          "stacks",
+          "lab-dev",
+          "drift"
+        ],
+        "equals": "DRIFTED"
+      }
+    },
+    {
+      "instruction": "刪除堆疊 lab-dev。範本裡 AppBucket 設了 DeletionPolicy: Retain：刪除後用 aws s3 ls 看看哪些資源還在。",
+      "hint": "aws cloudformation delete-stack --stack-name lab-dev，aws s3 ls，aws sns list-topics",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "cloudformation",
+          "stacks",
+          "lab-dev",
+          "retained",
+          "AppBucket"
+        ],
+        "exists": true
+      }
+    }
+  ]
+}

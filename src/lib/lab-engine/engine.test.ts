@@ -201,7 +201,7 @@ describe("linux commands", () => {
 
   it("reports unknown commands and never changes the input state", () => {
     const s = fresh({ "~/a": "1" });
-    expect(sh(s, "terraform plan").errors[0]).toMatch(/terraform: command not found/);
+    expect(sh(s, "ansible-playbook site.yml").errors[0]).toMatch(/ansible-playbook: command not found/);
     expect(sh(s, "constructor").errors[0]).toMatch(/command not found/);
     execute(s, "rm a && mkdir d && cd d");
     expect(view(s)).toMatchObject({ cwd: "~", files: { "~/a": "1" } });

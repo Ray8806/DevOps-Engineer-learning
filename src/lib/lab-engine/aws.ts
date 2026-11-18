@@ -4,6 +4,7 @@ import { CLOUDFRONT_COMMANDS, ROUTE53_COMMANDS, cloudfront, route53 } from "./aw
 import { BUDGETS_COMMANDS, CE_COMMANDS, budgets, ce } from "./aws-cost";
 import { DYNAMODB_COMMANDS, dynamodb } from "./aws-dynamodb";
 import { ECR_COMMANDS, ECS_COMMANDS, ecr, ecs } from "./aws-ecs";
+import { CLOUDFORMATION_COMMANDS, cloudformation } from "./cloudformation";
 import { EKS_COMMANDS, eks } from "./kube-clusters";
 import { KMS_COMMANDS, WAFV2_COMMANDS, kms, wafv2 } from "./aws-security";
 import { AUTOSCALING_COMMANDS, ELBV2_COMMANDS, autoscaling, elbv2 } from "./aws-elb";
@@ -15,7 +16,7 @@ import { LISTING_TIME, byteLength, listPrefix, parseLocation, relativeToCwd, tra
 import { DEFAULT_S3_REGION } from "./state";
 
 const S3_SUPPORTED = "這個模擬終端機目前支援 aws s3 的 mb、rb、ls、cp、mv、rm。";
-const SUPPORTED = `這個模擬終端機支援的 AWS 服務：s3（mb、rb、ls、cp、mv、rm）、iam（${IAM_COMMANDS}）、ec2（${EC2_COMMANDS}）、rds（${RDS_COMMANDS.join("、")}）、lambda（${LAMBDA_COMMANDS.join("、")}）、dynamodb（${DYNAMODB_COMMANDS.join("、")}）、elbv2（${ELBV2_COMMANDS.join("、")}）、autoscaling（${AUTOSCALING_COMMANDS.join("、")}）、cloudwatch（${CLOUDWATCH_COMMANDS.join("、")}）、logs（${LOGS_COMMANDS.join("、")}）、sns（${SNS_COMMANDS.join("、")}）、cloudtrail（${CLOUDTRAIL_COMMANDS.join("、")}）、route53（${ROUTE53_COMMANDS.join("、")}）、cloudfront（${CLOUDFRONT_COMMANDS.join("、")}）、kms（${KMS_COMMANDS.join("、")}）、wafv2（${WAFV2_COMMANDS.join("、")}）、ce（${CE_COMMANDS.join("、")}）、budgets（${BUDGETS_COMMANDS.join("、")}）、ecr（${ECR_COMMANDS.join("、")}）、ecs（${ECS_COMMANDS.join("、")}）、eks（${EKS_COMMANDS.join("、")}）。`;
+const SUPPORTED = `這個模擬終端機支援的 AWS 服務：s3（mb、rb、ls、cp、mv、rm）、iam（${IAM_COMMANDS}）、ec2（${EC2_COMMANDS}）、rds（${RDS_COMMANDS.join("、")}）、lambda（${LAMBDA_COMMANDS.join("、")}）、dynamodb（${DYNAMODB_COMMANDS.join("、")}）、elbv2（${ELBV2_COMMANDS.join("、")}）、autoscaling（${AUTOSCALING_COMMANDS.join("、")}）、cloudwatch（${CLOUDWATCH_COMMANDS.join("、")}）、logs（${LOGS_COMMANDS.join("、")}）、sns（${SNS_COMMANDS.join("、")}）、cloudtrail（${CLOUDTRAIL_COMMANDS.join("、")}）、route53（${ROUTE53_COMMANDS.join("、")}）、cloudfront（${CLOUDFRONT_COMMANDS.join("、")}）、kms（${KMS_COMMANDS.join("、")}）、wafv2（${WAFV2_COMMANDS.join("、")}）、ce（${CE_COMMANDS.join("、")}）、budgets（${BUDGETS_COMMANDS.join("、")}）、ecr（${ECR_COMMANDS.join("、")}）、ecs（${ECS_COMMANDS.join("、")}）、eks（${EKS_COMMANDS.join("、")}）、cloudformation（${CLOUDFORMATION_COMMANDS.join("、")}）。`;
 
 const apiError = (code: string, operation: string, message: string) =>
   `An error occurred (${code}) when calling the ${operation} operation: ${message}`;
@@ -198,6 +199,7 @@ export const aws: Command = (ctx, args) => {
   if (args[0] === "ecr") return ecr(ctx, args.slice(1));
   if (args[0] === "ecs") return ecs(ctx, args.slice(1));
   if (args[0] === "eks") return eks(ctx, args.slice(1));
+  if (args[0] === "cloudformation") return cloudformation(ctx, args.slice(1));
   ctx.err(args[0] ? `aws: 不支援的服務 '${args[0]}'。${SUPPORTED}` : `usage: aws <service> <command> [parameters]\n${SUPPORTED}`);
   return 252;
 };

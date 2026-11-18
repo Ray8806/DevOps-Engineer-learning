@@ -4,6 +4,7 @@ import { gcloud, gsutil } from "./gcloud";
 import { curl, docker } from "./docker";
 import { git } from "./git";
 import { kubectl } from "./kubectl";
+import { terraform } from "./terraform";
 import { linuxCommands } from "./linux";
 import { parseLine } from "./parse";
 import { cloneState, dirname, displayPath, listDir, resolvePath, type LabState } from "./state";
@@ -26,6 +27,7 @@ const HELP = `可用的指令：
   Git         git init | status | add | commit | log | branch | switch | checkout | merge
   Docker      docker build | images | tag | run | ps | stop | rm | rmi | login | push | pull，curl http://localhost:連接埠
   Kubernetes  kubectl apply -f | create | expose | get | describe | scale | set image | rollout status | history | undo | delete | config
+  Terraform   terraform init | validate | fmt | plan | apply | destroy | output | state list | state show（-var、-auto-approve）
   AWS         aws s3 mb | rb | ls | cp | mv | rm
               aws iam  使用者、群組、角色與政策（輸入 aws iam 看完整清單）
               aws ec2  安全群組、執行個體、啟動範本、EBS 磁碟區與快照、VPC、子網路、閘道與路由表（輸入 aws ec2 看完整清單）
@@ -45,6 +47,7 @@ const HELP = `可用的指令：
               aws ecr create-repository | describe-repositories | describe-images | delete-repository | get-login-password
               aws ecs create-cluster | register-task-definition | create-service | describe-services | update-service | list-tasks
               aws eks create-cluster | describe-cluster | create-nodegroup | update-nodegroup-config | update-kubeconfig
+              aws cloudformation validate-template | create-stack | describe-stacks | create-change-set | execute-change-set | detect-stack-drift | delete-stack（輸入 aws cloudformation 看完整清單）
   GCP         gcloud storage buckets create | delete | list | describe
               gcloud storage ls | cp | mv | rm | cat      （也支援 gsutil）
               gcloud iam service-accounts create | list | delete
@@ -80,7 +83,7 @@ const help: Command = (ctx) => {
   return 0;
 };
 
-const commands: Record<string, Command> = { ...linuxCommands, aws, gcloud, gsutil, git, docker, curl, kubectl, help };
+const commands: Record<string, Command> = { ...linuxCommands, aws, gcloud, gsutil, git, docker, curl, kubectl, terraform, help };
 
 export const COMMAND_NAMES = [...Object.keys(commands), "clear"].sort();
 
