@@ -23,7 +23,7 @@ export default function CertsPage() {
           <li key={cert.id}>
             <Link
               href={`/certs/${cert.id}`}
-              className="flex h-full flex-col rounded-xl border border-border bg-surface p-5 transition-colors hover:border-accent"
+              className="card-link flex h-full flex-col rounded-xl border border-border bg-surface p-5 hover:border-accent"
             >
               <div className="flex items-center gap-2">
                 <ProviderBadge provider={cert.provider} />

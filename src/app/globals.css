@@ -1,43 +1,25 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f7f8fa;
-  --surface: #ffffff;
-  --surface-2: #eef1f5;
-  --border: #dde2ea;
-  --text: #17202e;
-  --muted: #5b6678;
-  --accent: #0f766e;
-  --accent-soft: #d9f2ee;
-  --danger: #b42318;
-  --danger-soft: #fde7e4;
-  --aws: #c2570a;
-  --aws-soft: #fdebd8;
-  --gcp: #1a62d6;
-  --gcp-soft: #dde9fd;
-  --code-bg: #111827;
+  /* One dark "tech" theme: deep navy surfaces, cyan accent. */
+  color-scheme: dark;
+  --bg: #060a13;
+  --surface: #0c1320;
+  --surface-2: #131c2d;
+  --border: #1e2a40;
+  --text: #e4eaf5;
+  --muted: #8d9ab2;
+  --accent: #22d3ee;
+  --accent-2: #a78bfa;
+  --accent-soft: #0b2833;
+  --danger: #ff7b7b;
+  --danger-soft: #3a151a;
+  --aws: #ffa94d;
+  --aws-soft: #392511;
+  --gcp: #74a9ff;
+  --gcp-soft: #13254a;
+  --code-bg: #04070e;
   --code-text: #e5e9f0;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0d1117;
-    --surface: #151b24;
-    --surface-2: #1d2531;
-    --border: #2a3442;
-    --text: #e6eaf0;
-    --muted: #97a3b6;
-    --accent: #4fd1c0;
-    --accent-soft: #12332f;
-    --danger: #ff8a7a;
-    --danger-soft: #3b1512;
-    --aws: #ffab57;
-    --aws-soft: #3a2710;
-    --gcp: #7fb0ff;
-    --gcp-soft: #14274a;
-    --code-bg: #0a0e14;
-    --code-text: #e5e9f0;
-  }
 }
 
 @theme inline {
@@ -49,6 +31,7 @@
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
+  --color-accent-2: var(--accent-2);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
   --color-aws: var(--aws);
@@ -61,11 +44,43 @@
 }
 
 body {
-  background: var(--bg);
+  background-color: var(--bg);
+  /* A faint grid with a cyan and violet glow at the top. */
+  background-image:
+    radial-gradient(60rem 28rem at 15% -8rem, rgb(34 211 238 / 0.13), transparent 70%),
+    radial-gradient(50rem 26rem at 90% -10rem, rgb(167 139 250 / 0.12), transparent 70%),
+    linear-gradient(rgb(148 163 184 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(148 163 184 / 0.05) 1px, transparent 1px);
+  background-size: auto, auto, 40px 40px, 40px 40px;
+  background-attachment: fixed;
   color: var(--text);
   font-family: var(--font-sans);
   line-height: 1.7;
 }
+
+::selection { background: rgb(34 211 238 / 0.3); color: var(--text); }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Primary buttons glow a little. */
+a.bg-accent, button.bg-accent { box-shadow: 0 0 22px -6px rgb(34 211 238 / 0.7); }
+
+/* Gradient text for headlines. */
+.text-gradient {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Cards that are links light up on hover. */
+.card-link { transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
+.card-link:hover {
+  border-color: rgb(34 211 238 / 0.6);
+  box-shadow: 0 0 0 1px rgb(34 211 238 / 0.15), 0 8px 30px -12px rgb(34 211 238 / 0.45);
+}
+
+html { scrollbar-color: var(--border) var(--bg); }
 
 /* ---- Lesson typography (MDX output) ---- */
 .lesson > * + * { margin-top: 1rem; }
@@ -75,6 +90,12 @@ body {
   font-weight: 700;
   line-height: 1.3;
   scroll-margin-top: 5rem;
+}
+.lesson h2::before {
+  content: "# ";
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-weight: 600;
 }
 .lesson h3 { margin-top: 1.75rem; font-size: 1.2rem; font-weight: 700; }
 .lesson ul, .lesson ol { padding-left: 1.4rem; }
@@ -92,6 +113,7 @@ body {
 }
 .lesson pre {
   background: var(--code-bg);
+  border: 1px solid var(--border);
   color: var(--code-text);
   border-radius: 0.6rem;
   padding: 1rem 1.1rem;

@@ -23,7 +23,7 @@ const lineClass: Record<Line["kind"], string> = {
   input: "text-white",
   output: "text-[#d5dbe5]",
   error: "text-[#ff9d8f]",
-  system: "text-[#6fe0cf]",
+  system: "text-[#67e8f9]",
 };
 
 export function LabRunner({ unitId, unitTitle, lab }: { unitId: string; unitTitle: string; lab: RunnableLab }) {
@@ -217,7 +217,7 @@ export function LabRunner({ unitId, unitTitle, lab }: { unitId: string; unitTitl
           onClick={() => {
             if (window.getSelection()?.isCollapsed !== false) inputRef.current?.focus();
           }}
-          className="h-[26rem] cursor-text overflow-y-auto rounded-xl bg-[#0d1117] p-4 font-mono text-[13px] leading-relaxed ring-1 ring-border focus-within:ring-2 focus-within:ring-accent sm:h-[32rem]"
+          className="h-[26rem] cursor-text overflow-y-auto rounded-xl bg-[var(--code-bg)] p-4 font-mono shadow-[0_0_40px_-18px_rgb(34_211_238_/_0.6)] text-[13px] leading-relaxed ring-1 ring-border focus-within:ring-2 focus-within:ring-accent sm:h-[32rem]"
         >
           <div role="log" aria-label="終端機輸出" aria-live="polite">
             {lines.map((line, i) => (
@@ -227,7 +227,7 @@ export function LabRunner({ unitId, unitTitle, lab }: { unitId: string; unitTitl
             ))}
           </div>
           <div className="flex gap-2 text-white">
-            <label htmlFor="terminal-input" className="shrink-0 text-[#6fe0cf]">
+            <label htmlFor="terminal-input" className="shrink-0 text-[#67e8f9]">
               {prompt(state)}
             </label>
             <input
@@ -245,7 +245,7 @@ export function LabRunner({ unitId, unitTitle, lab }: { unitId: string; unitTitl
               autoComplete="off"
               spellCheck={false}
               enterKeyHint="send"
-              className="min-w-0 flex-1 bg-transparent text-[16px] leading-[1.25] text-white caret-[#6fe0cf] outline-none sm:text-[13px] sm:leading-relaxed"
+              className="min-w-0 flex-1 bg-transparent text-[16px] leading-[1.25] text-white caret-[#67e8f9] outline-none sm:text-[13px] sm:leading-relaxed"
             />
           </div>
         </div>
