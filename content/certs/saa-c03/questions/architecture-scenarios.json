@@ -1,0 +1,2898 @@
+{
+  "questions": [
+    {
+      "id": "saa-c03-d1-101",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司在 AWS Organizations 中有多個成員帳戶，要確保任何成員帳戶的使用者（包含管理員）都不能停用 CloudTrail。最適合的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "在每個帳戶建立 IAM 群組，附加拒絕的政策",
+          "explanation": "帳戶的管理員可以修改或移除自己帳戶中的 IAM 政策，無法集中強制。"
+        },
+        {
+          "id": "b",
+          "text": "把所有使用者改成用 root 使用者登入",
+          "explanation": "這違反安全最佳實務。"
+        },
+        {
+          "id": "c",
+          "text": "使用 AWS Artifact",
+          "explanation": "Artifact 提供合規報告，不能限制權限。"
+        },
+        {
+          "id": "d",
+          "text": "在組織中套用拒絕 cloudtrail:StopLogging 等動作的服務控制政策（SCP）",
+          "explanation": "正確。SCP 設定成員帳戶中 IAM 使用者與角色可用權限的上限，即使身分政策允許，SCP 拒絕的動作也無法執行。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "saa-c03-d1-102",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 3,
+      "question": "關於服務控制政策（SCP），哪些敘述正確？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "SCP 本身不授予任何權限，只設定權限的上限",
+          "explanation": "正確。要授予權限，仍然需要身分政策或資源政策。"
+        },
+        {
+          "id": "b",
+          "text": "SCP 不影響管理帳戶中的使用者與角色",
+          "explanation": "正確。SCP 只影響組織中的成員帳戶。"
+        },
+        {
+          "id": "c",
+          "text": "附加 SCP 後，成員帳戶的使用者就自動擁有 SCP 中允許的所有權限",
+          "explanation": "SCP 不授予權限；實際權限是 SCP 與身分、資源政策允許範圍的交集。"
+        },
+        {
+          "id": "d",
+          "text": "SCP 只能套用在單一 IAM 使用者上",
+          "explanation": "SCP 套用在組織、組織單位或帳戶上。"
+        }
+      ],
+      "answer": [
+        "a",
+        "b"
+      ]
+    },
+    {
+      "id": "saa-c03-d1-103",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司要快速建立一個依照最佳實務設定的多帳戶環境，並自動套用控制措施，避免帳戶偏離最佳實務（例如確保安全日誌不被停用）。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Config（單一帳戶）",
+          "explanation": "Config 記錄與評估設定，但不會建立多帳戶的著陸區（landing zone）。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Control Tower",
+          "explanation": "正確。Control Tower 協調 Organizations、Service Catalog、IAM Identity Center 等服務，依最佳實務設定與治理多帳戶環境，並用控制措施防止偏移。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Trusted Advisor",
+          "explanation": "Trusted Advisor 提出最佳實務建議，但不會建立與治理多帳戶環境。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon Inspector",
+          "explanation": "Inspector 掃描軟體弱點。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "saa-c03-d1-104",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "A 帳戶中的 Lambda 函式需要寫入 B 帳戶的 S3 bucket。在不建立長期憑證的前提下，哪些做法可行？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "在 B 帳戶建立 IAM 使用者，把存取金鑰寫在 Lambda 的環境變數",
+          "explanation": "這是長期憑證，題目要求避免。"
+        },
+        {
+          "id": "b",
+          "text": "把 B 帳戶 root 使用者的密碼放進 Lambda",
+          "explanation": "絕對不要共用 root 使用者的憑證。"
+        },
+        {
+          "id": "c",
+          "text": "在 B 帳戶的 bucket 政策中允許 A 帳戶的 Lambda 執行角色寫入",
+          "explanation": "正確。資源政策（bucket 政策）可以授權其他帳戶的主體存取資源。"
+        },
+        {
+          "id": "d",
+          "text": "在 B 帳戶建立可被 A 帳戶切換的 IAM 角色，Lambda 透過 STS 取得臨時憑證",
+          "explanation": "正確。跨帳戶角色讓呼叫者取得臨時憑證。"
+        }
+      ],
+      "answer": [
+        "c",
+        "d"
+      ]
+    },
+    {
+      "id": "saa-c03-d1-105",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於 AWS STS 發出的臨時安全憑證，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "臨時憑證是短期的，可以設定為幾分鐘到幾小時，到期後就無法再使用",
+          "explanation": "正確。這讓你不必在應用程式中保存或輪換長期的存取金鑰。"
+        },
+        {
+          "id": "b",
+          "text": "臨時憑證只能給 root 使用者使用",
+          "explanation": "臨時憑證用在角色切換、聯合身分等情境。"
+        },
+        {
+          "id": "c",
+          "text": "臨時憑證必須由使用者手動輪換",
+          "explanation": "臨時憑證到期後自然失效，不需要手動輪換。"
+        },
+        {
+          "id": "d",
+          "text": "臨時憑證永遠不會過期",
+          "explanation": "臨時憑證是短期的，到期後 AWS 不再接受用它發出的請求。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "saa-c03-d1-106",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個行動應用程式需要讓使用者註冊、登入，並讓已登入的使用者取得臨時的 AWS 憑證，直接上傳照片到 S3。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon Cognito（使用者集區搭配身分集區）",
+          "explanation": "正確。使用者集區是使用者目錄，提供註冊與登入；身分集區可以發給使用者臨時的 AWS 憑證。"
+        },
+        {
+          "id": "b",
+          "text": "AWS IAM Identity Center",
+          "explanation": "Identity Center 主要讓員工存取 AWS 帳戶與應用程式，不是為行動應用程式的大量終端使用者設計。"
+        },
+        {
+          "id": "c",
+          "text": "為每位使用者建立 IAM 使用者",
+          "explanation": "這無法擴展到大量的終端使用者，也會產生大量長期憑證。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Directory Service",
+          "explanation": "題目需要的是網頁與行動應用程式的使用者身分平台。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "saa-c03-d1-107",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司的員工帳號存放在既有的企業目錄中。公司希望員工用原本的帳號登入，取得多個 AWS 帳戶的存取權限，而不必在每個帳戶建立 IAM 使用者。最適合的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "使用 Amazon Cognito 使用者集區",
+          "explanation": "Cognito 主要給網頁與行動應用程式的終端使用者使用。"
+        },
+        {
+          "id": "b",
+          "text": "使用 IAM Identity Center 連接企業的身分提供者，透過權限集授予各帳戶的存取權",
+          "explanation": "正確。這是 IAM 建議人員透過聯合身分取得臨時憑證的做法。"
+        },
+        {
+          "id": "c",
+          "text": "在每個帳戶建立對應的 IAM 使用者並同步密碼",
+          "explanation": "這會在每個帳戶產生長期憑證，難以管理。"
+        },
+        {
+          "id": "d",
+          "text": "讓所有員工共用一個管理員帳號",
+          "explanation": "共用帳號無法追蹤個人行為，也違反最小權限。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "saa-c03-d1-108",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "私有子網路中的 EC2 執行個體需要下載作業系統的更新，但不能接受來自網際網路的連線。最適合的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "在私有子網路建立網際網路閘道",
+          "explanation": "網際網路閘道是掛在 VPC 上，而且會讓有公有 IP 的資源可以被直接連線，不符合需求。"
+        },
+        {
+          "id": "b",
+          "text": "使用 VPC 對等連線",
+          "explanation": "對等連線連接兩個 VPC，不提供網際網路存取。"
+        },
+        {
+          "id": "c",
+          "text": "在公有子網路建立公有 NAT 閘道，並把私有子網路的路由指向它",
+          "explanation": "正確。私有子網路的執行個體可以透過公有 NAT 閘道連上網際網路，但無法接收來自網際網路的主動連線。"
+        },
+        {
+          "id": "d",
+          "text": "把執行個體移到公有子網路並給它公有 IP",
+          "explanation": "這會讓執行個體可以被網際網路直接連線。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "saa-c03-d1-109",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 3,
+      "question": "關於 NAT 閘道與 NAT 執行個體，哪些敘述正確？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "要讓架構不依賴單一可用區，應該在每個可用區各建立一個 NAT 閘道",
+          "explanation": "正確。每個可用區中的 NAT 閘道本身有備援，但只在該可用區內。"
+        },
+        {
+          "id": "b",
+          "text": "NAT 執行個體會自動在可用區之間容錯移轉",
+          "explanation": "NAT 執行個體需要用腳本自行處理容錯移轉。"
+        },
+        {
+          "id": "c",
+          "text": "NAT 閘道只依建立的數量收費，不計傳送的資料量",
+          "explanation": "NAT 閘道依數量、使用時間與經過的資料量收費。"
+        },
+        {
+          "id": "d",
+          "text": "NAT 閘道由 AWS 管理，不需要自己修補或維護",
+          "explanation": "正確。NAT 執行個體則需要自己安裝更新與作業系統修補程式。"
+        }
+      ],
+      "answer": [
+        "a",
+        "d"
+      ]
+    },
+    {
+      "id": "saa-c03-d1-110",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "私有子網路中的應用程式需要大量讀寫同一個 Region 的 S3，團隊希望流量不經過網際網路，也不經過 NAT 閘道。最適合的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "建立 S3 的閘道 VPC 端點（gateway endpoint），並更新路由表",
+          "explanation": "正確。閘道端點讓 VPC 不需要網際網路閘道或 NAT 裝置就能連到 S3 和 DynamoDB，而且不另外收費。"
+        },
+        {
+          "id": "b",
+          "text": "改用公有子網路",
+          "explanation": "這會讓執行個體暴露在網際網路上，流量也不會因此變成私有。"
+        },
+        {
+          "id": "c",
+          "text": "建立 VPC 對等連線到 S3",
+          "explanation": "對等連線是連接兩個 VPC，不是連到 S3。"
+        },
+        {
+          "id": "d",
+          "text": "使用 AWS Direct Connect",
+          "explanation": "Direct Connect 是內部部署到 AWS 的專線。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "saa-c03-d1-111",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 3,
+      "question": "公司想讓自己 VPC 中的應用程式，以私有方式存取另一個帳戶提供的服務，不經過網際網路，也不需要 VPC 對等連線或公有 IP。最適合哪一項技術？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon CloudFront",
+          "explanation": "CloudFront 是內容傳遞網路。"
+        },
+        {
+          "id": "b",
+          "text": "AWS PrivateLink（介面 VPC 端點）",
+          "explanation": "正確。PrivateLink 讓你以私有方式連到服務，就像服務在自己的 VPC 中，不需要網際網路閘道、NAT、公有 IP、Direct Connect 或 VPN。"
+        },
+        {
+          "id": "c",
+          "text": "網際網路閘道",
+          "explanation": "這會經過網際網路。"
+        },
+        {
+          "id": "d",
+          "text": "NAT 閘道",
+          "explanation": "NAT 閘道用來讓私有子網路連出到網際網路或其他網路。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "saa-c03-d1-112",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司的網站使用 Application Load Balancer，想用 AWS 免費提供的 SSL/TLS 憑證加密傳輸，並讓憑證自動續約。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Secrets Manager",
+          "explanation": "Secrets Manager 管理密碼等秘密。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon Macie",
+          "explanation": "Macie 找出 S3 中的敏感資料。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Certificate Manager（ACM）",
+          "explanation": "正確。ACM 處理建立、儲存與續約 SSL/TLS 憑證；使用 DNS 驗證時，ACM 會自動續約。"
+        },
+        {
+          "id": "d",
+          "text": "AWS KMS",
+          "explanation": "KMS 管理加密金鑰，不提供 SSL/TLS 憑證。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "saa-c03-d1-113",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司規定加密金鑰的金鑰材料每年要輪換一次。使用 KMS 客戶受管金鑰時，最簡單的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "每年手動把所有資料解密再重新加密",
+          "explanation": "不需要。輪換只改變目前的金鑰材料，舊資料仍可解密。"
+        },
+        {
+          "id": "b",
+          "text": "刪除舊金鑰再建立新金鑰",
+          "explanation": "刪除舊金鑰會讓用它加密的資料無法解密。"
+        },
+        {
+          "id": "c",
+          "text": "把金鑰匯出到本機保存",
+          "explanation": "KMS 金鑰不會以未加密的形式離開 KMS。"
+        },
+        {
+          "id": "d",
+          "text": "開啟自動金鑰輪換",
+          "explanation": "正確。開啟後，KMS 預設每年產生新的金鑰材料；解密舊資料時，KMS 會自動使用當初加密用的金鑰材料。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "saa-c03-d1-114",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 3,
+      "question": "金融公司依法規必須保存交易紀錄 7 年，期間任何人（包含 root 使用者）都不能刪除或覆寫。S3 中應該使用哪一項設定？",
+      "options": [
+        {
+          "id": "a",
+          "text": "S3 Object Lock 的合規模式（compliance mode）",
+          "explanation": "正確。合規模式下，任何使用者（包含 root）都不能覆寫或刪除受保護的物件版本，保留期間也不能縮短。"
+        },
+        {
+          "id": "b",
+          "text": "S3 Object Lock 的治理模式（governance mode）",
+          "explanation": "治理模式下，具有特殊權限的使用者仍可以修改保留設定或刪除物件，不符合「任何人都不能刪除」。"
+        },
+        {
+          "id": "c",
+          "text": "S3 版本控制",
+          "explanation": "版本控制能保留舊版本，但有權限的使用者仍可刪除版本。"
+        },
+        {
+          "id": "d",
+          "text": "S3 生命週期規則",
+          "explanation": "生命週期規則用來轉換儲存類別或讓物件到期，不能防止刪除。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "saa-c03-d1-115",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想讓外部合作夥伴在 15 分鐘內，從私有的 S3 bucket 下載一個特定檔案，但不想修改 bucket 政策，也不想給對方 AWS 憑證。最適合的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "關閉 S3 封鎖公開存取",
+          "explanation": "這會增加 bucket 被公開的風險，而且仍不會產生有時限的存取。"
+        },
+        {
+          "id": "b",
+          "text": "產生該物件的預先簽章網址（presigned URL）",
+          "explanation": "正確。預先簽章網址提供有時限的物件存取，不需要更新 bucket 政策。"
+        },
+        {
+          "id": "c",
+          "text": "把 bucket 設定為公開",
+          "explanation": "這會讓所有人都能存取 bucket 中的物件。"
+        },
+        {
+          "id": "d",
+          "text": "為合作夥伴建立 IAM 使用者",
+          "explanation": "題目不希望給對方 AWS 憑證。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "saa-c03-d1-116",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司要防止任何人不小心把帳戶中的 S3 bucket 或物件設定成公開存取。最適合的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "開啟 S3 Transfer Acceleration",
+          "explanation": "Transfer Acceleration 加快長距離的傳輸速度。"
+        },
+        {
+          "id": "b",
+          "text": "使用 S3 Intelligent-Tiering",
+          "explanation": "Intelligent-Tiering 是儲存類別。"
+        },
+        {
+          "id": "c",
+          "text": "在帳戶層級開啟 S3 封鎖公開存取（Block Public Access）",
+          "explanation": "正確。封鎖公開存取可以在存取點、bucket、帳戶與 Organizations 層級設定，管理對 S3 資源的公開存取。"
+        },
+        {
+          "id": "d",
+          "text": "開啟 S3 版本控制",
+          "explanation": "版本控制保留物件版本，不會阻止公開存取。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "saa-c03-d1-117",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司的網站常遭到 SQL 注入與跨網站指令碼攻擊。網站前面是 Amazon CloudFront。最適合用哪一項服務過濾惡意請求？",
+      "options": [
+        {
+          "id": "a",
+          "text": "安全群組",
+          "explanation": "安全群組依 IP、連接埠與協定控制流量，無法檢查 HTTP 請求的內容。"
+        },
+        {
+          "id": "b",
+          "text": "網路 ACL",
+          "explanation": "網路 ACL 在子網路層級依 IP 與連接埠過濾，無法檢查 HTTP 請求的內容。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Shield Standard",
+          "explanation": "Shield Standard 防禦常見的網路層與傳輸層 DDoS 攻擊，不是過濾 SQL 注入。"
+        },
+        {
+          "id": "d",
+          "text": "AWS WAF",
+          "explanation": "正確。WAF 是網頁應用程式防火牆，可以監控並過濾送到 CloudFront、ALB、API Gateway 等資源的 HTTP(S) 請求。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "saa-c03-d1-118",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "應用程式連線 RDS 資料庫的密碼目前寫在設定檔中。公司要求密碼不能寫在程式或設定檔裡，而且要定期自動更換。最適合的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把密碼存放在 AWS Secrets Manager 並開啟自動輪換，應用程式在執行時取得密碼",
+          "explanation": "正確。Secrets Manager 可以設定自動輪換，同時更新秘密與資料庫中的憑證。"
+        },
+        {
+          "id": "b",
+          "text": "把密碼放在 S3 的公開 bucket",
+          "explanation": "任何人都能讀取。"
+        },
+        {
+          "id": "c",
+          "text": "把密碼寫在 EC2 的使用者資料（user data）",
+          "explanation": "這仍是寫死的密碼，也無法自動輪換。"
+        },
+        {
+          "id": "d",
+          "text": "把密碼存成 CloudFormation 範本的預設值",
+          "explanation": "範本內容可能被很多人看到，也無法自動輪換。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "saa-c03-d1-119",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想讓 S3 bucket 只接受透過 HTTPS 的請求，以確保傳輸中的資料都有加密。最適合的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把 bucket 移到另一個 Region",
+          "explanation": "Region 與傳輸加密無關。"
+        },
+        {
+          "id": "b",
+          "text": "在 bucket 政策中拒絕 aws:SecureTransport 為 false 的請求",
+          "explanation": "正確。這個條件鍵可以判斷請求是否透過 SSL/TLS 傳送。"
+        },
+        {
+          "id": "c",
+          "text": "開啟 SSE-S3",
+          "explanation": "SSE-S3 是靜態加密，不會強制傳輸使用 HTTPS。"
+        },
+        {
+          "id": "d",
+          "text": "開啟版本控制",
+          "explanation": "版本控制與傳輸加密無關。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "saa-c03-d1-120",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 3,
+      "question": "一個三層式架構：網頁層在公有子網路，應用層與資料庫層在私有子網路。資料庫只應該接受來自應用層的連線。最合適的設定是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把資料庫放在公有子網路，方便連線",
+          "explanation": "資料庫不應該能從網際網路直接存取。"
+        },
+        {
+          "id": "b",
+          "text": "只用網路 ACL 允許所有流量",
+          "explanation": "網路 ACL 允許所有流量就沒有隔離效果。"
+        },
+        {
+          "id": "c",
+          "text": "資料庫的安全群組只允許來源為應用層安全群組的資料庫連接埠流量",
+          "explanation": "正確。安全群組可以參照另一個安全群組作為來源，應用層的執行個體增減時不必修改 IP 規則。"
+        },
+        {
+          "id": "d",
+          "text": "資料庫的安全群組允許 0.0.0.0/0 的所有流量",
+          "explanation": "這允許任何來源連線。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "saa-c03-d1-121",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司要把內部部署的資料中心與 AWS 之間的流量加密，而且已經有 Direct Connect 專線。下列哪一項做法可以為流量提供加密？",
+      "options": [
+        {
+          "id": "a",
+          "text": "只使用 Direct Connect 就會自動加密所有流量",
+          "explanation": "Direct Connect 預設不會加密傳輸中的流量。可以結合 Site-to-Site VPN 取得 IPsec 加密的私有連線，或使用支援 MACsec 的連線。"
+        },
+        {
+          "id": "b",
+          "text": "改用 VPC 對等連線",
+          "explanation": "對等連線是連接兩個 VPC，不連接內部部署網路。"
+        },
+        {
+          "id": "c",
+          "text": "使用 Amazon CloudFront",
+          "explanation": "CloudFront 是內容傳遞網路。"
+        },
+        {
+          "id": "d",
+          "text": "在 Direct Connect 上建立 Site-to-Site VPN（IPsec）連線",
+          "explanation": "正確。把 Direct Connect 與 Site-to-Site VPN 結合，可以得到 IPsec 加密的私有連線。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "saa-c03-d1-122",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想確保重要的 S3 資料在另一個 Region 也有一份副本，以符合資料保護的要求。最適合的設定是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "開啟 S3 跨區域複寫（Cross-Region Replication）",
+          "explanation": "正確。S3 複寫會自動、非同步地把物件複製到其他 bucket，可以在不同 Region 或帳戶。"
+        },
+        {
+          "id": "b",
+          "text": "開啟 S3 Transfer Acceleration",
+          "explanation": "Transfer Acceleration 加快上傳速度，不會複製資料。"
+        },
+        {
+          "id": "c",
+          "text": "使用 S3 預先簽章網址",
+          "explanation": "預先簽章網址提供有時限的存取。"
+        },
+        {
+          "id": "d",
+          "text": "開啟 S3 封鎖公開存取",
+          "explanation": "這控制公開存取，不會複製資料。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "saa-c03-d1-123",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "API Gateway 後面的 API 偶爾瞬間湧入大量請求，造成後端過載。在 API Gateway 中可以設定什麼來保護後端？",
+      "options": [
+        {
+          "id": "a",
+          "text": "改用更大的 RDS 執行個體",
+          "explanation": "可能暫時撐住，但沒有限制請求來源，不是保護 API 的做法。"
+        },
+        {
+          "id": "b",
+          "text": "節流（throttling）與用量配額，超過時用戶端會收到 429 Too Many Requests",
+          "explanation": "正確。API Gateway 依速率與突發量限制請求，保護 API 不被過多請求壓垮。"
+        },
+        {
+          "id": "c",
+          "text": "把 API 改成公開",
+          "explanation": "這不會減少請求量。"
+        },
+        {
+          "id": "d",
+          "text": "關閉 CloudWatch 日誌",
+          "explanation": "這會讓你看不到發生了什麼，不會減少請求。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "saa-c03-d1-124",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "資安團隊想自動找出 S3 中含有個人資料的物件，以符合資料分類的法規。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Shield",
+          "explanation": "Shield 防禦 DDoS 攻擊。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon Cognito",
+          "explanation": "Cognito 是使用者身分平台。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Macie",
+          "explanation": "正確。Macie 用機器學習與模式比對找出 S3 中的敏感資料，並產生發現。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon GuardDuty",
+          "explanation": "GuardDuty 偵測威脅與可疑活動，不是分類敏感資料。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "saa-c03-d2-101",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "應用程式在流量尖峰時，大量新的資料庫連線讓 RDS 資料庫過載。團隊希望讓連線可以被共用與重複使用，而且資料庫容錯移轉時應用程式的連線不中斷。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "RDS 唯讀複本",
+          "explanation": "唯讀複本分擔讀取，但不會共用連線。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Global Accelerator",
+          "explanation": "Global Accelerator 改善全球使用者到應用程式的網路路徑。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon RDS Proxy",
+          "explanation": "正確。RDS Proxy 建立連線集區並重複使用連線，可以應付突發的流量；也會在容錯移轉時自動連到備用執行個體並保留應用程式的連線。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon ElastiCache",
+          "explanation": "ElastiCache 可以快取查詢結果，但不負責共用資料庫連線。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "saa-c03-d2-102",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 2
+        }
+      ],
+      "difficulty": 3,
+      "question": "關於 RDS 的 Multi-AZ 執行個體部署與唯讀複本，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Multi-AZ 主要用於高可用與容錯移轉；唯讀複本主要用於分擔讀取、擴展讀取能力",
+          "explanation": "正確。兩者用途不同，可以一起使用。"
+        },
+        {
+          "id": "b",
+          "text": "唯讀複本可以接受寫入",
+          "explanation": "唯讀複本是唯讀的。"
+        },
+        {
+          "id": "c",
+          "text": "兩者完全相同",
+          "explanation": "用途不同。"
+        },
+        {
+          "id": "d",
+          "text": "Multi-AZ 執行個體部署的備用執行個體可以分擔讀取流量",
+          "explanation": "Multi-AZ 執行個體部署的備用執行個體提供容錯移轉，但不處理讀取流量。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "saa-c03-d2-103",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "訂單處理系統中，消費者從 SQS 取出訊息後處理時間很長，結果同一則訊息被另一個消費者重複處理。最可能需要調整什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把可見性逾時（visibility timeout）調得比處理時間更長",
+          "explanation": "正確。訊息被接收後會暫時對其他消費者隱藏；隱藏時間太短，處理完成前訊息就會再次出現。"
+        },
+        {
+          "id": "b",
+          "text": "把佇列改成 SNS 主題",
+          "explanation": "SNS 是推播，不能解決處理時間與重複接收的問題。"
+        },
+        {
+          "id": "c",
+          "text": "關閉長輪詢",
+          "explanation": "長輪詢與重複處理無關。"
+        },
+        {
+          "id": "d",
+          "text": "刪除佇列再重建",
+          "explanation": "這不會解決根本原因。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "saa-c03-d2-104",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 2
+        }
+      ],
+      "difficulty": 3,
+      "question": "一個舊系統無法修改程式，但經常因為後端資料庫一時無法連線而失敗。在不改程式的前提下，下列哪一項最能提升可靠性？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把應用程式改寫成 Lambda",
+          "explanation": "題目限制不能修改程式。"
+        },
+        {
+          "id": "b",
+          "text": "在應用程式與資料庫之間加上 RDS Proxy，讓容錯移轉時保留應用程式的連線",
+          "explanation": "正確。RDS Proxy 讓應用程式更能承受資料庫故障，不需要修改應用程式的邏輯，只要改成連線到 Proxy 的端點。"
+        },
+        {
+          "id": "c",
+          "text": "把資料庫改成 DynamoDB",
+          "explanation": "這需要大幅修改程式。"
+        },
+        {
+          "id": "d",
+          "text": "關閉資料庫的自動備份",
+          "explanation": "這會降低資料的保護，不會提升可靠性。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "saa-c03-d2-105",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司在備援 Region 準備了 pilot light 環境。真正切換時，備援 Region 的 EC2 執行個體數量卻因為服務配額不足而無法擴大。事前應該怎麼避免？",
+      "options": [
+        {
+          "id": "a",
+          "text": "關閉 Auto Scaling",
+          "explanation": "這不能解決配額問題。"
+        },
+        {
+          "id": "b",
+          "text": "改用 Reserved Instances 就不受配額限制",
+          "explanation": "購買方式不會改變服務配額。"
+        },
+        {
+          "id": "c",
+          "text": "事先用 Service Quotas 檢查並提高備援 Region 的相關配額",
+          "explanation": "正確。配額是帳戶在各服務的資源與動作上限，各 Region 分別設定，備援環境要事先確認。"
+        },
+        {
+          "id": "d",
+          "text": "等到發生災難時再提出申請",
+          "explanation": "申請需要時間，會拖慢復原。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "saa-c03-d2-106",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊想追蹤一個請求在 API Gateway、Lambda 與 DynamoDB 之間的流向，找出是哪一段造成延遲。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS CloudTrail",
+          "explanation": "CloudTrail 記錄 API 管理操作，不是追蹤請求的延遲。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Config",
+          "explanation": "Config 記錄資源設定。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Macie",
+          "explanation": "Macie 找出 S3 中的敏感資料。"
+        },
+        {
+          "id": "d",
+          "text": "AWS X-Ray",
+          "explanation": "正確。X-Ray 協助分析與除錯分散式應用程式，了解請求在各服務之間的流向與效能問題。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "saa-c03-d2-107",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個全球的應用程式需要在多個 Region 都能低延遲地讀寫同一份資料，並在某個 Region 故障時繼續服務。最適合哪一項資料庫功能？",
+      "options": [
+        {
+          "id": "a",
+          "text": "DynamoDB 全域資料表（global tables）",
+          "explanation": "正確。全域資料表是全代管、多 Region、多主動的資料複寫功能，提供快速的本地讀寫，適合需要營運持續與高可用的應用程式。"
+        },
+        {
+          "id": "b",
+          "text": "單一 Region 的 RDS Multi-AZ",
+          "explanation": "Multi-AZ 只在同一個 Region 內提供高可用。"
+        },
+        {
+          "id": "c",
+          "text": "ElastiCache 單一節點",
+          "explanation": "單一節點沒有跨 Region 的備援。"
+        },
+        {
+          "id": "d",
+          "text": "S3 Transfer Acceleration",
+          "explanation": "這是加快 S3 上傳速度的功能。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "saa-c03-d2-108",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個流程包含多個步驟：驗證訂單、扣款、出貨，失敗時要重試或執行補償步驟，團隊希望用視覺化的方式管理流程狀態。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon CloudFront",
+          "explanation": "CloudFront 是內容傳遞網路。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Step Functions",
+          "explanation": "正確。Step Functions 用視覺化的工作流程協調分散式應用程式的各個元件。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon SNS",
+          "explanation": "SNS 是推播，不管理多步驟流程的狀態。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon Kinesis Data Streams",
+          "explanation": "Kinesis 處理即時串流資料。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "saa-c03-d3-101",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個高效能運算（HPC）工作需要節點之間極低延遲的網路通訊。EC2 執行個體應該使用哪一種置放群組？",
+      "options": [
+        {
+          "id": "a",
+          "text": "不使用置放群組，分散到多個 Region",
+          "explanation": "跨 Region 會大幅增加延遲。"
+        },
+        {
+          "id": "b",
+          "text": "叢集（cluster）置放群組",
+          "explanation": "正確。叢集策略把執行個體緊密放在同一個可用區內，提供緊密耦合的節點通訊所需的低延遲網路。"
+        },
+        {
+          "id": "c",
+          "text": "分散（spread）置放群組",
+          "explanation": "分散策略把少量執行個體放在不同的硬體上，以降低相關的故障，不是為了低延遲。"
+        },
+        {
+          "id": "d",
+          "text": "分割區（partition）置放群組",
+          "explanation": "分割區策略讓不同分割區的執行個體不共用底層硬體，常用於大型分散式系統。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "saa-c03-d3-102",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個小型但關鍵的應用程式只有幾台執行個體，希望每台都在不同的底層硬體上，以降低同時故障的機率。最適合哪一種置放群組？",
+      "options": [
+        {
+          "id": "a",
+          "text": "不需要設定，AWS 一定會分開放置",
+          "explanation": "預設不保證放在不同的硬體上。"
+        },
+        {
+          "id": "b",
+          "text": "使用 Dedicated Hosts",
+          "explanation": "Dedicated Hosts 是專屬的實體主機，不是分散硬體的設計。"
+        },
+        {
+          "id": "c",
+          "text": "分散（spread）置放群組",
+          "explanation": "正確。分散策略嚴格地把一小群執行個體放在不同的底層硬體上。"
+        },
+        {
+          "id": "d",
+          "text": "叢集（cluster）置放群組",
+          "explanation": "叢集策略把執行個體放得很近，反而可能共用硬體。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "saa-c03-d3-103",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個 Lambda 函式處理圖片時速度太慢，CPU 是瓶頸。最直接的調整方式是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "降低逾時時間",
+          "explanation": "逾時時間是函式最長可執行的時間，降低它不會讓函式變快。"
+        },
+        {
+          "id": "b",
+          "text": "把函式改成 128 MB",
+          "explanation": "128 MB 是最低設定，只建議用在簡單的函式。"
+        },
+        {
+          "id": "c",
+          "text": "增加 CloudWatch 日誌的保留期間",
+          "explanation": "日誌保留期間與效能無關。"
+        },
+        {
+          "id": "d",
+          "text": "提高函式的記憶體設定",
+          "explanation": "正確。Lambda 依設定的記憶體按比例分配 CPU；增加記憶體也會增加 CPU。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "saa-c03-d3-104",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "Auto Scaling 群組要讓平均 CPU 使用率維持在 50% 左右，團隊不想自己建立 CloudWatch 警示與調整的步驟。最適合哪一種擴展政策？",
+      "options": [
+        {
+          "id": "a",
+          "text": "目標追蹤擴展（target tracking scaling）",
+          "explanation": "正確。選擇指標與目標值後，Auto Scaling 會自動建立警示並調整容量，就像恆溫器一樣。"
+        },
+        {
+          "id": "b",
+          "text": "簡易擴展（simple scaling）",
+          "explanation": "簡易擴展需要自己設定警示與單一的調整量，並有冷卻時間。"
+        },
+        {
+          "id": "c",
+          "text": "步進擴展（step scaling）",
+          "explanation": "步進擴展需要自己定義依警示超標程度調整的步驟。"
+        },
+        {
+          "id": "d",
+          "text": "手動調整期望容量",
+          "explanation": "這不是自動化的擴展。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "saa-c03-d3-105",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "資料庫的讀取量很大，查詢多為重複讀取相同的熱門資料，寫入量不大。下列哪些做法可以提升讀取效能？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "把資料庫改成 HDD 的 sc1 磁碟區",
+          "explanation": "sc1 是為不常存取的資料設計的低成本 HDD，不能當開機磁碟區，也會讓效能更差。"
+        },
+        {
+          "id": "b",
+          "text": "建立 RDS 唯讀複本，把讀取查詢導向複本",
+          "explanation": "正確。唯讀複本可以分擔主要執行個體的讀取負載，擴展讀取密集的工作。"
+        },
+        {
+          "id": "c",
+          "text": "在應用程式與資料庫之間加入 ElastiCache 快取熱門資料",
+          "explanation": "正確。從記憶體內的快取讀取比每次查詢資料庫更快。"
+        },
+        {
+          "id": "d",
+          "text": "關閉資料庫的自動備份",
+          "explanation": "這不會改善讀取效能，反而降低資料保護。"
+        }
+      ],
+      "answer": [
+        "b",
+        "c"
+      ]
+    },
+    {
+      "id": "saa-c03-d3-106",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "difficulty": 3,
+      "question": "DynamoDB 的回應時間已經是個位數毫秒，但某個讀取密集的應用程式需要微秒等級的回應時間，而且不想修改太多程式。最適合的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "改用 DynamoDB 全域資料表",
+          "explanation": "全域資料表是跨 Region 複寫，不是為了微秒等級的讀取。"
+        },
+        {
+          "id": "b",
+          "text": "把讀取容量調到最低",
+          "explanation": "這會讓效能變差。"
+        },
+        {
+          "id": "c",
+          "text": "使用 DynamoDB Accelerator（DAX）",
+          "explanation": "正確。DAX 是相容於 DynamoDB 的記憶體內快取服務，適合需要微秒等級回應時間的情境。"
+        },
+        {
+          "id": "d",
+          "text": "改用 Amazon S3",
+          "explanation": "S3 是物件儲存，不會比 DynamoDB 更快。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "saa-c03-d3-107",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個資料庫需要持續、穩定的高 IOPS 與次毫秒等級的延遲，例如大型的交易型資料庫。最適合哪一種 EBS 磁碟區？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Throughput Optimized HDD（st1）",
+          "explanation": "st1 適合大數據、資料倉儲、日誌處理等以吞吐量為主的工作。"
+        },
+        {
+          "id": "b",
+          "text": "Cold HDD（sc1）",
+          "explanation": "sc1 適合不常存取、以最低成本為重點的資料。"
+        },
+        {
+          "id": "c",
+          "text": "Magnetic（standard）",
+          "explanation": "這是上一代的磁碟區類型，適合不常存取的資料。"
+        },
+        {
+          "id": "d",
+          "text": "Provisioned IOPS SSD（io2 Block Express）",
+          "explanation": "正確。適合需要持續 IOPS 效能與一致的次毫秒延遲的工作負載。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "saa-c03-d3-108",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個日誌處理系統需要循序讀取大量資料，重點是吞吐量而不是 IOPS，同時希望成本比 SSD 低。最適合哪一種 EBS 磁碟區？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Throughput Optimized HDD（st1）",
+          "explanation": "正確。HDD 磁碟區為大型串流工作最佳化，主要效能指標是吞吐量；st1 適合大數據、資料倉儲、日誌處理。"
+        },
+        {
+          "id": "b",
+          "text": "Provisioned IOPS SSD（io2）",
+          "explanation": "io2 為高 IOPS 設計，成本較高。"
+        },
+        {
+          "id": "c",
+          "text": "General Purpose SSD（gp3）",
+          "explanation": "gp3 適合大多數交易型工作，但題目重點是低成本的循序吞吐量。"
+        },
+        {
+          "id": "d",
+          "text": "執行個體儲存",
+          "explanation": "執行個體儲存是暫時的，執行個體停止後資料會遺失。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "saa-c03-d3-109",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "使用者從世界各地上傳大型檔案到同一個 S3 bucket，距離 Region 很遠的使用者上傳速度很慢。最適合的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "改用較小的物件",
+          "explanation": "這會改變應用程式的資料，不是解決長距離傳輸慢的方法。"
+        },
+        {
+          "id": "b",
+          "text": "開啟 S3 Transfer Acceleration",
+          "explanation": "正確。Transfer Acceleration 是 bucket 層級的功能，用來加快用戶端與 S3 之間的長距離傳輸。"
+        },
+        {
+          "id": "c",
+          "text": "把 bucket 改成 S3 Glacier",
+          "explanation": "Glacier 是封存儲存類別，與上傳速度無關。"
+        },
+        {
+          "id": "d",
+          "text": "開啟 S3 版本控制",
+          "explanation": "版本控制與傳輸速度無關。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "saa-c03-d3-110",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "應用程式要上傳數 GB 的大型檔案到 S3，網路偶爾不穩定，每次中斷都要從頭上傳。最適合的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把檔案存在 EC2 的執行個體儲存",
+          "explanation": "執行個體儲存是暫時的。"
+        },
+        {
+          "id": "b",
+          "text": "開啟 S3 Object Lock",
+          "explanation": "Object Lock 防止刪除與覆寫，與上傳無關。"
+        },
+        {
+          "id": "c",
+          "text": "使用分段上傳（multipart upload）",
+          "explanation": "正確。分段上傳可以平行上傳各段以充分利用頻寬；網路中斷時只需要重傳中斷的段。"
+        },
+        {
+          "id": "d",
+          "text": "改用 S3 Glacier Deep Archive",
+          "explanation": "這是封存儲存類別，不會改善上傳的可靠性。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "saa-c03-d3-111",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "difficulty": 3,
+      "question": "一個應用程式對 S3 的讀取請求非常多。關於 S3 的請求效能，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "每個分割的前綴（prefix）每秒至少可以達到 5,500 個 GET/HEAD 請求，使用多個前綴可以平行提高總請求率",
+          "explanation": "正確。bucket 中的前綴數量沒有上限。"
+        },
+        {
+          "id": "b",
+          "text": "要提高讀取效能，只能把物件改成更大的檔案",
+          "explanation": "這不是必要的做法；可以用多個前綴平行化。"
+        },
+        {
+          "id": "c",
+          "text": "S3 的請求效能與前綴無關，也無法擴展",
+          "explanation": "S3 依分割的前綴擴展請求效能。"
+        },
+        {
+          "id": "d",
+          "text": "每個 bucket 每秒只能處理 100 個請求",
+          "explanation": "S3 會自動擴展到很高的請求率。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "saa-c03-d3-112",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "全球的使用者透過 TCP 與 UDP 連線到一個遊戲伺服器，公司希望用兩個固定的 IP 位址作為入口，並把流量經由 AWS 全球網路送到最近的健康 Region。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Global Accelerator",
+          "explanation": "正確。Global Accelerator 提供從 AWS 節點網路以 anycast 宣告的靜態 IP 位址，並把流量經由 AWS 全球網路送到最近 Region 的端點。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon CloudFront",
+          "explanation": "CloudFront 主要用來快取與傳遞網頁內容，題目的重點是 TCP/UDP 與固定 IP。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Route 53 簡單路由",
+          "explanation": "簡單路由不會提供固定的 anycast IP，也不會經由 AWS 全球網路傳送流量。"
+        },
+        {
+          "id": "d",
+          "text": "NAT 閘道",
+          "explanation": "NAT 閘道讓私有子網路連出。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "saa-c03-d3-113",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "網站的靜態檔案（圖片、CSS、JavaScript）被全球使用者大量下載，原始伺服器負載很高、遠方使用者也覺得很慢。最適合的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "使用 VPC 對等連線",
+          "explanation": "對等連線是連接兩個 VPC。"
+        },
+        {
+          "id": "b",
+          "text": "使用 Amazon CloudFront，把內容快取在節點位置",
+          "explanation": "正確。內容已在延遲最低的節點時，CloudFront 會直接回應，減少回到原始伺服器的請求。"
+        },
+        {
+          "id": "c",
+          "text": "把原始伺服器換成更大的執行個體",
+          "explanation": "這可能減輕負載，但遠方使用者的延遲不會改善。"
+        },
+        {
+          "id": "d",
+          "text": "使用 NAT 閘道",
+          "explanation": "NAT 閘道與內容傳遞無關。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "saa-c03-d3-114",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "difficulty": 3,
+      "question": "公司有數十個 VPC 與內部部署網路需要彼此連通，用 VPC 對等連線會變成難以管理的網狀結構。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "NAT 閘道",
+          "explanation": "NAT 閘道讓私有子網路連出。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon CloudFront",
+          "explanation": "CloudFront 是內容傳遞網路。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Transit Gateway",
+          "explanation": "正確。Transit Gateway 是網路轉運中樞，用來連接多個 VPC 與內部部署網路。"
+        },
+        {
+          "id": "d",
+          "text": "在每對 VPC 之間建立對等連線",
+          "explanation": "對等連線是一對一的關係，不支援遞移，VPC 多時會變成大量連線。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "saa-c03-d3-115",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "VPC A 與 VPC B 有對等連線，VPC B 與 VPC C 也有對等連線。VPC A 的執行個體可以透過 VPC B 連到 VPC C 嗎？",
+      "options": [
+        {
+          "id": "a",
+          "text": "不可以，需要在 A 與 C 之間另外建立對等連線，或改用 Transit Gateway",
+          "explanation": "正確。對等連線是兩個 VPC 之間一對一的關係。"
+        },
+        {
+          "id": "b",
+          "text": "可以，只要 VPC B 開啟 NAT 閘道",
+          "explanation": "NAT 閘道不會讓對等連線遞移。"
+        },
+        {
+          "id": "c",
+          "text": "可以，只要三個 VPC 的 CIDR 重疊",
+          "explanation": "對等連線的 VPC 的 CIDR 不能重疊。"
+        },
+        {
+          "id": "d",
+          "text": "可以，對等連線會自動遞移",
+          "explanation": "VPC 對等連線不支援遞移的對等關係。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "saa-c03-d3-116",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "一家公司要每天把內部部署 NAS 上的大量檔案，以線上的方式快速、安全地搬到 Amazon S3 與 Amazon EFS。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS DataSync",
+          "explanation": "正確。DataSync 是安全、可靠、高速的檔案傳輸服務，可以在內部部署儲存與 AWS 儲存服務之間搬移檔案或物件資料。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Transfer Family",
+          "explanation": "Transfer Family 讓外部的合作夥伴用 SFTP、FTPS 等協定傳檔，題目是自家 NAS 的大量搬移。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon CloudFront",
+          "explanation": "CloudFront 是內容傳遞網路。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Direct Connect",
+          "explanation": "Direct Connect 提供網路連線，本身不會搬移檔案。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "saa-c03-d3-117",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司的合作夥伴習慣用 SFTP 傳送檔案，公司想讓這些檔案直接存進 Amazon S3，不想自己架設與維護 SFTP 伺服器。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon SES",
+          "explanation": "SES 是電子郵件服務。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Transfer Family",
+          "explanation": "正確。Transfer Family 全代管地支援 SFTP、AS2、FTPS、FTP 與網頁傳輸，直接存取 AWS 儲存服務。"
+        },
+        {
+          "id": "c",
+          "text": "AWS DataSync",
+          "explanation": "DataSync 適合在自己的儲存系統與 AWS 之間搬移資料，不是給外部夥伴用的 SFTP 端點。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon EC2 上自行架設 SFTP",
+          "explanation": "可以做到，但題目不想自己維護伺服器。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "saa-c03-d3-118",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "網站的點擊串流資料需要被多個應用程式即時讀取與處理，例如即時儀表板與異常偵測。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Glue 的排程作業",
+          "explanation": "排程的 ETL 作業不是即時串流處理。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon RDS",
+          "explanation": "RDS 是關聯式資料庫，不是串流服務。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Kinesis Data Streams",
+          "explanation": "正確。它即時收集與處理大量的資料記錄串流，消費者（consumers）可以讀取並處理這些資料。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon S3 搭配每天一次的批次處理",
+          "explanation": "批次處理無法即時。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "saa-c03-d3-119",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "分析團隊在 S3 資料湖上用 Athena 查詢，查詢又慢又貴。下列哪些做法可以改善？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "依查詢常用的欄位（例如日期）分割資料",
+          "explanation": "正確。查詢指定分區時，只會掃描相關的資料。"
+        },
+        {
+          "id": "b",
+          "text": "把所有檔案合併到 S3 Glacier Deep Archive",
+          "explanation": "封存類別的物件需要先還原才能讀取，不適合直接查詢。"
+        },
+        {
+          "id": "c",
+          "text": "在每個查詢都用 SELECT * 讀取所有欄位",
+          "explanation": "讀取不需要的欄位會增加掃描的資料量。"
+        },
+        {
+          "id": "d",
+          "text": "把 CSV 轉換成 Parquet 等欄式格式",
+          "explanation": "正確。欄式格式讓查詢只讀需要的欄位，並能壓縮資料。"
+        }
+      ],
+      "answer": [
+        "a",
+        "d"
+      ]
+    },
+    {
+      "id": "saa-c03-d3-120",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司要建立一個資料湖，需要集中管理哪些人可以存取哪些資料表、甚至細到欄位層級的權限，並在帳戶之間分享資料。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Lake Formation",
+          "explanation": "正確。Lake Formation 協助集中治理、保護與分享分析用的資料，提供資料湖資料的細粒度存取控制。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon Kinesis Data Streams",
+          "explanation": "Kinesis 處理串流資料，不負責資料湖的權限管理。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon EBS",
+          "explanation": "EBS 是區塊儲存。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Transfer Family",
+          "explanation": "Transfer Family 用於檔案傳輸。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "saa-c03-d3-121",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "資料工程師要用 Apache Spark 處理 PB 等級的資料，希望使用代管的叢集，不必自己安裝與管理 Hadoop、Spark 等框架。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Amplify",
+          "explanation": "Amplify 用來建置與託管網頁應用程式。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon EMR",
+          "explanation": "正確。EMR 是代管的叢集平台，簡化在 AWS 上執行 Hadoop、Spark 等大數據框架。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon RDS",
+          "explanation": "RDS 是關聯式資料庫。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon ElastiCache",
+          "explanation": "ElastiCache 是記憶體內快取。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "saa-c03-d4-101",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "研究機構把大量公開資料集放在 S3 讓外界下載，但不希望由自己負擔下載產生的請求與資料傳輸費用。應該怎麼設定？",
+      "options": [
+        {
+          "id": "a",
+          "text": "開啟版本控制",
+          "explanation": "版本控制與付費者無關。"
+        },
+        {
+          "id": "b",
+          "text": "把 bucket 設定為請求者付費（Requester Pays）",
+          "explanation": "正確。請求者付費的 bucket 由請求者支付請求與下載的費用，常用於分享大型資料集。"
+        },
+        {
+          "id": "c",
+          "text": "開啟 S3 Transfer Acceleration",
+          "explanation": "這會加快傳輸，但會增加費用，也不會改變付費者。"
+        },
+        {
+          "id": "d",
+          "text": "改用 S3 Standard-IA",
+          "explanation": "儲存類別不會改變由誰支付下載費用。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "saa-c03-d4-102",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "一批資料在建立後 30 天內常用，之後很少用，一年後可以封存，七年後可以刪除。最省成本又不需要人工的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "全部一直放在 S3 Standard",
+          "explanation": "長期不常用的資料放在 Standard 成本較高。"
+        },
+        {
+          "id": "b",
+          "text": "改存在 EBS 磁碟區",
+          "explanation": "EBS 的成本較高，也需要掛在執行個體上。"
+        },
+        {
+          "id": "c",
+          "text": "設定 S3 生命週期規則：依時間轉換到較便宜的儲存類別，並在七年後讓物件到期",
+          "explanation": "正確。生命週期的轉換動作可以把物件移到其他儲存類別，到期動作會讓 S3 代為刪除物件。"
+        },
+        {
+          "id": "d",
+          "text": "每個月手動把舊檔案移到其他 bucket",
+          "explanation": "人工操作容易出錯，也增加維運成本。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "saa-c03-d4-103",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個不需要開機的磁碟區用來存放很少存取的大量資料，最重要的是儲存成本最低。下列哪一種 EBS 磁碟區最適合？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Provisioned IOPS SSD（io2）",
+          "explanation": "io2 為高 IOPS 設計，成本最高。"
+        },
+        {
+          "id": "b",
+          "text": "General Purpose SSD（gp3）",
+          "explanation": "gp3 是成本最低的 SSD，但 HDD 的 sc1 更適合不常存取的資料。"
+        },
+        {
+          "id": "c",
+          "text": "Throughput Optimized HDD（st1）",
+          "explanation": "st1 適合經常存取、以吞吐量為主的工作，sc1 更適合不常存取的資料。"
+        },
+        {
+          "id": "d",
+          "text": "Cold HDD（sc1）",
+          "explanation": "正確。sc1 適合不常存取、以最低儲存成本為重點的吞吐量型資料；它不支援作為開機磁碟區，題目也不需要。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "saa-c03-d4-104",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊想降低 EBS 費用，同時保留 SSD 的效能。相較於 gp2，gp3 有什麼優點？",
+      "options": [
+        {
+          "id": "a",
+          "text": "gp3 是目前成本最低的 SSD 磁碟區，而且可以獨立於磁碟區大小調整效能",
+          "explanation": "正確。gp3 是最新一代的 General Purpose SSD，在價格與效能之間取得平衡。"
+        },
+        {
+          "id": "b",
+          "text": "gp3 不能作為開機磁碟區",
+          "explanation": "gp3 支援作為開機磁碟區。"
+        },
+        {
+          "id": "c",
+          "text": "gp3 是 HDD 磁碟區",
+          "explanation": "gp3 是 SSD 磁碟區。"
+        },
+        {
+          "id": "d",
+          "text": "gp3 只能用在 Outposts",
+          "explanation": "gp3 是一般的 EBS 磁碟區類型。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "saa-c03-d4-105",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "多台 Linux 執行個體共用一個 EFS 檔案系統，其中大部分檔案每季只會被讀取幾次。如何在不改變應用程式的情況下降低成本？",
+      "options": [
+        {
+          "id": "a",
+          "text": "每天刪除所有檔案",
+          "explanation": "這會遺失資料。"
+        },
+        {
+          "id": "b",
+          "text": "開啟 EFS 生命週期管理，把一段時間未存取的檔案移到 Infrequent Access 儲存類別",
+          "explanation": "正確。EFS 的生命週期政策可以依最後存取時間，把檔案移入或移出 Infrequent Access 與 Archive 儲存類別。"
+        },
+        {
+          "id": "c",
+          "text": "把 EFS 換成執行個體儲存",
+          "explanation": "執行個體儲存是暫時的，也不能多台共用。"
+        },
+        {
+          "id": "d",
+          "text": "把所有檔案搬到 EBS io2",
+          "explanation": "io2 成本更高，也不適合多台共用。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "saa-c03-d4-106",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "difficulty": 3,
+      "question": "開發環境的 EFS 資料遺失時可以從備份重建，公司想進一步降低儲存成本。下列哪一項做法合理？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把開發資料放在 S3 Object Lock 的合規模式",
+          "explanation": "這是為了防止刪除，不是降低成本。"
+        },
+        {
+          "id": "b",
+          "text": "改用 Provisioned IOPS SSD",
+          "explanation": "這會增加成本。"
+        },
+        {
+          "id": "c",
+          "text": "使用 EFS One Zone 檔案系統",
+          "explanation": "正確。One Zone 把資料存放在單一可用區，成本較低；但可用區損毀時資料可能遺失，所以適合可以從備份重建的資料，EFS 也會自動用 AWS Backup 備份 One Zone 檔案系統。"
+        },
+        {
+          "id": "d",
+          "text": "改用跨三個 Region 的複寫",
+          "explanation": "這會增加成本。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "saa-c03-d4-107",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個無狀態的網頁伺服器群組可以承受個別執行個體被中斷，平常就在 Auto Scaling 群組後面執行。下列哪一種方式最能降低運算成本？",
+      "options": [
+        {
+          "id": "a",
+          "text": "全部改用 Dedicated Hosts",
+          "explanation": "Dedicated Hosts 是專屬的實體主機，成本較高。"
+        },
+        {
+          "id": "b",
+          "text": "全部改用最大的執行個體",
+          "explanation": "這會增加成本。"
+        },
+        {
+          "id": "c",
+          "text": "關閉 Auto Scaling，固定執行最大的容量",
+          "explanation": "這會一直為尖峰容量付費。"
+        },
+        {
+          "id": "d",
+          "text": "在 Auto Scaling 群組中使用 Spot Instances",
+          "explanation": "正確。Spot 建議用在無狀態、可容錯、有彈性的應用程式，例如無狀態網頁伺服器；它和 On-Demand 唯一的差別是可能被中斷。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "saa-c03-d4-108",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊想找出規格過大或閒置的 EC2 執行個體，並取得調整大小的建議。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Compute Optimizer",
+          "explanation": "正確。它分析資源的設定與使用率，提供調整大小的建議並找出閒置的資源。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Artifact",
+          "explanation": "Artifact 提供合規報告。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Inspector",
+          "explanation": "Inspector 掃描軟體弱點。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Transfer Family",
+          "explanation": "Transfer Family 用於檔案傳輸。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "saa-c03-d4-109",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "difficulty": 3,
+      "question": "一台 EC2 上的應用程式啟動後要花很長時間載入資料到記憶體才能開始服務。為了省錢，團隊想在晚上停止執行個體，但又希望早上能快速恢復。最適合的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "讓執行個體 24 小時執行",
+          "explanation": "這不會省錢。"
+        },
+        {
+          "id": "b",
+          "text": "使用 EC2 休眠（hibernation）",
+          "explanation": "正確。休眠會把記憶體內容存到 EBS 根磁碟區，恢復時還原；休眠的執行個體在停止狀態不收執行個體使用費，但要支付 EBS 的儲存費用。"
+        },
+        {
+          "id": "c",
+          "text": "終止執行個體，早上再重新建立",
+          "explanation": "重新建立後要重新載入資料，速度慢。"
+        },
+        {
+          "id": "d",
+          "text": "改用 Spot Instances",
+          "explanation": "Spot 可能被中斷，而且不會保留記憶體內容。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "saa-c03-d4-110",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司需要在 VPC 中部署第三方的防火牆虛擬設備，並讓流量經過這些設備檢查，同時能水平擴展設備的數量。最適合哪一種負載平衡器？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Network Load Balancer",
+          "explanation": "NLB 為高效能的 TCP 流量設計，不是為了串接虛擬設備。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon CloudFront",
+          "explanation": "CloudFront 是內容傳遞網路。"
+        },
+        {
+          "id": "c",
+          "text": "Gateway Load Balancer",
+          "explanation": "正確。Gateway Load Balancer 用來部署、擴展與管理防火牆、入侵偵測等虛擬設備，在 OSI 第三層運作。"
+        },
+        {
+          "id": "d",
+          "text": "Application Load Balancer",
+          "explanation": "ALB 在第七層處理 HTTP/HTTPS 請求，不是為了串接虛擬設備。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "saa-c03-d4-111",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個事件驅動的工作每天只執行幾百次，每次幾秒鐘，其他時間完全沒有流量。哪一種運算方式最能降低成本？",
+      "options": [
+        {
+          "id": "a",
+          "text": "一直執行的 On-Demand EC2 執行個體",
+          "explanation": "沒有流量時仍要付費。"
+        },
+        {
+          "id": "b",
+          "text": "3 年期全預付的 Reserved Instance",
+          "explanation": "長期承諾適合穩定的用量，不適合偶爾執行的工作。"
+        },
+        {
+          "id": "c",
+          "text": "Dedicated Hosts",
+          "explanation": "專屬主機成本較高。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Lambda",
+          "explanation": "正確。Lambda 只依實際使用的運算時間收費，程式沒有執行時不收費。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "saa-c03-d4-112",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "開發與測試環境只在上班時間使用，正式環境需要全天候、跨多個可用區的高可用。關於成本與可用性，哪一項設計最合理？",
+      "options": [
+        {
+          "id": "a",
+          "text": "正式環境跨多個可用區；開發與測試環境用較少資源，並在下班後自動停止",
+          "explanation": "正確。不同等級的工作負載可以有不同的可用性需求，非正式環境不需要和正式環境一樣的備援。"
+        },
+        {
+          "id": "b",
+          "text": "所有環境都跨三個 Region 部署",
+          "explanation": "對非正式環境來說成本過高。"
+        },
+        {
+          "id": "c",
+          "text": "正式環境只放一台執行個體以省錢",
+          "explanation": "這會造成單一故障點。"
+        },
+        {
+          "id": "d",
+          "text": "開發環境 24 小時執行最大的執行個體",
+          "explanation": "這會浪費成本。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "saa-c03-d4-113",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個新的應用程式的資料庫流量非常難預測，有時幾乎沒有流量、有時突然暴增。團隊想用 DynamoDB，而且不想做容量規劃。應該選擇哪一種容量模式？",
+      "options": [
+        {
+          "id": "a",
+          "text": "改用 ElastiCache",
+          "explanation": "ElastiCache 是快取，不是主要的資料庫。"
+        },
+        {
+          "id": "b",
+          "text": "隨需（on-demand）模式",
+          "explanation": "正確。隨需模式是無伺服器的吞吐量選項，不必規劃容量、監控用量或設定擴展。"
+        },
+        {
+          "id": "c",
+          "text": "佈建（provisioned）模式，設定固定的讀寫容量",
+          "explanation": "佈建模式依佈建的容量每小時收費，不論是否用完，適合可預測的流量。"
+        },
+        {
+          "id": "d",
+          "text": "改用 RDS 單一執行個體",
+          "explanation": "題目希望不必規劃容量；RDS 需要選擇執行個體大小。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "saa-c03-d4-114",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個資料庫的流量穩定、可預測，團隊想控制 DynamoDB 的成本。哪一種容量模式比較適合？",
+      "options": [
+        {
+          "id": "a",
+          "text": "使用 DAX 取代資料表",
+          "explanation": "DAX 是快取，不能取代資料表。"
+        },
+        {
+          "id": "b",
+          "text": "改用 S3",
+          "explanation": "S3 是物件儲存。"
+        },
+        {
+          "id": "c",
+          "text": "佈建（provisioned）模式，必要時搭配自動擴展",
+          "explanation": "正確。佈建模式讓你指定每秒的讀寫量，依佈建的容量計費，適合流量可預測的應用程式，有助於控制成本。"
+        },
+        {
+          "id": "d",
+          "text": "一律使用隨需模式",
+          "explanation": "隨需模式適合難以預測的流量；穩定的流量用佈建模式通常較容易控制成本。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "saa-c03-d4-115",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "開發用的關聯式資料庫只有在工程師測試時才有流量，負載變化大且難以預測。團隊想要相容 MySQL、依實際用量自動調整容量。最適合哪一個選項？",
+      "options": [
+        {
+          "id": "a",
+          "text": "最大規格的 RDS 執行個體，全天候執行",
+          "explanation": "這會為用不到的容量付費。"
+        },
+        {
+          "id": "b",
+          "text": "在 EC2 上自行架設 MySQL",
+          "explanation": "這需要自己管理，也不會自動依用量調整容量。"
+        },
+        {
+          "id": "c",
+          "text": "DynamoDB 全域資料表",
+          "explanation": "這是 NoSQL 的跨 Region 功能，題目需要相容 MySQL 的關聯式資料庫。"
+        },
+        {
+          "id": "d",
+          "text": "Aurora Serverless",
+          "explanation": "正確。Aurora Serverless 是 Aurora 的隨需、自動擴展設定，依應用程式的需求自動調整容量，適合開發測試等負載變化大的環境。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "saa-c03-d4-116",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司有兩個可用區的私有子網路需要連出網際網路。目前只在一個可用區建立了一個 NAT 閘道，另一個可用區的流量要跨可用區送過去。關於成本與可用性，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "只用一個 NAT 閘道的成本較低，但那個可用區故障時，另一個可用區的執行個體也會失去對外連線；跨可用區的流量也會產生資料傳輸費用",
+          "explanation": "正確。為了不依賴單一可用區，可以在每個可用區各建一個 NAT 閘道，但要支付較多的 NAT 閘道費用。"
+        },
+        {
+          "id": "b",
+          "text": "NAT 閘道會自動在可用區之間容錯移轉",
+          "explanation": "NAT 閘道的備援只在它所在的可用區內。"
+        },
+        {
+          "id": "c",
+          "text": "同一個 Region 內跨可用區傳輸資料一定免費",
+          "explanation": "同一個 Region 內跨可用區的資料傳輸有計費項目。"
+        },
+        {
+          "id": "d",
+          "text": "每個可用區各一個 NAT 閘道的成本一定更低",
+          "explanation": "NAT 閘道依數量與時間收費，數量越多費用越高。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "saa-c03-d4-117",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "私有子網路中的應用程式每天透過 NAT 閘道存取大量 S3 資料，NAT 閘道的資料處理費用很高。如何降低成本？",
+      "options": [
+        {
+          "id": "a",
+          "text": "改用 Transfer Acceleration",
+          "explanation": "這會增加費用。"
+        },
+        {
+          "id": "b",
+          "text": "建立 S3 的閘道 VPC 端點，讓 S3 流量不經過 NAT 閘道",
+          "explanation": "正確。閘道端點不另外收費，S3 與 DynamoDB 的流量可以不經過 NAT 裝置。"
+        },
+        {
+          "id": "c",
+          "text": "把 NAT 閘道換成更大的規格",
+          "explanation": "NAT 閘道沒有規格可以選擇，而且這不會減少資料處理費用。"
+        },
+        {
+          "id": "d",
+          "text": "把 S3 bucket 設為公開",
+          "explanation": "這會產生安全風險，流量仍會經過 NAT 閘道。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "saa-c03-d4-118",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "difficulty": 3,
+      "question": "公司在內部部署與 AWS 之間每月傳輸大量資料，需要穩定的頻寬；目前透過網際網路的 VPN 連線經常不穩定。長期來看，哪一個選項最合適？",
+      "options": [
+        {
+          "id": "a",
+          "text": "改用 VPC 對等連線",
+          "explanation": "對等連線只連接 VPC。"
+        },
+        {
+          "id": "b",
+          "text": "改用 Amazon CloudFront",
+          "explanation": "CloudFront 是內容傳遞網路。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Direct Connect",
+          "explanation": "正確。Direct Connect 透過標準的乙太網路光纖把內部網路連到 Direct Connect 位置，在許多情況下可以降低網路成本、增加頻寬，網路表現也比網際網路穩定。"
+        },
+        {
+          "id": "d",
+          "text": "增加更多透過網際網路的 VPN 連線",
+          "explanation": "VPN 仍經過網際網路，穩定度受網際網路影響。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "saa-c03-d4-119",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "應用程式伺服器與資料庫分別放在不同的可用區，兩者之間每天傳輸大量資料。下列哪一項觀念正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "同一個 Region 的資料傳輸永遠免費",
+          "explanation": "跨可用區的資料傳輸有計費項目。"
+        },
+        {
+          "id": "b",
+          "text": "跨 Region 的資料傳輸比跨可用區便宜",
+          "explanation": "題目沒有足夠資訊比較，而且跨 Region 傳輸也會收費。"
+        },
+        {
+          "id": "c",
+          "text": "資料傳輸費用只和使用的資料庫引擎有關",
+          "explanation": "資料傳輸費用和傳輸的方向與量有關。"
+        },
+        {
+          "id": "d",
+          "text": "同一個 Region 內跨可用區的資料傳輸會產生費用，設計時要考慮資料流向",
+          "explanation": "正確。帳單上，同一 Region 內可用區之間的資料傳輸有獨立的計費項目。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "saa-c03-d4-120",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個全球的影音網站，大部分費用來自從原始伺服器傳出到網際網路的資料。下列哪一項做法最能降低原始伺服器的負載與傳輸量？",
+      "options": [
+        {
+          "id": "a",
+          "text": "使用 Amazon CloudFront 快取內容",
+          "explanation": "正確。內容在節點位置快取後，重複的請求不必再回到原始伺服器。"
+        },
+        {
+          "id": "b",
+          "text": "把原始伺服器換成更大的執行個體",
+          "explanation": "這不會減少傳出的資料量。"
+        },
+        {
+          "id": "c",
+          "text": "增加 NAT 閘道",
+          "explanation": "NAT 閘道用在私有子網路連出。"
+        },
+        {
+          "id": "d",
+          "text": "改用 Direct Connect",
+          "explanation": "Direct Connect 用於內部部署到 AWS 的連線，不是給網際網路的使用者。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "saa-c03-d4-121",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "財務部門要依專案追蹤 AWS 費用，並在某個專案的花費預計超過預算時通知負責人。下列哪些組合最合適？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "使用 Amazon Inspector",
+          "explanation": "Inspector 掃描軟體弱點。"
+        },
+        {
+          "id": "b",
+          "text": "替資源加上「Project」標籤，並啟用為成本分配標籤",
+          "explanation": "正確。啟用後可以在 Cost Explorer 或成本報告中依標籤分組。"
+        },
+        {
+          "id": "c",
+          "text": "用 AWS Budgets 依標籤建立預算，設定預測超出時通知",
+          "explanation": "正確。Budgets 可以依實際或預測的花費發出通知。"
+        },
+        {
+          "id": "d",
+          "text": "使用 AWS Pricing Calculator 追蹤實際花費",
+          "explanation": "Pricing Calculator 用來在建置前估算費用。"
+        }
+      ],
+      "answer": [
+        "b",
+        "c"
+      ]
+    },
+    {
+      "id": "saa-c03-d4-122",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司的運算用量穩定，但架構正逐步從 EC2 移到 Fargate 與 Lambda，未來也可能更換執行個體家族與 Region。想用承諾用量取得折扣，最適合哪一種方式？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Spot Instances",
+          "explanation": "Spot 可能被中斷，而且不是承諾用量的折扣。"
+        },
+        {
+          "id": "b",
+          "text": "Dedicated Hosts",
+          "explanation": "Dedicated Hosts 是專屬的實體主機，不是承諾用量的折扣方案。"
+        },
+        {
+          "id": "c",
+          "text": "Compute Savings Plans",
+          "explanation": "正確。承諾 1 或 3 年每小時固定金額的用量；不論執行個體家族、大小、作業系統、租用方式或 Region 都能套用，也適用於 Fargate 與 Lambda。"
+        },
+        {
+          "id": "d",
+          "text": "可用區範圍的 Standard Reserved Instances",
+          "explanation": "Reserved Instances 承諾的是特定的執行個體設定，不適用於 Lambda，彈性也較低。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "saa-c03-d4-123",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個資料湖中的物件存取模式無法預測，有些檔案會突然被大量讀取、有些很久都沒人用。團隊想自動降低儲存成本，又不想影響效能或自己寫生命週期規則。最適合哪一種 S3 儲存類別？",
+      "options": [
+        {
+          "id": "a",
+          "text": "S3 Glacier Deep Archive",
+          "explanation": "封存類別的物件需要先還原才能讀取，不適合可能突然被大量讀取的資料。"
+        },
+        {
+          "id": "b",
+          "text": "S3 Express One Zone",
+          "explanation": "Express One Zone 是為極低延遲設計的單一可用區儲存類別，不是自動分層降低成本。"
+        },
+        {
+          "id": "c",
+          "text": "S3 Standard，不做任何設定",
+          "explanation": "長期不常用的資料放在 Standard 成本較高。"
+        },
+        {
+          "id": "d",
+          "text": "S3 Intelligent-Tiering",
+          "explanation": "正確。它收取少量的監控與自動化費用，自動把連續 30 天沒有存取的物件移到 Infrequent Access 層，再次存取時不影響效能。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    }
+  ]
+}
