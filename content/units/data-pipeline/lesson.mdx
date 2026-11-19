@@ -1,0 +1,141 @@
+## 情境
+
+一家連鎖零售商有幾十間分店。每天晚上，每間分店會上傳一份當天的銷售檔（CSV）；網站也持續產生點擊與訂單紀錄。管理階層想要：
+
+- 隔天早上就能看到各分店、各商品的銷售報表。
+- 分析人員可以直接用 **SQL** 查詢，不用等工程師幫忙撈資料。
+- 資料量會越來越大，不想自己維護資料庫伺服器；查詢費用也要控制。
+
+要把資料從「產生」一路送到「被分析」，中間這一串自動化的步驟就叫**資料管線**（data pipeline）。
+
+## 資料管線的四個階段
+
+<Flow id="pipeline-stages" />
+
+1. **收集**（ingest）：把資料收進雲端。
+   - **批次**：定時一次上傳一大包，例如每晚的銷售檔。
+   - **串流**：資料一產生就一筆一筆送進來，例如點擊紀錄。
+2. **儲存**：原始資料先原封不動存進**物件儲存**，這個集中存放原始與整理後檔案的地方常被稱為**資料湖**（data lake）。保留原始資料的好處是：處理程式寫錯了，可以從頭重新處理。
+3. **處理**：清除錯誤的資料、統一格式、轉換欄位，常稱為 **ETL**（擷取 extract、轉換 transform、載入 load）；也有先載入再轉換的 **ELT**。
+4. **分析**：用 SQL 查詢、製作報表與儀表板。
+
+## 新檔案一上傳就自動處理
+
+與其讓處理程式每隔幾分鐘去看「有沒有新檔案」，不如讓儲存服務在新檔案上傳時**主動發出事件通知**，處理程式收到通知才開始工作。這就是事件驅動的架構，常搭配前一個單元的佇列或 Pub/Sub：
+
+<Flow id="event-ingest" />
+
+設計時要注意：
+
+- **通知至少送達一次**：S3 和 Cloud Storage 的通知都可能重複，也不保證順序。處理程式要能承受重複的事件，例如用物件的 key 判斷是否處理過。
+- **避免無限迴圈**：處理結果如果寫回會觸發通知的同一個位置，就會再觸發一次處理。解法是寫到另一個 bucket，或用**前綴**篩選，只對 `incoming/` 這類收件路徑發通知。
+
+## 讓查詢又快又便宜
+
+分析服務通常依**掃描（處理）的資料量**計費，所以「少讀一點」同時是效能和成本的關鍵：
+
+- **分區**（partition）：依日期等欄位把資料分開存放（例如 `year=2026/month=11/day=16/`）。查詢只需要某幾天的資料時，就只掃描那幾個分區。
+- **欄式格式**：Parquet、ORC 依欄位壓縮存放；查詢只用到幾個欄位時，不必讀整列。
+- **只選需要的欄位**：避免 `SELECT *`。
+
+## 在兩個平台上怎麼做
+
+<ProviderTabs>
+<Provider name="aws">
+
+### AWS 的資料管線
+
+| 階段 | 服務 |
+|---|---|
+| 收集 | 批次檔上傳到 **S3**；串流用 **Kinesis Data Streams**（資料寫入後一秒內就能被讀取），或用 **Amazon Data Firehose** 把串流緩衝後送進 S3、Redshift 等目的地 |
+| 儲存 | **S3** 當資料湖，原始資料和整理後的資料放不同的前綴或 bucket |
+| 觸發處理 | **S3 事件通知**送到 SQS、SNS、Lambda 或 EventBridge |
+| 處理 | **AWS Glue**：無伺服器的資料整合服務，可以建立 ETL 作業，並用集中的 **Data Catalog** 記錄資料的結構 |
+| 分析 | **Amazon Athena**：用標準 SQL 直接查詢 S3 上的資料，無伺服器、依查詢付費 |
+
+**S3 事件通知**
+
+- 可以通知的事件包括新建物件（`s3:ObjectCreated:*`）、刪除物件（`s3:ObjectRemoved:*`）等；可以用前綴、後綴篩選物件的 key。
+- 設定時，S3 會先送一則**測試訊息**（`s3:TestEvent`）到目的地，確認目的地存在、而且有權限。所以目的地的政策要先允許 `s3.amazonaws.com`（例如 SQS 佇列政策允許 `sqs:SendMessage`，並用 `aws:SourceArn` 限定這個 bucket），否則設定會失敗。
+- 事件是 JSON，物件資訊在 `Records[].s3.bucket.name` 和 `Records[].s3.object.key`（key 經過 URL 編碼，空白會變成 `+`）。
+- SQS 的 FIFO 佇列不能當作 S3 事件通知的目的地，需要時改用 EventBridge。
+
+```bash
+aws s3api put-bucket-notification-configuration --bucket lab-sales-raw \
+  --notification-configuration file://notification.json
+```
+
+```json
+{
+  "QueueConfigurations": [
+    {
+      "Id": "new-sales-files",
+      "QueueArn": "arn:aws:sqs:us-east-1:123456789012:new-files",
+      "Events": ["s3:ObjectCreated:*"],
+      "Filter": { "Key": { "FilterRules": [{ "Name": "prefix", "Value": "incoming/" }] } }
+    }
+  ]
+}
+```
+
+**Athena 的分區與格式**：Athena 可以使用 Hive 風格的分區路徑（`year=2026/month=11/day=16/`），`WHERE` 條件指定分區時只掃描那個分區。把原始的 CSV 轉成 Parquet 或 ORC，可以壓縮、讓查詢只讀需要的欄位，也能平行讀取。
+
+</Provider>
+<Provider name="gcp">
+
+### Google Cloud 的資料管線
+
+| 階段 | 服務 |
+|---|---|
+| 收集 | 批次檔上傳到 **Cloud Storage**；串流事件送到 **Pub/Sub** |
+| 儲存 | **Cloud Storage** 當資料湖 |
+| 觸發處理 | **Pub/Sub notifications for Cloud Storage**；只想觸發一個簡單的函式時，也可以用 Cloud Run functions |
+| 處理 | **Dataflow**：全代管，批次和串流使用同一套程式模型，以 **Apache Beam** 撰寫；預設每筆資料恰好處理一次，會自動調整工作者 VM 的數量 |
+| 分析 | **BigQuery**：無伺服器的資料倉儲，儲存層和運算層分開、各自擴展，用 SQL 查詢大量資料 |
+
+**Cloud Storage 的 Pub/Sub 通知**
+
+- 事件類型有 `OBJECT_FINALIZE`（物件建立完成）、`OBJECT_DELETE`、`OBJECT_METADATA_UPDATE`、`OBJECT_ARCHIVE`；可以用 `--object-prefix` 只通知某個前綴。
+- 用 `gcloud storage buckets notifications create` 設定時，gcloud 會在需要時**建立主題**，並**授權 Cloud Storage 服務代理**發布到這個主題。
+- 通知的**屬性**記錄事件：`eventType`、`bucketId`、`objectId`、`objectGeneration`、`eventTime` 等；內容（payload）預設是物件中繼資料的 JSON。
+- 設定後最多可能要 30 秒才開始送出通知。和所有 Pub/Sub 訂閱一樣，**訂閱建立之前**發布的通知不會出現在這個訂閱。
+
+```bash
+gcloud storage buckets notifications create gs://my-project-sales-raw \
+  --topic=new-files --event-types=OBJECT_FINALIZE --object-prefix=incoming/
+gcloud pubsub subscriptions create new-files-sub --topic=new-files
+```
+
+**BigQuery 的成本控制**
+
+- 隨選計費依查詢**處理的位元組數**計算。執行前可以**試跑**（dry run）估算會處理多少資料。
+- **分區資料表**：查詢條件篩選分區欄位時，BigQuery 只掃描符合的分區、略過其他分區（pruning）。
+- 只查需要的欄位，避免 `SELECT *`。對沒有叢集的資料表，加上 `LIMIT` **不會**降低處理的資料量。
+
+</Provider>
+</ProviderTabs>
+
+## 兩個平台的差異
+
+<Compare />
+
+兩個平台的管線形狀幾乎一樣：物件儲存當資料湖、事件通知觸發處理、無伺服器的 SQL 分析。主要差別在分析端：AWS 的 Athena 直接查詢 S3 上的檔案；BigQuery 是資料倉儲，資料通常載入 BigQuery 的資料表後查詢。另一個差別是權限：S3 的通知目的地要自己加上允許 S3 的政策；gcloud 設定 Cloud Storage 通知時會自動幫你授權。
+
+## 面試時怎麼回答
+
+被問到「設計一個資料管線」時，先問清楚：
+
+1. **資料量與速度**：每天多少？需要即時（串流）還是隔天（批次）就好？
+2. **誰要用、怎麼用**：報表、臨時的 SQL 查詢，還是機器學習？
+3. **正確性**：能不能接受重複或遺失？
+
+再依序說明收集、儲存（保留原始資料）、處理（事件觸發、可重新處理、能承受重複）、分析（分區與欄式格式控制成本），以及監控與失敗時怎麼重新處理。
+
+## 重點整理
+
+- 資料管線：收集 → 儲存（資料湖，保留原始資料）→ 處理（ETL）→ 分析。
+- 批次是定時處理一大包，串流是資料一產生就處理。
+- 用事件通知觸發處理：S3 事件通知、Cloud Storage 的 Pub/Sub 通知；通知至少送達一次，處理要能承受重複。
+- 處理結果不要寫回會觸發通知的位置：用另一個 bucket 或前綴篩選，避免無限迴圈。
+- S3 通知的目的地要先允許 `s3.amazonaws.com`；gcloud 設定 Cloud Storage 通知時會自動授權。
+- 分析依處理的資料量計費：分區、欄式格式、只選需要的欄位都能降低成本；BigQuery 上 `LIMIT` 不會降低沒有叢集的資料表的處理量。

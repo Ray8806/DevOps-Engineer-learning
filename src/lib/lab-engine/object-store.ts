@@ -1,3 +1,4 @@
+import { objectChanged } from "./bucket-events";
 import type { Ctx } from "./context";
 import { basename, dirname, displayPath, isWithin, resolvePath, type Bucket, type LabState } from "./state";
 
@@ -96,7 +97,9 @@ export function transfer(
       const files = [...state.files.keys()].filter((f) => isWithin(f, abs)).sort();
       for (const file of files) {
         const key = base + file.slice(abs.length + (abs === "/" ? 0 : 1));
+        const replaced = target.objects.has(key);
         target.objects.set(key, state.files.get(file)!);
+        objectChanged(state, style.scheme, dst.bucket, key, "put", replaced);
         if (opts.move) state.files.delete(file);
         ctx.out(`${style.done("upload", opts.move, style.localPath(state, file), `${style.scheme}://${dst.bucket}/${key}`)}\n`);
       }
@@ -104,7 +107,9 @@ export function transfer(
     }
     if (!state.files.has(abs)) return fail(style.noLocalFile(src.arg));
     const key = keyFor(dst.key, basename(abs));
+    const replaced = target.objects.has(key);
     target.objects.set(key, state.files.get(abs)!);
+    objectChanged(state, style.scheme, dst.bucket, key, "put", replaced);
     if (opts.move) state.files.delete(abs);
     ctx.out(`${style.done("upload", opts.move, style.localPath(state, abs), `${style.scheme}://${dst.bucket}/${key}`)}\n`);
     return 0;
@@ -122,15 +127,23 @@ export function transfer(
     if (state.dirs.has(abs)) abs = `${abs === "/" ? "" : abs}/${basename(src.key)}`;
     else if (dst.arg.endsWith("/") || !state.dirs.has(dirname(abs))) return fail(style.noLocalFile(dst.arg));
     state.files.set(abs, content);
-    if (opts.move) source.objects.delete(src.key);
+    if (opts.move) {
+      source.objects.delete(src.key);
+      objectChanged(state, style.scheme, src.bucket, src.key, "delete");
+    }
     ctx.out(`${style.done("download", opts.move, src.url, style.localPath(state, abs))}\n`);
     return 0;
   }
 
   // ---- bucket -> bucket
   const key = keyFor(dst.key, basename(src.key));
+  const replaced = buckets.get(dst.bucket)!.objects.has(key);
   buckets.get(dst.bucket)!.objects.set(key, content);
-  if (opts.move && !(src.bucket === dst.bucket && src.key === key)) source.objects.delete(src.key);
+  objectChanged(state, style.scheme, dst.bucket, key, "copy", replaced);
+  if (opts.move && !(src.bucket === dst.bucket && src.key === key)) {
+    source.objects.delete(src.key);
+    objectChanged(state, style.scheme, src.bucket, src.key, "delete");
+  }
   ctx.out(`${style.done("copy", opts.move, src.url, `${style.scheme}://${dst.bucket}/${key}`)}\n`);
   return 0;
 }

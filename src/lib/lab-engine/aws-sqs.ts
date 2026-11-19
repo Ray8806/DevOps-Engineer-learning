@@ -6,7 +6,7 @@ import { resolvePath, type LabState, type SqsMessage, type SqsQueue } from "./st
 const REGION = "us-east-1";
 const ACCOUNT = "123456789012";
 /** Wall-clock time of the simulated clock's zero, for timestamps. */
-const EPOCH_MS = Date.UTC(2026, 10, 16, 8, 0, 0);
+export const EPOCH_MS = Date.UTC(2026, 10, 16, 8, 0, 0);
 
 export const SQS_COMMANDS = [
   "create-queue", "list-queues", "get-queue-url", "get-queue-attributes", "set-queue-attributes", "send-message",
@@ -95,8 +95,11 @@ function checkAttributes(state: LabState, name: string, attrs: Record<string, st
   return null;
 }
 
-/** True when the queue policy lets the topic's SNS service principal send to the queue. */
-function allowsSns(queue: SqsQueue, name: string, topic: string): boolean {
+/**
+ * True when the queue policy lets an AWS service (sns.amazonaws.com,
+ * s3.amazonaws.com) send messages on behalf of `source` (the topic or bucket ARN).
+ */
+function allowsService(queue: SqsQueue, name: string, service: string, source: string): boolean {
   if (!queue.attributes.Policy) return false;
   let policy: { Statement?: unknown };
   try {
@@ -112,7 +115,7 @@ function allowsSns(queue: SqsQueue, name: string, topic: string): boolean {
     if (st.Effect !== "Allow") return false;
     const principal = st.Principal as unknown;
     const principals = principal === "*" ? ["*"] : principal && typeof principal === "object" ? list((principal as Record<string, unknown>).Service ?? (principal as Record<string, unknown>).AWS) : [];
-    if (!principals.some((p) => p === "*" || p === "sns.amazonaws.com")) return false;
+    if (!principals.some((p) => p === "*" || p === service)) return false;
     if (!list(st.Action).some((a) => ["sqs:SendMessage", "sqs:*", "*"].includes(a))) return false;
     if (!list(st.Resource ?? "*").some((r) => wildcard(r, queueArn(name)))) return false;
     const condition = st.Condition as Record<string, Record<string, unknown>> | undefined;
@@ -120,20 +123,34 @@ function allowsSns(queue: SqsQueue, name: string, topic: string): boolean {
     return Object.entries(condition).every(([op, keys]) =>
       Object.entries(keys).every(([key, value]) => {
         if (key !== "aws:SourceArn") return key === "aws:SourceAccount" ? list(value).includes(ACCOUNT) : true;
-        return list(value).some((v) => (op === "ArnLike" || op === "StringLike" ? wildcard(v, topic) : v === topic));
+        return list(value).some((v) => (op === "ArnLike" || op === "StringLike" ? wildcard(v, source) : v === source));
       }),
     );
   });
 }
 
-/**
- * Delivers an SNS notification to a subscribed queue, if the queue's access
- * policy allows the topic to send to it. Returns whether it was delivered.
- */
-export function deliverFromSns(state: LabState, queueArnValue: string, topic: string, subject: string | undefined, message: string, messageId: string): boolean {
+/** Whether `service` may send to the queue with this ARN for `source`. */
+export function queueAllows(state: LabState, queueArnValue: string, service: string, source: string): boolean {
   const name = nameFromArn(queueArnValue);
   const queue = name ? state.aws.sqs.queues.get(name) : undefined;
-  if (!queue || !allowsSns(queue, name!, topic)) return false;
+  return Boolean(queue && allowsService(queue, name!, service, source));
+}
+
+/**
+ * Puts a message from an AWS service (SNS, S3) on a queue, if the queue
+ * exists and its access policy allows that service for `source`.
+ * Returns whether it was delivered.
+ */
+export function deliverToQueue(state: LabState, queueArnValue: string, service: string, source: string, body: string): boolean {
+  if (!queueAllows(state, queueArnValue, service, source)) return false;
+  const queue = state.aws.sqs.queues.get(nameFromArn(queueArnValue)!)!;
+  queue.messages.push({ id: makeId(state, "msg"), body, sentAt: state.clock, receiveCount: 0, invisibleUntil: state.clock + Number(queue.attributes.DelaySeconds), receipt: null, fromSns: service === "sns.amazonaws.com", fromS3Event: service === "s3.amazonaws.com" && body.startsWith('{"Records"') });
+  queue.stats.sent++;
+  return true;
+}
+
+/** Delivers an SNS notification to a subscribed queue (see deliverToQueue). */
+export function deliverFromSns(state: LabState, queueArnValue: string, topic: string, subject: string | undefined, message: string, messageId: string): boolean {
   const body = JSON.stringify(
     {
       Type: "Notification",
@@ -150,9 +167,7 @@ export function deliverFromSns(state: LabState, queueArnValue: string, topic: st
     null,
     2,
   );
-  queue.messages.push({ id: makeId(state, "msg"), body, sentAt: state.clock, receiveCount: 0, invisibleUntil: state.clock + Number(queue.attributes.DelaySeconds), receipt: null, fromSns: true });
-  queue.stats.sent++;
-  return true;
+  return deliverToQueue(state, queueArnValue, "sns.amazonaws.com", topic, body);
 }
 
 export function sqs(ctx: Ctx, args: string[]): number {
@@ -299,6 +314,7 @@ export function sqs(ctx: Ctx, args: string[]): number {
         m.invisibleUntil = state.clock + (vt ?? Number(queue.attributes.VisibilityTimeout));
         if (m.receiveCount > 1) queue.stats.redelivered = true;
         if (m.fromSns) queue.stats.receivedFromSns = true;
+        if (m.fromS3Event) queue.stats.receivedS3Event = true;
         received.push(m);
       }
       if (!received.length) {

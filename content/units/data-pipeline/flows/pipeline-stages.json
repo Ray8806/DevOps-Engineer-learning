@@ -1,0 +1,80 @@
+{
+  "id": "pipeline-stages",
+  "title": "資料從產生到被分析的路線",
+  "nodes": [
+    {
+      "id": "source",
+      "label": "資料來源",
+      "detail": "分店、網站、App",
+      "col": 0,
+      "row": 1
+    },
+    {
+      "id": "ingest",
+      "label": "收集",
+      "detail": "上傳／串流",
+      "col": 1,
+      "row": 1
+    },
+    {
+      "id": "raw",
+      "label": "原始資料區",
+      "detail": "資料湖",
+      "col": 2,
+      "row": 1
+    },
+    {
+      "id": "process",
+      "label": "處理",
+      "detail": "清理、轉換",
+      "col": 3,
+      "row": 1
+    },
+    {
+      "id": "curated",
+      "label": "整理後的資料",
+      "detail": "分區、欄式格式",
+      "col": 3,
+      "row": 0
+    },
+    {
+      "id": "analyze",
+      "label": "分析",
+      "detail": "SQL、報表",
+      "col": 4,
+      "row": 0
+    }
+  ],
+  "steps": [
+    {
+      "from": "source",
+      "to": "ingest",
+      "text": "分店每天上傳銷售檔，網站持續送出點擊紀錄。批次（定時一大包）和串流（一筆一筆即時）都要收得進來。"
+    },
+    {
+      "from": "ingest",
+      "to": "raw",
+      "text": "先把原始資料原封不動存進物件儲存（資料湖），出問題時可以從頭重新處理。"
+    },
+    {
+      "from": "raw",
+      "to": "process",
+      "text": "新檔案一到就觸發處理：清除錯誤的資料、統一格式、補上欄位。"
+    },
+    {
+      "from": "process",
+      "to": "curated",
+      "text": "整理好的資料依日期分區、存成欄式格式，查詢時只需要讀取必要的部分。"
+    },
+    {
+      "from": "curated",
+      "to": "analyze",
+      "text": "分析人員用 SQL 查詢、製作報表，不用管伺服器。"
+    },
+    {
+      "from": "process",
+      "text": "處理失敗的檔案不會遺失：原始資料還在，修好程式後重新處理即可。",
+      "status": "fail"
+    }
+  ]
+}

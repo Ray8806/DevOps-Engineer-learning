@@ -1,0 +1,66 @@
+{
+  "id": "event-ingest",
+  "title": "新檔案一上傳就自動處理",
+  "nodes": [
+    {
+      "id": "store",
+      "label": "分店",
+      "col": 0,
+      "row": 0
+    },
+    {
+      "id": "bucket",
+      "label": "bucket",
+      "detail": "incoming/",
+      "col": 1,
+      "row": 0
+    },
+    {
+      "id": "queue",
+      "label": "佇列／主題",
+      "detail": "事件通知",
+      "col": 2,
+      "row": 0
+    },
+    {
+      "id": "worker",
+      "label": "處理程式",
+      "col": 2,
+      "row": 1
+    },
+    {
+      "id": "out",
+      "label": "整理後的路徑",
+      "detail": "sales/date=…/",
+      "col": 1,
+      "row": 1
+    }
+  ],
+  "steps": [
+    {
+      "from": "store",
+      "to": "bucket",
+      "text": "分店把銷售檔上傳到 incoming/。"
+    },
+    {
+      "from": "bucket",
+      "to": "queue",
+      "text": "bucket 偵測到新物件，送出事件通知（S3 事件通知、Cloud Storage 的 Pub/Sub 通知）。"
+    },
+    {
+      "from": "queue",
+      "to": "worker",
+      "text": "處理程式從佇列或訂閱拿到事件，裡面有 bucket 名稱和物件的 key。"
+    },
+    {
+      "from": "worker",
+      "to": "out",
+      "text": "處理完的結果寫到另一個路徑（或另一個 bucket），而不是 incoming/。"
+    },
+    {
+      "from": "out",
+      "text": "如果寫回同一個會觸發通知的位置，就會再觸發一次處理，變成無限迴圈。",
+      "status": "fail"
+    }
+  ]
+}

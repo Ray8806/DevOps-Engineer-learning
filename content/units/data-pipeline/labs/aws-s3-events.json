@@ -1,0 +1,79 @@
+{
+  "id": "aws-s3-events",
+  "title": "新檔案上傳到 S3，自動通知 SQS",
+  "description": "建立原始資料的 bucket 和佇列，設定 S3 事件通知：只有 incoming/ 底下的新檔案才通知佇列。先遇到 S3 驗證不了目的地的錯誤，加上佇列政策後再設定一次，最後上傳檔案、讀取事件，並把檔案整理到分區的路徑。",
+  "provider": "aws",
+  "estimatedMinutes": 25,
+  "initialState": {
+    "files": {
+      "~/sales-2026-11-16.csv": "order_id,store,amount\n1001,taipei,1200\n1002,taichung,560\n1003,taipei,890\n",
+      "~/notification.json": "{\n  \"QueueConfigurations\": [\n    {\n      \"Id\": \"new-sales-files\",\n      \"QueueArn\": \"arn:aws:sqs:us-east-1:123456789012:new-files\",\n      \"Events\": [\n        \"s3:ObjectCreated:*\"\n      ],\n      \"Filter\": {\n        \"Key\": {\n          \"FilterRules\": [\n            {\n              \"Name\": \"prefix\",\n              \"Value\": \"incoming/\"\n            }\n          ]\n        }\n      }\n    }\n  ]\n}\n",
+      "~/queue-policy.json": "{\n  \"Policy\": \"{\\\"Statement\\\":[{\\\"Effect\\\":\\\"Allow\\\",\\\"Principal\\\":{\\\"Service\\\":\\\"s3.amazonaws.com\\\"},\\\"Action\\\":\\\"sqs:SendMessage\\\",\\\"Resource\\\":\\\"arn:aws:sqs:us-east-1:123456789012:new-files\\\",\\\"Condition\\\":{\\\"ArnEquals\\\":{\\\"aws:SourceArn\\\":\\\"arn:aws:s3:::lab-sales-raw-123456789012\\\"},\\\"StringEquals\\\":{\\\"aws:SourceAccount\\\":\\\"123456789012\\\"}}}]}\"\n}\n"
+    },
+    "cloud": {}
+  },
+  "steps": [
+    {
+      "instruction": "建立放原始資料的 bucket lab-sales-raw-123456789012 和佇列 new-files。用 cat 看看 ~/notification.json（只有 incoming/ 底下新建的物件才通知 new-files），試著套用到 bucket：為什麼失敗？",
+      "hint": "aws s3 mb s3://lab-sales-raw-123456789012，aws sqs create-queue --queue-name new-files，cat notification.json，aws s3api put-bucket-notification-configuration --bucket lab-sales-raw-123456789012 --notification-configuration file://notification.json",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "sqs",
+          "queues",
+          "new-files"
+        ],
+        "exists": true
+      }
+    },
+    {
+      "instruction": "S3 設定通知時會先送一則測試訊息到佇列，佇列政策要允許 S3 送訊息。看看 ~/queue-policy.json，套用到 new-files，再設定一次通知，然後到佇列接收那則測試訊息。",
+      "hint": "cat queue-policy.json，aws sqs set-queue-attributes --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/new-files --attributes file://queue-policy.json，aws s3api put-bucket-notification-configuration --bucket lab-sales-raw-123456789012 --notification-configuration file://notification.json，aws sqs receive-message --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/new-files",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "s3Notifications",
+          "lab-sales-raw-123456789012",
+          "new-sales-files"
+        ],
+        "equals": "new-files"
+      }
+    },
+    {
+      "instruction": "分店上傳了今天的銷售資料。把 ~/sales-2026-11-16.csv 上傳到 incoming/，再從佇列接收事件：eventName 是什麼？物件的 key 在哪個欄位？",
+      "hint": "aws s3 cp sales-2026-11-16.csv s3://lab-sales-raw-123456789012/incoming/sales-2026-11-16.csv，aws sqs receive-message --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/new-files",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "sqs",
+          "queues",
+          "new-files",
+          "receivedS3Event"
+        ],
+        "equals": true
+      }
+    },
+    {
+      "instruction": "處理程式把檔案整理到依日期分區的路徑 sales/year=2026/month=11/day=16/，之後用 Athena 查詢時只要掃描需要的日期。複製過去後再接收一次佇列：有新的事件嗎？為什麼這樣能避免無限迴圈？",
+      "hint": "aws s3 cp s3://lab-sales-raw-123456789012/incoming/sales-2026-11-16.csv s3://lab-sales-raw-123456789012/sales/year=2026/month=11/day=16/sales.csv，aws s3 ls s3://lab-sales-raw-123456789012 --recursive，aws sqs receive-message --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/new-files",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "s3",
+          "buckets",
+          "lab-sales-raw-123456789012",
+          "objects",
+          "sales/year=2026/month=11/day=16/sales.csv"
+        ],
+        "exists": true
+      }
+    }
+  ]
+}

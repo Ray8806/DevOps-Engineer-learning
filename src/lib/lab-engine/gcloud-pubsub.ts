@@ -39,7 +39,7 @@ function canForward(state: LabState, sub: PubsubSubscription): boolean {
 }
 
 /** Writes a message to every subscription the topic has right now. */
-function publish(state: LabState, topicId: string, data: string, attributes: Record<string, string>): string {
+export function publish(state: LabState, topicId: string, data: string, attributes: Record<string, string>): string {
   const topic = state.gcp.pubsub.topics.get(topicId)!;
   topic.published++;
   const n = nextId(state);
