@@ -1,0 +1,153 @@
+## 為什麼要用訊息佇列
+
+想像一個購物網站：使用者下單後，要扣款、通知倉庫出貨、寄確認信。如果網站直接一個接一個呼叫這些服務：
+
+- **一個慢，全部慢**：寄信服務卡住，使用者就一直看著轉圈圈。
+- **一個壞，全部壞**：出貨服務當機，下單就失敗。
+- **擋不住尖峰**：促銷時訂單一下子湧進來，後面的服務來不及處理就被壓垮。
+
+**訊息佇列**把「送出工作」和「處理工作」拆開：網站把一則訊息（例如「訂單 1001 成立」）放進佇列就可以回應使用者，後面的服務照自己的速度從佇列拿訊息處理。這叫做**解耦**（decoupling）：
+
+- 處理的一方暫時故障，訊息留在佇列裡等它恢復，不會遺失。
+- 尖峰時訊息先堆在佇列，處理的一方可以慢慢消化，也可以多開幾個一起處理。
+- 送出的一方不需要知道處理的一方在哪裡、有幾個。
+
+## 兩種模式
+
+- **佇列（點對點）**：一則訊息只會被一個消費者處理。適合分配工作，例如很多台機器分攤處理訂單。
+- **發布／訂閱（pub/sub）**：發布者把訊息發到**主題**，每個**訂閱**都會收到一份。適合「一個事件通知很多服務」，又叫**扇出**（fan-out）。
+
+<Flow id="fanout" />
+
+## 接收不等於刪除
+
+訊息被消費者收到之後，**還留在佇列裡**，只是暫時不會給其他消費者；消費者處理完必須明確地**刪除**（SQS）或**確認**（ack，Pub/Sub），訊息才真正離開。
+
+如果消費者處理到一半當掉、沒有刪除，時間一到（SQS 叫**可見性逾時**，Pub/Sub 叫**確認期限**），訊息就會重新變成可以接收，交給別的消費者再試一次。這樣訊息不會因為消費者當掉而遺失。
+
+<Flow id="queue-lifecycle" />
+
+<Callout title="同一則訊息可能收到不只一次">
+SQS 標準佇列和 Pub/Sub 預設都是**至少傳送一次**（at-least-once）：在少數情況下，同一則訊息會被傳送兩次以上，而且不保證順序。處理程式要設計成**重複處理也沒關係**（冪等，idempotent），例如用訂單編號檢查是否已經處理過。
+</Callout>
+
+## 一直處理失敗的訊息：dead-letter
+
+有些訊息怎麼處理都會失敗，例如格式錯誤。如果讓它一直重試，會浪費資源，也可能卡住其他訊息。解法是設定一個**dead-letter** 佇列或主題：同一則訊息被傳送超過設定的次數，就把它移過去，留給工程師查原因。修好程式後，再把訊息送回原本的佇列處理。
+
+<Flow id="dead-letter" />
+
+## 在兩個平台上怎麼做
+
+<ProviderTabs>
+<Provider name="aws">
+
+### Amazon SQS
+
+SQS 是代管的訊息佇列服務。生產者送訊息到佇列，消費者用**輪詢**（polling）的方式去拿訊息。
+
+| 設定 | 預設值與範圍 |
+|---|---|
+| 可見性逾時（VisibilityTimeout） | 預設 30 秒，0 秒到 12 小時 |
+| 訊息保留期間（MessageRetentionPeriod） | 預設 4 天，60 秒到 14 天 |
+| 訊息大小 | 1 位元組到 1 MiB |
+| 延遲傳送（DelaySeconds） | 預設 0，最多 15 分鐘 |
+| 長輪詢等待時間 | 最多 20 秒 |
+
+- **兩種佇列**：
+  - **標準佇列**：吞吐量幾乎沒有上限，至少傳送一次，可能重複、順序不保證。
+  - **FIFO 佇列**：嚴格保持順序、不會產生重複的訊息，但每秒的交易數有上限。送到 FIFO 佇列的訊息一定要指定**訊息群組 ID**，同一群組的訊息依序處理。
+- **短輪詢與長輪詢**：預設是短輪詢，馬上回應，可能回傳空的結果。設定等待時間（`--wait-time-seconds`，最多 20 秒）就是長輪詢：有訊息才回應，能減少空的回應、降低成本。
+- **dead-letter queue**：在**來源佇列**設定 **redrive policy**，指定 dead-letter queue 的 ARN 和 `maxReceiveCount`（訊息被接收幾次後移過去）。dead-letter queue 必須和來源佇列在同一個帳戶、同一個 Region。修好之後可以用 **DLQ redrive**（`start-message-move-task`）把訊息送回來源佇列。
+
+```bash
+aws sqs create-queue --queue-name orders
+aws sqs send-message --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/orders \
+  --message-body order-1001
+aws sqs receive-message --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/orders
+aws sqs delete-message --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/orders \
+  --receipt-handle <ReceiptHandle>
+aws sqs set-queue-attributes --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/orders \
+  --attributes file://redrive.json
+```
+
+`redrive.json` 的內容（RedrivePolicy 的值本身是一段 JSON 字串）：
+
+```json
+{
+  "RedrivePolicy": "{\"deadLetterTargetArn\":\"arn:aws:sqs:us-east-1:123456789012:orders-dlq\",\"maxReceiveCount\":\"3\"}"
+}
+```
+
+### Amazon SNS 與扇出
+
+SNS 是發布／訂閱服務：發布者把訊息發到**主題**，SNS 把它推送給每個訂閱者，例如 SQS 佇列、Lambda、HTTP(S) 端點、Email、簡訊。
+
+把多個 SQS 佇列訂閱到同一個主題，就是常見的**扇出**：一則「訂單成立」同時進到帳務、出貨、通知各自的佇列，各自處理、互不影響。佇列收到的是一段 JSON，原本發布的內容在 `Message` 欄位。
+
+<Callout title="佇列要允許主題送訊息進來">
+把佇列訂閱到主題還不夠：佇列的**存取政策**要允許 SNS 主題執行 `sqs:SendMessage`（Principal 是 `sns.amazonaws.com`，用 `aws:SourceArn` 條件限定只有這個主題）。少了這一步，發布的訊息不會出現在佇列裡。
+</Callout>
+
+```bash
+aws sns create-topic --name order-events
+aws sns subscribe --topic-arn arn:aws:sns:us-east-1:123456789012:order-events \
+  --protocol sqs --notification-endpoint arn:aws:sqs:us-east-1:123456789012:orders
+aws sns publish --topic-arn arn:aws:sns:us-east-1:123456789012:order-events --message order-1003
+```
+
+SQS、SNS 適合新開發的應用程式；要從既有的訊息代理（使用 JMS、AMQP、MQTT 等標準協定）搬過來，則可以用 **Amazon MQ**。
+
+</Provider>
+<Provider name="gcp">
+
+### Pub/Sub
+
+Pub/Sub 是發布／訂閱服務。**主題**可以有很多個**訂閱**，每個訂閱都會收到每則訊息的一份；連到**同一個訂閱**的多個訂閱者則是分攤訊息，就像一個佇列。所以 Pub/Sub 同時能做扇出和工作佇列。
+
+- 訂閱只會收到**建立之後**才發布的訊息。
+- 訂閱者收到訊息後要**確認**（ack）；在**確認期限**內沒有確認，訊息會重新傳送。
+- 預設是**至少傳送一次**、不保證順序。發布時設定相同的 **ordering key**，並在訂閱啟用訊息排序，相同 key 的訊息就會依序傳送；也支援**恰好傳送一次**（exactly-once delivery）。
+
+| 訂閱設定 | 預設值與範圍 |
+|---|---|
+| 確認期限（ack deadline） | 預設 10 秒，10 到 600 秒 |
+| 訊息保留期間 | 預設 7 天，10 分鐘到 31 天 |
+| 最多傳送次數（設定 dead-letter topic 時） | 預設 5 次，5 到 100 次 |
+
+- **訂閱類型**：**pull**（訂閱者主動來拉）、**push**（Pub/Sub 主動把訊息送到你的端點），以及直接匯出到 BigQuery、Cloud Storage 的**匯出訂閱**。
+- **dead-letter topic**：設定在**訂閱**上，不是設定在主題上。還要授予 Pub/Sub 的服務帳戶（`service-專案編號@gcp-sa-pubsub.iam.gserviceaccount.com`）兩個角色：dead-letter topic 的**發布者**（`roles/pubsub.publisher`），以及原本訂閱的**訂閱者**（`roles/pubsub.subscriber`）。Pub/Sub 只有在權限設定正確時，才會計算傳送次數並轉送。轉送出去的訊息會加上 `CloudPubSubDeadLetterSource…` 開頭的屬性，記錄來源訂閱和傳送次數。
+
+```bash
+gcloud pubsub topics create orders
+gcloud pubsub subscriptions create billing --topic=orders
+gcloud pubsub topics publish orders --message=order-1001
+gcloud pubsub subscriptions pull billing --auto-ack
+gcloud pubsub subscriptions ack billing --ack-ids=<ACK_ID>
+
+gcloud pubsub subscriptions update billing \
+  --dead-letter-topic=orders-dead --max-delivery-attempts=5
+gcloud pubsub topics add-iam-policy-binding orders-dead \
+  --member=serviceAccount:service-專案編號@gcp-sa-pubsub.iam.gserviceaccount.com \
+  --role=roles/pubsub.publisher
+```
+
+**Pub/Sub 還是 Cloud Tasks？** Pub/Sub 讓發布者和訂閱者完全解耦，發布者不需要知道誰會處理（隱含的呼叫）；Cloud Tasks 則由發送端明確指定要呼叫哪個端點，並能控制執行的時間（明確的呼叫）。
+
+</Provider>
+</ProviderTabs>
+
+## 兩個平台的差異
+
+<Compare />
+
+AWS 把「佇列」和「發布／訂閱」分成 SQS 和 SNS 兩個服務，扇出要把 SQS 佇列訂閱到 SNS 主題；Pub/Sub 一個服務就同時做到，主題的每個訂閱各收一份、同一個訂閱的訂閱者分攤訊息。兩邊都有一個容易忘記的權限：SQS 要用佇列政策允許 SNS 送進來，Pub/Sub 的 dead-letter topic 要授權給 Pub/Sub 服務帳戶。
+
+## 重點整理
+
+- 訊息佇列把送出工作和處理工作解耦：吸收尖峰、處理端故障時訊息不遺失、可以多個消費者一起處理。
+- 佇列是一則訊息給一個消費者；發布／訂閱是每個訂閱者各收一份（扇出）。
+- 接收不等於刪除：處理完要刪除（SQS）或確認（Pub/Sub），否則逾時後會重新傳送。
+- 預設至少傳送一次、不保證順序：處理程式要能承受重複的訊息；需要順序用 SQS FIFO 佇列或 Pub/Sub 的 ordering key。
+- 一直失敗的訊息交給 dead-letter：SQS 在來源佇列設 redrive policy 的 `maxReceiveCount`；Pub/Sub 在訂閱設 dead-letter topic 並授權給服務帳戶。
+- SNS 扇出到 SQS 時，佇列政策要允許主題 `sqs:SendMessage`。

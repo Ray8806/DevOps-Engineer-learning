@@ -351,7 +351,7 @@ describe("aws s3", () => {
   });
 
   it("explains unsupported services, subcommands and options", () => {
-    expect(sh(fresh(), "aws sqs list-queues").errors[0]).toMatch(/不支援的服務 'sqs'/);
+    expect(sh(fresh(), "aws kinesis list-streams").errors[0]).toMatch(/不支援的服務 'kinesis'/);
     expect(sh(fresh(), "aws s3 sync . s3://bbb").errors[0]).toMatch(/不支援的 s3 指令 'sync'/);
     expect(sh(fresh(), "aws s3 ls --profile x").errors[0]).toMatch(/Unknown options: --profile/);
     expect(sh(fresh(), "aws").errors[0]).toMatch(/usage/);

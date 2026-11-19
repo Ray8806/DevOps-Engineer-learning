@@ -1,0 +1,515 @@
+{
+  "questions": [
+    {
+      "id": "message-queues-001",
+      "type": "single",
+      "provider": "general",
+      "unitId": "message-queues",
+      "difficulty": 1,
+      "question": "購物網站下單後要寄確認信，寄信服務偶爾很慢，拖累了下單的回應時間。最適合的改法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "下單時把「寄信」的訊息放進佇列就回應使用者，由寄信服務從佇列取出處理",
+          "explanation": "正確。送出和處理解耦，寄信慢不會拖累下單。"
+        },
+        {
+          "id": "b",
+          "text": "把下單和寄信寫在同一個程式裡",
+          "explanation": "還是同步執行，寄信慢一樣會拖累下單。"
+        },
+        {
+          "id": "c",
+          "text": "增加下單服務的記憶體",
+          "explanation": "瓶頸在等待寄信，不是下單服務的資源。"
+        },
+        {
+          "id": "d",
+          "text": "寄信失敗就讓下單也失敗",
+          "explanation": "這讓一個次要功能的故障影響到主要功能。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "message-queues-002",
+      "type": "single",
+      "provider": "general",
+      "unitId": "message-queues",
+      "difficulty": 2,
+      "question": "消費者收到一則訊息，處理到一半就當掉了，沒有刪除（確認）訊息。接下來會發生什麼事？",
+      "options": [
+        {
+          "id": "a",
+          "text": "等可見性逾時（確認期限）過去，訊息會重新變成可以接收，交給消費者再處理一次",
+          "explanation": "正確。接收不等於刪除，所以訊息不會因為消費者當掉而遺失。"
+        },
+        {
+          "id": "b",
+          "text": "訊息永久遺失",
+          "explanation": "訊息還在佇列裡，只是暫時對其他消費者隱藏。"
+        },
+        {
+          "id": "c",
+          "text": "佇列停止運作，直到該消費者恢復",
+          "explanation": "其他消費者可以繼續處理其他訊息。"
+        },
+        {
+          "id": "d",
+          "text": "訊息立刻被移到 dead-letter",
+          "explanation": "要超過設定的最大次數才會移過去。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "message-queues-003",
+      "type": "single",
+      "provider": "general",
+      "unitId": "message-queues",
+      "difficulty": 2,
+      "question": "佇列服務保證「至少傳送一次」。設計處理訊息的程式時，最需要注意什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "同一則訊息可能收到不只一次，處理要設計成重複執行也不會出錯（冪等）",
+          "explanation": "正確。例如用訂單編號記錄已處理過的訊息。"
+        },
+        {
+          "id": "b",
+          "text": "訊息一定只會收到一次，不用特別處理",
+          "explanation": "至少一次代表可能重複。"
+        },
+        {
+          "id": "c",
+          "text": "訊息一定依照送出的順序抵達",
+          "explanation": "預設不保證順序。"
+        },
+        {
+          "id": "d",
+          "text": "每則訊息都要手動重送一次",
+          "explanation": "服務本身會在逾時後重新傳送。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "message-queues-004",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "unitId": "message-queues",
+      "difficulty": 1,
+      "question": "哪個 AWS 服務是代管的訊息佇列，讓分散式系統的元件可以解耦？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon SQS",
+          "explanation": "正確。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon SNS",
+          "explanation": "SNS 是發布／訂閱的推送服務，沒有佇列。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Route 53",
+          "explanation": "Route 53 是 DNS 服務。"
+        },
+        {
+          "id": "d",
+          "text": "AWS CloudTrail",
+          "explanation": "CloudTrail 記錄 API 操作。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "message-queues-005",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 2
+        }
+      ],
+      "unitId": "message-queues",
+      "difficulty": 2,
+      "question": "一則「訂單成立」的事件要同時送到帳務、出貨、通知三個各自用 SQS 佇列處理的服務。最適合的架構是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "發布到一個 SNS 主題，把三個 SQS 佇列都訂閱到這個主題（扇出）",
+          "explanation": "正確。每個佇列都收到一份，各自處理、互不影響。"
+        },
+        {
+          "id": "b",
+          "text": "送到一個 SQS 佇列，讓三個服務一起接收",
+          "explanation": "一則訊息只會被一個消費者處理，三個服務會互相搶訊息。"
+        },
+        {
+          "id": "c",
+          "text": "訂單服務依序呼叫三個服務的 API",
+          "explanation": "這樣又變回緊密耦合，任何一個故障都會影響下單。"
+        },
+        {
+          "id": "d",
+          "text": "把訊息寫進 S3，三個服務定時去讀",
+          "explanation": "可以但沒有即時通知，也要自己處理哪些讀過了。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "message-queues-006",
+      "type": "single",
+      "provider": "aws",
+      "unitId": "message-queues",
+      "difficulty": 2,
+      "question": "SQS 佇列已經訂閱到 SNS 主題，但發布到主題的訊息從來沒有出現在佇列裡。最可能的原因是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "佇列的存取政策沒有允許這個 SNS 主題執行 sqs:SendMessage",
+          "explanation": "正確。要在佇列政策允許 sns.amazonaws.com，並用 aws:SourceArn 限定這個主題。"
+        },
+        {
+          "id": "b",
+          "text": "SNS 主題不能有 SQS 訂閱",
+          "explanation": "SQS 是 SNS 支援的訂閱類型。"
+        },
+        {
+          "id": "c",
+          "text": "佇列的可見性逾時太短",
+          "explanation": "可見性逾時只影響接收後多久重新可見。"
+        },
+        {
+          "id": "d",
+          "text": "要改用 FIFO 佇列",
+          "explanation": "佇列類型不是原因。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "message-queues-007",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 2
+        }
+      ],
+      "unitId": "message-queues",
+      "difficulty": 2,
+      "question": "一則格式錯誤的訊息每次處理都失敗，不斷重新出現在 SQS 佇列裡。要讓它在失敗幾次後自動移開，應該怎麼做？",
+      "options": [
+        {
+          "id": "a",
+          "text": "建立 dead-letter queue，在來源佇列設定 redrive policy 並指定 maxReceiveCount",
+          "explanation": "正確。訊息被接收超過 maxReceiveCount 次就會移到 dead-letter queue。"
+        },
+        {
+          "id": "b",
+          "text": "把可見性逾時設成 0",
+          "explanation": "這只會讓訊息更快重新出現。"
+        },
+        {
+          "id": "c",
+          "text": "把訊息保留期間設成 14 天",
+          "explanation": "保留越久，壞訊息停留越久。"
+        },
+        {
+          "id": "d",
+          "text": "改用長輪詢",
+          "explanation": "長輪詢是減少空的回應，和失敗的訊息無關。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "message-queues-008",
+      "type": "single",
+      "provider": "aws",
+      "unitId": "message-queues",
+      "difficulty": 2,
+      "question": "消費者處理一則 SQS 訊息通常要 2 分鐘，但佇列使用預設設定，常常同一則訊息被兩個消費者同時處理。應該怎麼調整？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把可見性逾時調長到超過處理時間，例如 3 分鐘",
+          "explanation": "正確。預設 30 秒，處理還沒完成訊息就重新可見，被其他消費者拿走。"
+        },
+        {
+          "id": "b",
+          "text": "把訊息保留期間調短",
+          "explanation": "和重複處理無關。"
+        },
+        {
+          "id": "c",
+          "text": "改用短輪詢",
+          "explanation": "輪詢方式不影響可見性逾時。"
+        },
+        {
+          "id": "d",
+          "text": "把延遲傳送設成 15 分鐘",
+          "explanation": "這只是讓訊息晚一點才能被接收。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "message-queues-009",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "unitId": "message-queues",
+      "difficulty": 2,
+      "question": "消費者經常收到空的回應，造成很多不必要的請求和費用。可以怎麼改善？",
+      "options": [
+        {
+          "id": "a",
+          "text": "使用長輪詢：接收時設定等待時間（最多 20 秒）",
+          "explanation": "正確。有訊息才回應，減少空的回應。"
+        },
+        {
+          "id": "b",
+          "text": "把可見性逾時設成 12 小時",
+          "explanation": "和空的回應無關。"
+        },
+        {
+          "id": "c",
+          "text": "增加更多消費者",
+          "explanation": "會產生更多空的請求。"
+        },
+        {
+          "id": "d",
+          "text": "把佇列改成 FIFO",
+          "explanation": "FIFO 解決的是順序和重複，不是空的回應。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "message-queues-010",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 2
+        }
+      ],
+      "unitId": "message-queues",
+      "difficulty": 3,
+      "question": "關於 Amazon SQS 的佇列類型，哪些敘述正確？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "標準佇列可能重複傳送訊息，也不保證順序",
+          "explanation": "正確。"
+        },
+        {
+          "id": "b",
+          "text": "FIFO 佇列嚴格保持順序，送出的訊息要指定訊息群組 ID",
+          "explanation": "正確。"
+        },
+        {
+          "id": "c",
+          "text": "FIFO 佇列的吞吐量沒有上限",
+          "explanation": "FIFO 佇列每秒的交易數有上限，可以開啟高吞吐量模式提高。"
+        },
+        {
+          "id": "d",
+          "text": "標準佇列保證每則訊息只處理一次",
+          "explanation": "標準佇列是至少傳送一次。"
+        }
+      ],
+      "answer": [
+        "a",
+        "b"
+      ]
+    },
+    {
+      "id": "message-queues-011",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 4
+        }
+      ],
+      "unitId": "message-queues",
+      "difficulty": 1,
+      "question": "在 Google Cloud 上，哪個服務提供發布／訂閱的非同步訊息傳遞，讓發布者和訂閱者解耦？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Pub/Sub",
+          "explanation": "正確。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud DNS",
+          "explanation": "Cloud DNS 是 DNS 服務。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud Build",
+          "explanation": "Cloud Build 是建置服務。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud Armor",
+          "explanation": "Cloud Armor 是網頁應用程式防火牆。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "message-queues-012",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "unitId": "message-queues",
+      "difficulty": 2,
+      "question": "一個 Pub/Sub 主題有 billing 和 shipping 兩個訂閱。發布一則訊息後，會發生什麼事？",
+      "options": [
+        {
+          "id": "a",
+          "text": "兩個訂閱各收到一份",
+          "explanation": "正確。主題的每個訂閱都會收到每則訊息。"
+        },
+        {
+          "id": "b",
+          "text": "只有其中一個訂閱收到",
+          "explanation": "連到同一個訂閱的訂閱者才是分攤訊息；不同訂閱各收一份。"
+        },
+        {
+          "id": "c",
+          "text": "先建立的訂閱收到，後建立的不會",
+          "explanation": "兩個訂閱都在發布前建立，所以都收到。"
+        },
+        {
+          "id": "d",
+          "text": "要等兩個訂閱都確認後才會傳送",
+          "explanation": "訊息會分別傳送到每個訂閱。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "message-queues-013",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "unitId": "message-queues",
+      "difficulty": 3,
+      "question": "Pub/Sub 訂閱設定了 dead-letter topic 和最多傳送 5 次，但一直確認失敗的訊息從來沒有被轉送到 dead-letter topic。最可能的原因是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "沒有授予 Pub/Sub 服務帳戶 dead-letter topic 的發布者角色，以及原本訂閱的訂閱者角色",
+          "explanation": "正確。權限不對時，Pub/Sub 不會計算傳送次數，也無法轉送。"
+        },
+        {
+          "id": "b",
+          "text": "最多傳送次數一定要設成 100",
+          "explanation": "5 是允許的最小值也是預設值。"
+        },
+        {
+          "id": "c",
+          "text": "dead-letter topic 要設定在主題上，不是訂閱上",
+          "explanation": "dead-letter topic 是訂閱的屬性。"
+        },
+        {
+          "id": "d",
+          "text": "要改用 push 訂閱",
+          "explanation": "pull 和 push 訂閱都支援 dead-letter topic。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "message-queues-014",
+      "type": "single",
+      "provider": "gcp",
+      "unitId": "message-queues",
+      "difficulty": 2,
+      "question": "相同使用者的事件要依照發布的順序被處理。使用 Pub/Sub 時應該怎麼做？",
+      "options": [
+        {
+          "id": "a",
+          "text": "發布時用使用者 ID 當 ordering key，並在訂閱啟用訊息排序",
+          "explanation": "正確。相同 ordering key 的訊息會依序傳送。"
+        },
+        {
+          "id": "b",
+          "text": "不用設定，Pub/Sub 預設就保證順序",
+          "explanation": "預設不保證順序。"
+        },
+        {
+          "id": "c",
+          "text": "把確認期限設成 600 秒",
+          "explanation": "確認期限和順序無關。"
+        },
+        {
+          "id": "d",
+          "text": "每個使用者建立一個主題",
+          "explanation": "不需要，而且難以管理。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    }
+  ]
+}

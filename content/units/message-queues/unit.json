@@ -1,0 +1,24 @@
+{
+  "id": "message-queues",
+  "title": "訊息佇列",
+  "summary": "讓系統的各個部分用訊息溝通，而不是直接呼叫彼此：佇列吸收突然湧入的工作、讓失敗可以重試，發布／訂閱讓一個事件同時通知很多服務。",
+  "stage": 3,
+  "prerequisites": ["iam-basics", "serverless"],
+  "providers": {
+    "aws": { "services": ["SQS", "SNS"] },
+    "gcp": { "services": ["Pub/Sub"] }
+  },
+  "compare": [
+    { "aspect": "佇列（一則訊息由一個消費者處理）", "aws": "Amazon SQS", "gcp": "Pub/Sub 的一個訂閱：連到同一個訂閱的多個訂閱者分攤訊息" },
+    { "aspect": "發布／訂閱（一則訊息送給很多接收端）", "aws": "Amazon SNS 主題，可以把 SQS 佇列訂閱上去（扇出）", "gcp": "Pub/Sub 主題的每個訂閱都會收到一份" },
+    { "aspect": "處理中的訊息暫時不給別人", "aws": "可見性逾時：預設 30 秒，最長 12 小時", "gcp": "確認期限（ack deadline）：預設 10 秒，10 到 600 秒" },
+    { "aspect": "處理完成", "aws": "用 ReceiptHandle 刪除訊息（delete-message）", "gcp": "用 ACK_ID 確認訊息（ack）" },
+    { "aspect": "訊息保留多久", "aws": "預設 4 天，60 秒到 14 天", "gcp": "訂閱的訊息保留期間預設 7 天，10 分鐘到 31 天" },
+    { "aspect": "一直處理失敗的訊息", "aws": "dead-letter queue：在來源佇列設定 redrive policy 的 maxReceiveCount", "gcp": "dead-letter topic：在訂閱設定最多傳送次數（5 到 100，預設 5）" },
+    { "aspect": "要額外給的權限", "aws": "佇列的存取政策要允許 SNS 主題 sqs:SendMessage", "gcp": "Pub/Sub 服務帳戶要能發布到 dead-letter topic、也能確認原本訂閱的訊息" },
+    { "aspect": "順序", "aws": "標準佇列不保證順序；FIFO 佇列依訊息群組保持順序", "gcp": "預設不保證順序；啟用訊息排序後，相同 ordering key 的訊息依序傳送" },
+    { "aspect": "命令列工具", "aws": "aws sqs、aws sns", "gcp": "gcloud pubsub topics、gcloud pubsub subscriptions" }
+  ],
+  "certDomains": ["clf-c02:3", "saa-c03:2", "gcp-cdl:4", "gcp-ace:2"],
+  "estimatedMinutes": 50
+}

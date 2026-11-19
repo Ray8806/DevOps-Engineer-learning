@@ -1,0 +1,79 @@
+{
+  "id": "gcp-pubsub",
+  "title": "Pub/Sub 主題、訂閱與 dead-letter topic",
+  "description": "建立主題和兩個訂閱，看每個訂閱各收到一份訊息；不確認訊息，觀察確認期限過後的重新傳送；設定 dead-letter topic 並授予 Pub/Sub 服務帳戶需要的角色，讓一直處理失敗的訊息被轉送出去。",
+  "provider": "gcp",
+  "estimatedMinutes": 30,
+  "initialState": {
+    "files": {},
+    "cloud": {}
+  },
+  "steps": [
+    {
+      "instruction": "建立主題 orders，以及兩個訂閱 billing 和 shipping（都接到 orders）。發布一則 order-1001，再分別從兩個訂閱用 --auto-ack 拉取：兩邊都收到了嗎？",
+      "hint": "gcloud pubsub topics create orders，gcloud pubsub subscriptions create billing --topic=orders，gcloud pubsub subscriptions create shipping --topic=orders，gcloud pubsub topics publish orders --message=order-1001，gcloud pubsub subscriptions pull billing --auto-ack，gcloud pubsub subscriptions pull shipping --auto-ack",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "pubsub",
+          "subscriptions",
+          "shipping",
+          "ackedAny"
+        ],
+        "equals": true
+      }
+    },
+    {
+      "instruction": "發布 order-1002，從 billing 拉取但不要加 --auto-ack（記下 ACK_ID）。馬上再拉一次：收得到嗎？用 sleep 10 讓 10 秒的確認期限過去，再拉一次，最後用新的 ACK_ID 確認這則訊息。",
+      "hint": "gcloud pubsub topics publish orders --message=order-1002，gcloud pubsub subscriptions pull billing（兩次），sleep 10，gcloud pubsub subscriptions pull billing，gcloud pubsub subscriptions ack billing --ack-ids=<ACK_ID>",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "pubsub",
+          "subscriptions",
+          "billing",
+          "ackedAfterRedelivery"
+        ],
+        "equals": true
+      }
+    },
+    {
+      "instruction": "幫 billing 設定 dead-letter topic：建立主題 orders-dead 和它的訂閱 orders-dead-sub，更新 billing 使用 orders-dead、最多傳送 5 次。用 gcloud projects describe my-project 查專案編號，授予 Pub/Sub 服務帳戶（service-專案編號@gcp-sa-pubsub.iam.gserviceaccount.com）orders-dead 的 roles/pubsub.publisher，以及 billing 的 roles/pubsub.subscriber。",
+      "hint": "gcloud pubsub topics create orders-dead，gcloud pubsub subscriptions create orders-dead-sub --topic=orders-dead，gcloud pubsub subscriptions update billing --dead-letter-topic=orders-dead --max-delivery-attempts=5，gcloud projects describe my-project，gcloud pubsub topics add-iam-policy-binding orders-dead --member=serviceAccount:service-498765432109@gcp-sa-pubsub.iam.gserviceaccount.com --role=roles/pubsub.publisher，gcloud pubsub subscriptions add-iam-policy-binding billing --member=serviceAccount:service-498765432109@gcp-sa-pubsub.iam.gserviceaccount.com --role=roles/pubsub.subscriber",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "pubsub",
+          "subscriptions",
+          "billing",
+          "iam",
+          "roles/pubsub.subscriber",
+          "serviceAccount:service-498765432109@gcp-sa-pubsub.iam.gserviceaccount.com"
+        ],
+        "equals": true
+      }
+    },
+    {
+      "instruction": "發布一則 bad-order。假裝一直處理失敗：重複「從 billing 拉取（不確認）、sleep 10」，注意 DELIVERY_ATTEMPT 的變化，直到 bad-order 不再出現。最後從 orders-dead-sub 用 --auto-ack 拉取，看看附加的屬性。",
+      "hint": "gcloud pubsub topics publish orders --message=bad-order，gcloud pubsub subscriptions pull billing && sleep 10（重複約 6 次），gcloud pubsub subscriptions pull orders-dead-sub --auto-ack",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "pubsub",
+          "subscriptions",
+          "orders-dead-sub",
+          "ackedAny"
+        ],
+        "equals": true
+      }
+    }
+  ]
+}

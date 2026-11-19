@@ -1,0 +1,80 @@
+{
+  "id": "aws-sqs-sns",
+  "title": "SQS 佇列、dead-letter queue 與 SNS 扇出",
+  "description": "建立 SQS 佇列，送出、接收、刪除訊息，觀察可見性逾時造成的重新傳送；設定 dead-letter queue 收容一直處理失敗的訊息；最後把佇列訂閱到 SNS 主題，並設定佇列政策讓 SNS 送得進來。",
+  "provider": "aws",
+  "estimatedMinutes": 30,
+  "initialState": {
+    "files": {
+      "~/redrive.json": "{\n  \"RedrivePolicy\": \"{\\\"deadLetterTargetArn\\\":\\\"arn:aws:sqs:us-east-1:123456789012:orders-dlq\\\",\\\"maxReceiveCount\\\":\\\"3\\\"}\"\n}\n",
+      "~/queue-policy.json": "{\n  \"Policy\": \"{\\\"Statement\\\":[{\\\"Effect\\\":\\\"Allow\\\",\\\"Principal\\\":{\\\"Service\\\":\\\"sns.amazonaws.com\\\"},\\\"Action\\\":\\\"sqs:SendMessage\\\",\\\"Resource\\\":\\\"arn:aws:sqs:us-east-1:123456789012:orders\\\",\\\"Condition\\\":{\\\"ArnEquals\\\":{\\\"aws:SourceArn\\\":\\\"arn:aws:sns:us-east-1:123456789012:order-events\\\"}}}]}\"\n}\n"
+    },
+    "cloud": {}
+  },
+  "steps": [
+    {
+      "instruction": "建立佇列 orders，送一則內容是 order-1001 的訊息。接收它（記下輸出裡的 ReceiptHandle），再用這個 ReceiptHandle 刪除訊息，代表處理完成。",
+      "hint": "aws sqs create-queue --queue-name orders，aws sqs send-message --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/orders --message-body order-1001，aws sqs receive-message --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/orders，aws sqs delete-message --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/orders --receipt-handle <ReceiptHandle>",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "sqs",
+          "queues",
+          "orders",
+          "deletedAny"
+        ],
+        "equals": true
+      }
+    },
+    {
+      "instruction": "再送一則 order-1002 並接收它，但這次不要刪除（假裝處理到一半當掉）。馬上再接收一次：收得到嗎？用 sleep 30 讓 30 秒的可見性逾時過去，再加上 --attribute-names All 接收一次，看 ApproximateReceiveCount。",
+      "hint": "aws sqs send-message --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/orders --message-body order-1002，aws sqs receive-message --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/orders（兩次），sleep 30，aws sqs receive-message --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/orders --attribute-names All",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "sqs",
+          "queues",
+          "orders",
+          "redelivered"
+        ],
+        "equals": true
+      }
+    },
+    {
+      "instruction": "order-1002 一直處理不完。建立 dead-letter queue orders-dlq，看看 ~/redrive.json，用它幫 orders 設定 redrive policy（最多接收 3 次）。接著重複「sleep 30、接收」，直到 order-1002 從 orders 消失，再到 orders-dlq 接收它。",
+      "hint": "aws sqs create-queue --queue-name orders-dlq，cat redrive.json，aws sqs set-queue-attributes --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/orders --attributes file://redrive.json，sleep 30，aws sqs receive-message --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/orders（重複），aws sqs receive-message --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/orders-dlq",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "sqs",
+          "queues",
+          "orders",
+          "movedToDeadLetter"
+        ],
+        "equals": true
+      }
+    },
+    {
+      "instruction": "建立 SNS 主題 order-events，把 orders 佇列訂閱上去（protocol 是 sqs，endpoint 是佇列的 ARN），發布一則訊息後到 orders 接收：收得到嗎？看看 ~/queue-policy.json，用它設定佇列政策允許這個主題送訊息，再發布一次並接收。",
+      "hint": "aws sns create-topic --name order-events，aws sns subscribe --topic-arn arn:aws:sns:us-east-1:123456789012:order-events --protocol sqs --notification-endpoint arn:aws:sqs:us-east-1:123456789012:orders，aws sns publish --topic-arn arn:aws:sns:us-east-1:123456789012:order-events --message order-1003，aws sqs receive-message --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/orders，aws sqs set-queue-attributes --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/orders --attributes file://queue-policy.json",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "sqs",
+          "queues",
+          "orders",
+          "receivedFromSns"
+        ],
+        "equals": true
+      }
+    }
+  ]
+}

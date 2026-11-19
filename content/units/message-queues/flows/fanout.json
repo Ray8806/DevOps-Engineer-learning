@@ -1,0 +1,64 @@
+{
+  "id": "fanout",
+  "title": "一個事件通知很多服務（扇出）",
+  "nodes": [
+    {
+      "id": "shop",
+      "label": "訂單服務",
+      "col": 0,
+      "row": 1
+    },
+    {
+      "id": "topic",
+      "label": "主題",
+      "detail": "order-events",
+      "col": 1,
+      "row": 1
+    },
+    {
+      "id": "billing",
+      "label": "帳務佇列",
+      "col": 2,
+      "row": 0
+    },
+    {
+      "id": "shipping",
+      "label": "出貨佇列",
+      "col": 2,
+      "row": 1
+    },
+    {
+      "id": "mail",
+      "label": "通知佇列",
+      "col": 2,
+      "row": 2
+    }
+  ],
+  "steps": [
+    {
+      "from": "shop",
+      "to": "topic",
+      "text": "訂單服務只把「訂單成立」發布到主題，不需要知道有誰要用。"
+    },
+    {
+      "from": "topic",
+      "to": "billing",
+      "text": "帳務的佇列收到一份。"
+    },
+    {
+      "from": "topic",
+      "to": "shipping",
+      "text": "出貨的佇列也收到一份。"
+    },
+    {
+      "from": "topic",
+      "to": "mail",
+      "text": "通知的佇列也收到一份。之後要加新的服務，只要再訂閱主題，訂單服務完全不用改。"
+    },
+    {
+      "from": "shipping",
+      "text": "出貨服務暫時故障也沒關係：訊息留在它自己的佇列裡，修好後再處理，不影響帳務和通知。",
+      "status": "fail"
+    }
+  ]
+}

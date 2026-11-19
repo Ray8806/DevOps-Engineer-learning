@@ -1,3 +1,4 @@
+import { PROJECT_NUMBER } from "./gcloud-pubsub";
 import { parseArgs, type Ctx } from "./context";
 
 const saEmail = (name: string, project: string) => `${name}@${project}.iam.gserviceaccount.com`;
@@ -73,11 +74,11 @@ export function projects(ctx: Ctx, args: string[]): number {
   const gcp = ctx.state.gcp;
 
   if (action === "list") {
-    ctx.out(`PROJECT_ID  NAME        PROJECT_NUMBER\n${gcp.project}  ${gcp.project}  123456789012\n`);
+    ctx.out(`PROJECT_ID  NAME        PROJECT_NUMBER\n${gcp.project}  ${gcp.project}  ${PROJECT_NUMBER}\n`);
     return 0;
   }
-  if (!["add-iam-policy-binding", "remove-iam-policy-binding", "get-iam-policy"].includes(action ?? "")) {
-    return error(ctx, "gcloud.projects", `不支援的指令 '${action ?? ""}'。支援 list、get-iam-policy、add-iam-policy-binding、remove-iam-policy-binding。`);
+  if (!["add-iam-policy-binding", "remove-iam-policy-binding", "get-iam-policy", "describe"].includes(action ?? "")) {
+    return error(ctx, "gcloud.projects", `不支援的指令 '${action ?? ""}'。支援 list、describe、get-iam-policy、add-iam-policy-binding、remove-iam-policy-binding。`);
   }
   const project = parsed.positional[0];
   if (!project) return error(ctx, command, "argument PROJECT_ID: Must be specified.");
@@ -86,6 +87,10 @@ export function projects(ctx: Ctx, args: string[]): number {
   }
   if (action === "get-iam-policy") {
     printPolicy(ctx);
+    return 0;
+  }
+  if (action === "describe") {
+    ctx.out(`createTime: '2026-01-05T08:00:00.000Z'\nlifecycleState: ACTIVE\nname: ${gcp.project}\nprojectId: ${gcp.project}\nprojectNumber: '${PROJECT_NUMBER}'\n`);
     return 0;
   }
 
