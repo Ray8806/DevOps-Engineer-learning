@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AccountLink } from "./AccountLink";
 
 const NAV = [
   { href: "/roadmap", label: "學習路線" },
@@ -26,6 +27,7 @@ export function SiteHeader() {
               {item.label}
             </Link>
           ))}
+          <AccountLink />
         </nav>
       </div>
     </header>

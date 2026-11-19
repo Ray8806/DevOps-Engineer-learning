@@ -1,8 +1,8 @@
 import { EMPTY_PROGRESS, parseProgress, type Progress } from "./progress";
 
 /**
- * Where progress is kept. Stage 7 adds a synced implementation behind the
- * same interface; UI code only talks to this.
+ * Where progress is kept. UI code only talks to this; when signed in,
+ * sync.ts keeps the same store in step with the account's copy.
  */
 export interface ProgressStore {
   /** Current progress. Returns the same object until something changes. */
