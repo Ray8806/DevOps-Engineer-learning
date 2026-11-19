@@ -159,7 +159,7 @@ export function Roadmap({ stages }: { stages: RoadmapStage[] }) {
           <p className="mt-2 max-w-md text-xs text-muted" role="status" data-testid="platform-effect">
             {preferred === "both"
               ? "顯示兩個平台的內容，測驗和 Lab 兩邊都要完成。"
-              : `只看 ${PROVIDER_LABEL[preferred]}：課文預設開啟 ${PROVIDER_LABEL[preferred]} 分頁，測驗和 Lab 只計入 ${PROVIDER_LABEL[preferred]} 與不分平台的部分。${
+              : `只看 ${PROVIDER_LABEL[preferred]}：單元只顯示 ${PROVIDER_LABEL[preferred]} 的做法（需要時可以切換看另一個平台），測驗和 Lab 只計入 ${PROVIDER_LABEL[preferred]} 與不分平台的部分。${
                   hiddenCount > 0 ? `已隱藏 ${hiddenCount} 個沒有 ${PROVIDER_LABEL[preferred]} 內容的單元。` : ""
                 }`}
           </p>

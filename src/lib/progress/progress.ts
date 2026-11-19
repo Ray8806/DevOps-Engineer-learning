@@ -186,6 +186,14 @@ export function countDone(progress: Progress, units: UnitRef[]): { done: number;
   return { done: units.filter((u) => isUnitDone(progress, u)).length, total: units.length };
 }
 
+/**
+ * Platforms a unit page shows: only the main platform when one is chosen and
+ * the unit covers it, otherwise every platform the unit covers.
+ */
+export function visibleProviders(preferred: PreferredProvider, available: Provider[]): Provider[] {
+  return preferred !== "both" && available.includes(preferred) ? [preferred] : available;
+}
+
 /** Which provider tab a lesson opens on. */
 export function defaultProvider(preferred: PreferredProvider, available: Provider[]): Provider | undefined {
   return preferred !== "both" && available.includes(preferred) ? preferred : available[0];
