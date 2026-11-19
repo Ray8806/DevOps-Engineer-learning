@@ -56,7 +56,8 @@
       "units": [
         "ha-website",
         "data-pipeline",
-        "disaster-recovery"
+        "disaster-recovery",
+        "cloud-interview"
       ]
     }
   ]

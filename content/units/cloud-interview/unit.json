@@ -1,0 +1,18 @@
+{
+  "id": "cloud-interview",
+  "title": "雲端工程師面試題",
+  "summary": "整理雲端工程師面試常見的觀念題、情境設計題、故障排除題與行為題。先自己想，再對照回答重點；答不出來就回到對應的單元複習。",
+  "stage": 4,
+  "prerequisites": [
+    "ha-website",
+    "data-pipeline",
+    "disaster-recovery"
+  ],
+  "providers": {},
+  "certDomains": [
+    "saa-c03:1",
+    "saa-c03:2",
+    "gcp-ace:3"
+  ],
+  "estimatedMinutes": 60
+}
