@@ -3,6 +3,7 @@ import {
   EMPTY_PROGRESS,
   countDone,
   defaultProvider,
+  visibleProviders,
   matchesProvider,
   missingPrerequisites,
   isLabDone,
@@ -239,6 +240,13 @@ describe("provider filter", () => {
     expect(defaultProvider("both", ["aws", "gcp"])).toBe("aws");
     expect(defaultProvider("gcp", ["aws"])).toBe("aws");
     expect(defaultProvider("aws", [])).toBeUndefined();
+  });
+
+  it("shows only the main platform on a unit page when the unit covers it", () => {
+    expect(visibleProviders("aws", ["aws", "gcp"])).toEqual(["aws"]);
+    expect(visibleProviders("both", ["aws", "gcp"])).toEqual(["aws", "gcp"]);
+    expect(visibleProviders("gcp", ["aws"])).toEqual(["aws"]);
+    expect(visibleProviders("aws", [])).toEqual([]);
   });
 });
 

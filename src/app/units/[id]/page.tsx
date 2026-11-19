@@ -3,11 +3,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
-import { LabCard } from "@/components/LabCard";
 import { lessonComponents } from "@/components/lesson-components";
 import { MarkReadButton } from "@/components/MarkReadButton";
 import { QuizCard } from "@/components/QuizCard";
-import { ProviderBadge } from "@/components/ProviderBadge";
+import { UnitLabs } from "@/components/UnitLabs";
+import { UnitProviderBadges } from "@/components/UnitProviderBadges";
 import { getContent } from "@/lib/content/loader";
 import { PROVIDERS } from "@/lib/content/schema";
 import { toUnitRef } from "@/lib/content/unit-ref";
@@ -44,11 +44,7 @@ export default async function UnitPage({ params }: PageProps<"/units/[id]">) {
         <h1 className="text-4xl font-extrabold tracking-tight">{meta.title}</h1>
         <p className="mt-3 text-lg text-muted">{meta.summary}</p>
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          {providers.map((p) => (
-            <ProviderBadge key={p} provider={p}>
-              {meta.providers[p]!.services.join("、")}
-            </ProviderBadge>
-          ))}
+          <UnitProviderBadges services={Object.fromEntries(providers.map((p) => [p, meta.providers[p]!.services]))} />
           <span className="text-sm text-muted">約 {meta.estimatedMinutes} 分鐘</span>
         </div>
         {meta.prerequisites.length > 0 ? (
@@ -86,20 +82,16 @@ export default async function UnitPage({ params }: PageProps<"/units/[id]">) {
           <li>
             <QuizCard unitId={meta.id} questionCount={unit.quiz.length} />
           </li>
-          {unit.labs.map((lab) => (
-            <li key={lab.id}>
-              <LabCard
-                unitId={meta.id}
-                lab={{
-                  id: lab.id,
-                  title: lab.title,
-                  description: lab.description,
-                  provider: lab.provider,
-                  estimatedMinutes: lab.estimatedMinutes,
-                }}
-              />
-            </li>
-          ))}
+          <UnitLabs
+            unitId={meta.id}
+            labs={unit.labs.map((lab) => ({
+              id: lab.id,
+              title: lab.title,
+              description: lab.description,
+              provider: lab.provider,
+              estimatedMinutes: lab.estimatedMinutes,
+            }))}
+          />
         </ul>
       </section>
     </article>
