@@ -1,0 +1,1718 @@
+{
+  "questions": [
+    {
+      "id": "clf-c02-d2-101",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 1,
+      "question": "依照 AWS 共同責任模型，下列哪一項屬於 AWS 的責任？",
+      "options": [
+        {
+          "id": "a",
+          "text": "決定哪些 IAM 使用者可以讀取 S3 bucket",
+          "explanation": "存取權限的設定是客戶的責任。"
+        },
+        {
+          "id": "b",
+          "text": "決定資料要不要加密",
+          "explanation": "客戶要依資料的敏感度與法規決定是否加密，屬於「雲端之中的安全」。"
+        },
+        {
+          "id": "c",
+          "text": "保護執行 AWS 服務的基礎設施，例如資料中心與硬體",
+          "explanation": "正確。這是「雲端本身的安全」（security of the cloud），由 AWS 負責。"
+        },
+        {
+          "id": "d",
+          "text": "設定 EC2 執行個體的安全群組規則",
+          "explanation": "控制執行個體的網路存取是客戶的責任。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-102",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 1,
+      "question": "依照 AWS 共同責任模型，「雲端之中的安全」（security in the cloud）由誰負責？",
+      "options": [
+        {
+          "id": "a",
+          "text": "客戶",
+          "explanation": "正確。客戶的責任範圍取決於使用的服務，也包含資料的敏感度、公司的要求與適用的法規。"
+        },
+        {
+          "id": "b",
+          "text": "第三方稽核機構",
+          "explanation": "稽核機構負責驗證 AWS 的控制措施，不負責客戶在雲端中的安全。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Support",
+          "explanation": "Support 提供協助，但不承擔客戶的安全責任。"
+        },
+        {
+          "id": "d",
+          "text": "AWS",
+          "explanation": "AWS 負責的是「雲端本身的安全」。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-103",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "使用 Amazon EC2 時，下列哪些是客戶的責任？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "管理客體作業系統（guest OS），包含更新與安全修補程式",
+          "explanation": "正確。EC2 文件列出客體作業系統與其上的軟體由客戶管理。"
+        },
+        {
+          "id": "b",
+          "text": "設定附加在執行個體上的 IAM 角色與權限",
+          "explanation": "正確。這也是 EC2 文件列出的客戶責任。"
+        },
+        {
+          "id": "c",
+          "text": "維護執行個體所在的實體主機",
+          "explanation": "實體主機屬於 AWS 負責的基礎設施。"
+        },
+        {
+          "id": "d",
+          "text": "更換資料中心故障的硬碟",
+          "explanation": "實體硬體由 AWS 負責。"
+        }
+      ],
+      "answer": [
+        "a",
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-104",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司把自行在 EC2 上安裝的資料庫改成 Amazon RDS。依照共同責任模型，哪一項工作從客戶轉移給 AWS？",
+      "options": [
+        {
+          "id": "a",
+          "text": "決定是否要加密資料庫",
+          "explanation": "是否開啟 RDS 加密由客戶決定。"
+        },
+        {
+          "id": "b",
+          "text": "決定誰可以登入資料庫",
+          "explanation": "使用資料庫引擎的帳號功能控制登入，仍是客戶的工作。"
+        },
+        {
+          "id": "c",
+          "text": "設定安全群組，控制哪些 IP 可以連線",
+          "explanation": "安全群組仍由客戶設定。"
+        },
+        {
+          "id": "d",
+          "text": "修補資料庫底層的作業系統",
+          "explanation": "正確。RDS 的維護項目包含底層作業系統的更新，由 RDS 在維護時段套用；在 EC2 上自己架設時，這是客戶的工作。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-105",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "使用 AWS Lambda 的 Lambda 受管執行環境（runtime）時，哪一項工作預設由 AWS 處理？",
+      "options": [
+        {
+          "id": "a",
+          "text": "修補執行環境的版本",
+          "explanation": "正確。使用 Lambda 受管的執行環境時，Lambda 預設會自動套用更新，承擔修補的工作。"
+        },
+        {
+          "id": "b",
+          "text": "決定哪些資料要傳給函式",
+          "explanation": "資料由客戶決定與保護。"
+        },
+        {
+          "id": "c",
+          "text": "撰寫函式的程式碼",
+          "explanation": "函式程式碼由客戶撰寫並負責。"
+        },
+        {
+          "id": "d",
+          "text": "設定函式的 IAM 權限",
+          "explanation": "權限設定由客戶負責。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-106",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 3,
+      "question": "比較 Amazon EC2、Amazon RDS、AWS Lambda，客戶需要自己管理的作業系統層面工作，由多到少的順序是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Lambda > RDS > EC2",
+          "explanation": "順序相反。越是全代管的服務，客戶要管理的越少。"
+        },
+        {
+          "id": "b",
+          "text": "RDS > EC2 > Lambda",
+          "explanation": "EC2 需要客戶管理整個客體作業系統，比 RDS 更多。"
+        },
+        {
+          "id": "c",
+          "text": "三者完全相同",
+          "explanation": "責任的分界會依使用的服務而改變。"
+        },
+        {
+          "id": "d",
+          "text": "EC2 > RDS > Lambda",
+          "explanation": "正確。EC2 的客體作業系統由客戶管理；RDS 的作業系統更新由 RDS 處理，但客戶仍要管理資料庫的設定；Lambda 連執行環境的修補都由 AWS 處理，客戶專注在程式碼。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-107",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於共同責任模型，哪些是不論使用哪一種服務，都屬於客戶的責任？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "決定哪些人可以存取自己的資料（身分與存取管理）",
+          "explanation": "正確。存取權限的設定一定是客戶的責任。"
+        },
+        {
+          "id": "b",
+          "text": "依資料的敏感度與法規，決定如何保護自己的資料",
+          "explanation": "正確。服務文件都指出，客戶要負責資料的敏感度、公司的要求與適用的法規。"
+        },
+        {
+          "id": "c",
+          "text": "資料中心的實體門禁",
+          "explanation": "實體安全由 AWS 負責。"
+        },
+        {
+          "id": "d",
+          "text": "AWS 全球網路的維護",
+          "explanation": "AWS 的基礎設施由 AWS 負責。"
+        }
+      ],
+      "answer": [
+        "a",
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-108",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 1,
+      "question": "稽核人員要求公司提供 AWS 的 SOC 報告與 ISO 認證。公司可以在哪裡免費下載？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Config",
+          "explanation": "Config 記錄你自己資源的設定，不提供 AWS 的合規報告。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Artifact",
+          "explanation": "正確。AWS Artifact 提供 AWS 安全與合規文件的隨選下載，例如 ISO、PCI 與 SOC 報告，免費提供。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Trusted Advisor",
+          "explanation": "Trusted Advisor 檢查你的環境並提出建議，不提供合規報告。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon Inspector",
+          "explanation": "Inspector 掃描工作負載的軟體弱點。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-109",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於 AWS Artifact，哪些敘述正確？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "下載 AWS 的報告後，客戶自己的系統就自動通過合規",
+          "explanation": "客戶仍要負責準備證明自家公司安全與合規的文件。"
+        },
+        {
+          "id": "b",
+          "text": "需要購買 Enterprise Support 才能使用",
+          "explanation": "AWS Artifact 的文件與協議免費提供。"
+        },
+        {
+          "id": "c",
+          "text": "可以檢視、接受並追蹤自己與 AWS 之間的協議（agreements）",
+          "explanation": "正確。也可以為組織中的多個帳戶管理協議。"
+        },
+        {
+          "id": "d",
+          "text": "可以把下載的文件交給稽核人員，證明所使用的 AWS 基礎設施與服務的安全與合規",
+          "explanation": "正確。這些文件稱為稽核成品（audit artifacts）。"
+        }
+      ],
+      "answer": [
+        "c",
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-110",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "資安主管想知道「上週是誰刪除了這個安全群組」。應該查詢哪一項服務的紀錄？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon CloudWatch 指標",
+          "explanation": "CloudWatch 指標記錄效能數值，例如 CPU 使用率，不記錄是誰做了什麼操作。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Artifact",
+          "explanation": "Artifact 提供 AWS 的合規報告。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Macie",
+          "explanation": "Macie 找出 S3 中的敏感資料。"
+        },
+        {
+          "id": "d",
+          "text": "AWS CloudTrail",
+          "explanation": "正確。CloudTrail 把使用者、角色或 AWS 服務執行的動作記錄成事件，包含主控台、CLI、SDK 與 API 的操作。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-111",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "沒有另外建立追蹤（trail）時，AWS CloudTrail 的事件歷史（Event history）可以查詢多久內的管理事件？",
+      "options": [
+        {
+          "id": "a",
+          "text": "過去 7 天",
+          "explanation": "事件歷史保留的是過去 90 天。"
+        },
+        {
+          "id": "b",
+          "text": "過去 30 天",
+          "explanation": "事件歷史保留的是過去 90 天。"
+        },
+        {
+          "id": "c",
+          "text": "過去 90 天",
+          "explanation": "正確。建立帳戶後就自動擁有，可以檢視、搜尋、下載，而且內容不可修改。要保存更久，就要另外建立追蹤，送到 S3。"
+        },
+        {
+          "id": "d",
+          "text": "永久保存",
+          "explanation": "事件歷史只有過去 90 天；要長期保存需要另外設定。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-112",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司規定所有 EBS 磁碟區都必須加密，希望持續檢查資源的設定，並在發現不符合規定的資源時標示出來、發出通知。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Pricing Calculator",
+          "explanation": "Pricing Calculator 用來估算費用。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Config",
+          "explanation": "正確。AWS Config 規則會評估資源的設定，違反規則時把資源標示為不合規（noncompliant）並發出通知。"
+        },
+        {
+          "id": "c",
+          "text": "AWS CloudTrail",
+          "explanation": "CloudTrail 記錄是誰做了哪些操作，但不會依規則評估資源的設定。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Artifact",
+          "explanation": "Artifact 提供 AWS 的合規報告。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-113",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 3,
+      "question": "關於 AWS CloudTrail 與 AWS Config 的差異，哪一項敘述最正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "CloudTrail 用來掃描軟體弱點，Config 用來阻擋 DDoS 攻擊",
+          "explanation": "掃描弱點是 Amazon Inspector，DDoS 防護是 AWS Shield。"
+        },
+        {
+          "id": "b",
+          "text": "Config 只能記錄 EC2，CloudTrail 只能記錄 S3",
+          "explanation": "兩者都支援許多種服務與資源。"
+        },
+        {
+          "id": "c",
+          "text": "CloudTrail 記錄「誰在什麼時候做了什麼操作」；Config 記錄「資源的設定，以及設定隨時間怎麼變化」",
+          "explanation": "正確。兩者常一起使用：Config 看到設定被改了，再用 CloudTrail 找出是誰改的。"
+        },
+        {
+          "id": "d",
+          "text": "兩者功能完全相同",
+          "explanation": "兩者記錄的內容不同。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-114",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 1,
+      "question": "團隊想即時觀察 EC2 執行個體的 CPU 使用率，並在超過門檻時發出警示。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS CloudTrail",
+          "explanation": "CloudTrail 記錄 API 操作，不是效能指標。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Artifact",
+          "explanation": "Artifact 提供合規報告。"
+        },
+        {
+          "id": "c",
+          "text": "AWS IAM",
+          "explanation": "IAM 管理身分與權限。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon CloudWatch",
+          "explanation": "正確。CloudWatch 即時監控 AWS 資源與應用程式，可以依指標設定警示。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-115",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 1,
+      "question": "資料在網路上傳送時，例如使用者從瀏覽器上傳檔案到 Amazon S3，防止被竊聽的做法稱為什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "靜態加密（encryption at rest）",
+          "explanation": "靜態加密保護的是存放在磁碟上的資料。"
+        },
+        {
+          "id": "b",
+          "text": "傳輸中加密（encryption in transit），例如使用 SSL/TLS",
+          "explanation": "正確。S3 文件說明可以用 SSL/TLS 或用戶端加密保護傳輸中的資料。"
+        },
+        {
+          "id": "c",
+          "text": "多重要素驗證",
+          "explanation": "MFA 是登入時的驗證方式，不是保護傳送中的資料。"
+        },
+        {
+          "id": "d",
+          "text": "最小權限原則",
+          "explanation": "最小權限原則是關於權限的設定。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-116",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於 Amazon S3 的靜態加密，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "開啟加密後，下載的檔案無法解密",
+          "explanation": "伺服器端加密在下載時由 S3 自動解密。"
+        },
+        {
+          "id": "b",
+          "text": "S3 預設不加密，必須手動為每個物件開啟",
+          "explanation": "目前所有 S3 bucket 預設都有加密設定，新上傳的物件會自動加密。"
+        },
+        {
+          "id": "c",
+          "text": "新上傳的物件會自動以 S3 管理的金鑰（SSE-S3）加密，不額外收費",
+          "explanation": "正確。SSE-S3 是每個 bucket 的預設加密設定；也可以改用 SSE-KMS 等其他方式。"
+        },
+        {
+          "id": "d",
+          "text": "S3 只支援用戶端加密",
+          "explanation": "S3 支援多種伺服器端加密，也可以搭配用戶端加密。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-117",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想自己建立與控制加密資料用的金鑰，並用金鑰政策決定哪些人可以使用。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Artifact",
+          "explanation": "Artifact 提供合規報告。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon Inspector",
+          "explanation": "Inspector 掃描軟體弱點。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Key Management Service（AWS KMS）",
+          "explanation": "正確。KMS 用來建立與控制加密、簽章用的金鑰；KMS 金鑰在服務內建立、使用與刪除，不會以未加密的形式離開服務。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Secrets Manager",
+          "explanation": "Secrets Manager 管理的是資料庫密碼、API 金鑰等秘密；加密金鑰建議用 KMS。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-118",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 3,
+      "question": "一家醫療業者要確認某項 AWS 服務是否在特定合規計畫（例如某國醫療法規）的範圍內。下列哪一項觀念正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "不同的 AWS 服務可能適用不同的合規計畫，要個別確認；客戶仍要負責自己系統的合規",
+          "explanation": "正確。各服務文件都會指向「依合規計畫列出的服務範圍」，客戶也要負責自己的文件與控制措施。"
+        },
+        {
+          "id": "b",
+          "text": "合規只和 AWS 有關，客戶不需要做任何事",
+          "explanation": "依照共同責任模型，客戶要負責自己在雲端中的合規。"
+        },
+        {
+          "id": "c",
+          "text": "只要購買 Enterprise Support，就自動符合法規",
+          "explanation": "支援方案不會讓系統自動合規。"
+        },
+        {
+          "id": "d",
+          "text": "只要使用 AWS，所有服務都自動符合所有產業與國家的法規",
+          "explanation": "合規要求會依服務、產業與地區不同，必須確認每項服務是否在該合規計畫的範圍內。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-119",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 1,
+      "question": "依照最小權限原則（principle of least privilege），授予權限時應該怎麼做？",
+      "options": [
+        {
+          "id": "a",
+          "text": "一開始就給予管理員權限，之後再慢慢收回",
+          "explanation": "這違反最小權限原則，權限過大會增加風險。"
+        },
+        {
+          "id": "b",
+          "text": "只授予執行工作所需的權限",
+          "explanation": "正確。IAM 最佳實務建議套用最小權限，並定期移除用不到的權限。"
+        },
+        {
+          "id": "c",
+          "text": "讓所有人共用同一組帳號",
+          "explanation": "共用帳號無法追蹤是誰做的，也無法個別控管權限。"
+        },
+        {
+          "id": "d",
+          "text": "只用 root 使用者執行日常工作",
+          "explanation": "root 使用者權限最大，不應用於日常工作。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-120",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "下列哪一項工作**只能**由 AWS 帳戶的 root 使用者執行？",
+      "options": [
+        {
+          "id": "a",
+          "text": "檢視 CloudTrail 事件歷史",
+          "explanation": "有權限的 IAM 身分就能檢視。"
+        },
+        {
+          "id": "b",
+          "text": "建立 EC2 執行個體",
+          "explanation": "有權限的 IAM 使用者或角色就能建立執行個體。"
+        },
+        {
+          "id": "c",
+          "text": "關閉獨立的（不屬於 AWS Organizations 的）AWS 帳戶",
+          "explanation": "正確。關閉獨立帳戶需要 root 使用者的憑證。"
+        },
+        {
+          "id": "d",
+          "text": "建立 IAM 使用者",
+          "explanation": "有權限的 IAM 管理員就能建立 IAM 使用者。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-121",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 3,
+      "question": "下列哪些工作需要 root 使用者的憑證？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "建立 S3 bucket",
+          "explanation": "有權限的 IAM 身分就能建立 bucket。"
+        },
+        {
+          "id": "b",
+          "text": "啟動 Lambda 函式",
+          "explanation": "有權限的 IAM 身分就能執行。"
+        },
+        {
+          "id": "c",
+          "text": "唯一的 IAM 管理員不小心撤銷了自己的權限，需要恢復 IAM 使用者的權限",
+          "explanation": "正確。這是 IAM 文件列出需要 root 使用者的工作之一。"
+        },
+        {
+          "id": "d",
+          "text": "在 Reserved Instance Marketplace 註冊成為賣家",
+          "explanation": "正確。這也是需要 root 使用者的工作。"
+        }
+      ],
+      "answer": [
+        "c",
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-122",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於保護 root 使用者，下列哪一項**不是** AWS 建議的做法？",
+      "options": [
+        {
+          "id": "a",
+          "text": "為 root 使用者開啟 MFA",
+          "explanation": "這是建議的做法。"
+        },
+        {
+          "id": "b",
+          "text": "為 root 使用者建立存取金鑰，方便用程式自動化",
+          "explanation": "正確。AWS 建議不要為 root 使用者建立存取金鑰。"
+        },
+        {
+          "id": "c",
+          "text": "使用群組電子郵件地址作為 root 使用者的信箱",
+          "explanation": "這是建議的做法，避免只有一個人能收到帳戶相關的信件。"
+        },
+        {
+          "id": "d",
+          "text": "使用強密碼",
+          "explanation": "這是建議的做法。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-123",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司有 15 位工程師需要相同的權限，人員會經常異動。在 IAM 中最容易依最小權限原則管理的方式是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "為每位工程師各自附加內嵌政策（inline policy）",
+          "explanation": "內嵌政策只屬於單一身分，人多時難以一致地管理。"
+        },
+        {
+          "id": "b",
+          "text": "建立一個 IAM 使用者群組，附加需要的政策，再把工程師加入群組",
+          "explanation": "正確。權限集中設定在群組上；新人加入群組、離職移出群組即可。"
+        },
+        {
+          "id": "c",
+          "text": "讓 15 位工程師共用一個 IAM 使用者",
+          "explanation": "共用帳號無法追蹤個人操作，也違反最佳實務。"
+        },
+        {
+          "id": "d",
+          "text": "讓所有人使用 root 使用者",
+          "explanation": "root 使用者不應用於日常工作。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-124",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於 IAM 的政策類型，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "政策只能附加到 root 使用者",
+          "explanation": "政策附加到 IAM 使用者、群組或角色。"
+        },
+        {
+          "id": "b",
+          "text": "AWS 受管政策可以由客戶修改內容",
+          "explanation": "AWS 受管政策由 AWS 建立與管理，客戶不能修改。"
+        },
+        {
+          "id": "c",
+          "text": "客戶受管政策由客戶建立，可以隨時修改，並附加到多個身分",
+          "explanation": "正確。客戶受管政策適合依自己的需求撰寫、在多個身分間重複使用。"
+        },
+        {
+          "id": "d",
+          "text": "內嵌政策可以同時附加到多個使用者",
+          "explanation": "內嵌政策與單一身分是一對一的關係。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-125",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 3,
+      "question": "團隊剛開始使用 AWS，不確定每個人需要哪些權限。依照 IAM 最佳實務，比較合適的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "不給任何權限，等出錯再說",
+          "explanation": "沒有權限就無法工作；應該從合理的權限開始再收斂。"
+        },
+        {
+          "id": "b",
+          "text": "全部使用 root 使用者",
+          "explanation": "root 使用者不應用於日常工作。"
+        },
+        {
+          "id": "c",
+          "text": "先用 AWS 受管政策開始，再逐步改成符合最小權限的客戶受管政策",
+          "explanation": "正確。IAM 最佳實務建議從 AWS 受管政策開始，並朝最小權限調整，例如參考存取活動產生政策。"
+        },
+        {
+          "id": "d",
+          "text": "給所有人 AdministratorAccess，永遠不調整",
+          "explanation": "這違反最小權限原則。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-126",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個在 EC2 上執行的應用程式需要讀取 S3。依照 IAM 最佳實務，應該怎麼提供憑證？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把 root 使用者的存取金鑰放在執行個體上",
+          "explanation": "絕對不要為 root 使用者建立存取金鑰。"
+        },
+        {
+          "id": "b",
+          "text": "把具有所需權限的 IAM 角色附加到執行個體，使用臨時憑證",
+          "explanation": "正確。IAM 最佳實務要求工作負載使用 IAM 角色的臨時憑證存取 AWS。"
+        },
+        {
+          "id": "c",
+          "text": "把存取金鑰存在公開的 S3 bucket",
+          "explanation": "這會讓任何人都能取得憑證。"
+        },
+        {
+          "id": "d",
+          "text": "把 IAM 使用者的存取金鑰寫在程式碼裡",
+          "explanation": "長期的存取金鑰寫在程式碼裡容易外洩。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-127",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於 IAM 存取金鑰，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "存取金鑰是臨時憑證，一小時後自動失效",
+          "explanation": "存取金鑰是 IAM 使用者或 root 使用者的長期憑證。"
+        },
+        {
+          "id": "b",
+          "text": "秘密存取金鑰只能在建立時取得；遺失時要刪除後重新建立",
+          "explanation": "正確。所以建立時就要存放在安全的地方。"
+        },
+        {
+          "id": "c",
+          "text": "存取金鑰用來登入 AWS 管理主控台",
+          "explanation": "存取金鑰用在 CLI、SDK 或 API 的程式化請求；主控台登入用密碼。"
+        },
+        {
+          "id": "d",
+          "text": "AWS 建議優先使用存取金鑰，而不是 IAM 角色",
+          "explanation": "AWS 建議優先使用臨時憑證（例如 IAM 角色），而不是長期的存取金鑰。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-128",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "應用程式需要連線資料庫的密碼，團隊希望不要把密碼寫在程式碼裡，而且能自動定期輪換密碼。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Shield",
+          "explanation": "Shield 防護 DDoS 攻擊。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Secrets Manager",
+          "explanation": "正確。Secrets Manager 管理、取得並輪換資料庫憑證、API 金鑰等秘密，可以設定自動輪換。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Artifact",
+          "explanation": "Artifact 提供合規報告。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon Inspector",
+          "explanation": "Inspector 掃描軟體弱點。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-129",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 3,
+      "question": "團隊要在 AWS Systems Manager Parameter Store 和 AWS Secrets Manager 之間選擇存放位置。依照官方建議，哪一項最合理？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Parameter Store 完全不能加密，所以不能存任何設定",
+          "explanation": "Parameter Store 支援 SecureString 加密型別。"
+        },
+        {
+          "id": "b",
+          "text": "AWS 的存取金鑰應該存在 Secrets Manager 中長期使用",
+          "explanation": "AWS 憑證建議使用 IAM（例如角色的臨時憑證），而不是長期金鑰。"
+        },
+        {
+          "id": "c",
+          "text": "一般的設定值（例如環境名稱、端點網址）放 Parameter Store；資料庫密碼這類需要自動輪換的秘密放 Secrets Manager",
+          "explanation": "正確。Parameter Store 是集中的設定資料存放處，也支援加密的 SecureString；對資料庫憑證、API 金鑰等秘密，文件建議使用有自動輪換功能的 Secrets Manager。"
+        },
+        {
+          "id": "d",
+          "text": "所有東西都寫在程式碼裡比較方便",
+          "explanation": "寫死在程式碼裡容易外洩，也難以更換。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-130",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司已經用自己的身分提供者（IdP）管理員工帳號，希望員工用公司帳號登入、取得多個 AWS 帳戶的存取權，而不必在每個帳戶建立 IAM 使用者。最適合使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "在每個帳戶各建立 IAM 使用者",
+          "explanation": "這正是題目想避免的做法；IAM 最佳實務建議人員透過聯合身分使用臨時憑證。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Secrets Manager",
+          "explanation": "Secrets Manager 管理秘密，不負責員工登入。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Macie",
+          "explanation": "Macie 找出 S3 中的敏感資料。"
+        },
+        {
+          "id": "d",
+          "text": "AWS IAM Identity Center",
+          "explanation": "正確。它可以連接既有的身分提供者並同步使用者與群組，讓員工存取組織中的多個 AWS 帳戶與應用程式。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-131",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "「使用者在外部的身分提供者登入，再取得 AWS 的臨時權限」，這種身分管理方式稱為什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "聯合身分（federation）",
+          "explanation": "正確。透過 SAML 2.0 或 OIDC 等標準，讓外部身分取得 AWS 資源的權限，不必在 AWS 建立長期的使用者憑證。"
+        },
+        {
+          "id": "b",
+          "text": "內嵌政策",
+          "explanation": "內嵌政策是政策的一種類型。"
+        },
+        {
+          "id": "c",
+          "text": "合併帳單",
+          "explanation": "合併帳單是帳單功能。"
+        },
+        {
+          "id": "d",
+          "text": "最小權限",
+          "explanation": "最小權限是授予權限的原則。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-132",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "A 帳戶的維運人員需要管理 B 帳戶的部分資源。依照 IAM 的建議，最合適的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把兩個帳戶合併成一個",
+          "explanation": "帳戶分開通常有隔離的目的，不需要為了存取而合併。"
+        },
+        {
+          "id": "b",
+          "text": "在 B 帳戶為每位人員建立 IAM 使用者，並寄送密碼",
+          "explanation": "這會讓每個人在多個帳戶都有長期憑證，難以管理。"
+        },
+        {
+          "id": "c",
+          "text": "在 B 帳戶建立 IAM 角色，允許 A 帳戶的人員切換（assume）這個角色",
+          "explanation": "正確。跨帳戶角色讓人員不必在每個帳戶都有 IAM 使用者，而是使用臨時憑證。"
+        },
+        {
+          "id": "d",
+          "text": "把 B 帳戶的 root 使用者密碼告訴維運人員",
+          "explanation": "絕對不應該共用 root 使用者的憑證。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-133",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於多重要素驗證（MFA），哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "MFA 只能用在 root 使用者",
+          "explanation": "IAM 使用者也可以、也應該開啟 MFA。"
+        },
+        {
+          "id": "b",
+          "text": "MFA 用來加密 S3 中的資料",
+          "explanation": "MFA 是驗證身分的方式，不是加密資料。"
+        },
+        {
+          "id": "c",
+          "text": "MFA 在密碼之外，再要求另一種驗證方式，提高帳戶的安全",
+          "explanation": "正確。IAM 最佳實務要求開啟 MFA，root 使用者更應該開啟。"
+        },
+        {
+          "id": "d",
+          "text": "開啟 MFA 後就不需要密碼",
+          "explanation": "MFA 是額外的驗證，不是取代密碼。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-134",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 3,
+      "question": "關於 IAM 的帳戶密碼政策，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "可以要求 IAM 使用者的密碼符合最低長度等條件，並設定到期期限",
+          "explanation": "正確。修改長度與字元規則後，會在使用者下次變更密碼時套用；到期期限則立即生效。"
+        },
+        {
+          "id": "b",
+          "text": "密碼政策會讓存取金鑰也定期到期",
+          "explanation": "密碼政策不套用到存取金鑰。"
+        },
+        {
+          "id": "c",
+          "text": "密碼到期後，IAM 使用者的所有存取方式都會立即停用",
+          "explanation": "密碼到期只影響主控台登入；使用者的存取金鑰仍可使用。"
+        },
+        {
+          "id": "d",
+          "text": "密碼政策也會套用到 root 使用者的密碼",
+          "explanation": "IAM 密碼政策不套用到 root 使用者的密碼，也不套用到存取金鑰。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-135",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 3,
+      "question": "稽核人員要求一份清單，列出帳戶中所有 IAM 使用者的密碼、存取金鑰與 MFA 裝置狀態。最適合使用哪一項功能？",
+      "options": [
+        {
+          "id": "a",
+          "text": "IAM 憑證報告（credential report）",
+          "explanation": "正確。憑證報告列出帳戶中所有使用者與其憑證的狀態，可以提供給外部稽核人員。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Cost and Usage Reports",
+          "explanation": "CUR 是帳單資料。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Artifact",
+          "explanation": "Artifact 提供的是 AWS 自己的合規報告，不是你帳戶中的使用者清單。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon CloudWatch 指標",
+          "explanation": "CloudWatch 指標是效能數值。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-136",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 3,
+      "question": "管理員想找出某個 IAM 角色已經很久沒用到的服務權限，以便移除、落實最小權限。應該參考哪一項資訊？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon Inspector",
+          "explanation": "Inspector 掃描軟體弱點，不分析 IAM 權限的使用情形。"
+        },
+        {
+          "id": "b",
+          "text": "IAM 的上次存取資訊（last accessed information）",
+          "explanation": "正確。它顯示身分最後一次使用各服務與動作的時間，協助移除用不到的權限。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Pricing Calculator",
+          "explanation": "Pricing Calculator 用來估算費用。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Health Dashboard",
+          "explanation": "Health Dashboard 顯示服務事件。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-137",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想自動、持續地掃描 EC2 執行個體、ECR 中的容器映像檔，找出軟體弱點與非預期的網路暴露。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Artifact",
+          "explanation": "Artifact 提供合規報告。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Shield",
+          "explanation": "Shield 防護 DDoS 攻擊。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Inspector",
+          "explanation": "正確。Inspector 是弱點管理服務，會自動找出工作負載並持續掃描軟體弱點與非預期的網路暴露。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon GuardDuty",
+          "explanation": "GuardDuty 偵測可疑與惡意的活動，例如憑證外洩、挖礦，不是軟體弱點掃描。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-138",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "資安團隊希望持續分析帳戶中的日誌與活動，偵測例如憑證外洩、EC2 上未經授權的加密貨幣挖礦等威脅。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon Inspector",
+          "explanation": "Inspector 掃描的是軟體弱點與網路暴露。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Config",
+          "explanation": "Config 記錄與評估資源的設定。"
+        },
+        {
+          "id": "c",
+          "text": "AWS KMS",
+          "explanation": "KMS 管理加密金鑰。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon GuardDuty",
+          "explanation": "正確。GuardDuty 是威脅偵測服務，利用威脅情報與機器學習找出可疑與惡意的活動。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-139",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 3,
+      "question": "公司使用了 GuardDuty、Inspector、Macie 等多項安全服務，希望在一個地方集中檢視這些發現，並依照 AWS 基礎安全最佳實務、CIS 等標準評估環境。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Security Hub",
+          "explanation": "正確。Security Hub 彙整各 AWS 帳戶、服務與第三方產品的安全資料，並依安全標準評估環境。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Artifact",
+          "explanation": "Artifact 提供 AWS 的合規報告，不會評估你的環境。"
+        },
+        {
+          "id": "c",
+          "text": "AWS CloudTrail",
+          "explanation": "CloudTrail 記錄 API 操作，不彙整安全服務的發現。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Firewall Manager",
+          "explanation": "Firewall Manager 集中管理跨帳戶的防火牆規則。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-140",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想自動找出存放在 Amazon S3 中的敏感資料（例如個人資料），並在 bucket 變成公開存取時收到通知。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Secrets Manager",
+          "explanation": "Secrets Manager 管理秘密，不會掃描 S3 中的資料。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon Macie",
+          "explanation": "正確。Macie 用機器學習與模式比對找出 S3 中的敏感資料，並評估 bucket 的安全與存取控制。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Inspector",
+          "explanation": "Inspector 掃描軟體弱點。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Shield",
+          "explanation": "Shield 防護 DDoS 攻擊。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-141",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想阻擋針對網站的惡意 HTTP(S) 請求，網站使用 Application Load Balancer 和 CloudFront。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Artifact",
+          "explanation": "Artifact 提供合規報告。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon Macie",
+          "explanation": "Macie 找出 S3 中的敏感資料。"
+        },
+        {
+          "id": "c",
+          "text": "AWS WAF",
+          "explanation": "正確。AWS WAF 是網頁應用程式防火牆，可以監控並控制送到 CloudFront、API Gateway、ALB 等資源的 HTTP(S) 請求。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon Inspector",
+          "explanation": "Inspector 掃描軟體弱點，不會攔截請求。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-142",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於 AWS Shield，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Shield Standard 需要另外訂閱並付費",
+          "explanation": "Shield Standard 對所有客戶自動提供、不另外收費。"
+        },
+        {
+          "id": "b",
+          "text": "Shield 用來掃描 EC2 上的軟體弱點",
+          "explanation": "掃描軟體弱點的是 Amazon Inspector。"
+        },
+        {
+          "id": "c",
+          "text": "Shield 用來管理 IAM 使用者",
+          "explanation": "管理身分的是 IAM。"
+        },
+        {
+          "id": "d",
+          "text": "所有 AWS 客戶都自動享有 Shield Standard，不另外收費，可以防禦常見的網路層與傳輸層 DDoS 攻擊",
+          "explanation": "正確。需要更進一步的偵測、緩解與回應能力時，可以訂閱 Shield Advanced。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-143",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 3,
+      "question": "公司在 AWS Organizations 中有數十個帳戶，希望一次設定 AWS WAF 規則與安全群組政策，並自動套用到所有帳戶，包括之後新增的資源。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Firewall Manager",
+          "explanation": "正確。Firewall Manager 讓你只設定一次保護措施，就自動套用到多個帳戶與資源，包含新增的資源。"
+        },
+        {
+          "id": "b",
+          "text": "AWS WAF（在每個帳戶個別設定）",
+          "explanation": "WAF 本身可以保護資源，但跨數十個帳戶逐一設定難以維持一致，這正是 Firewall Manager 解決的問題。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon GuardDuty",
+          "explanation": "GuardDuty 偵測威脅，不管理防火牆規則。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Artifact",
+          "explanation": "Artifact 提供合規報告。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-144",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 1,
+      "question": "公司想購買第三方廠商的資安產品（例如防火牆或端點防護），並在 AWS 上部署。可以在哪裡尋找？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS CloudTrail",
+          "explanation": "CloudTrail 記錄 API 操作。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Marketplace",
+          "explanation": "正確。Marketplace 包含資安等類別的大量第三方軟體，費用會併入 AWS 帳單。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Artifact",
+          "explanation": "Artifact 提供合規報告；也能下載 Marketplace 部分廠商的合規文件，但不是購買產品的地方。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Config",
+          "explanation": "Config 記錄與評估資源設定。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d2-145",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "哪一項 AWS 工具會檢查你的環境，並在安全方面提出建議（例如找出安全缺口），即使是 Basic Support 也能使用部分檢查？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Artifact",
+          "explanation": "Artifact 提供合規報告。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Marketplace",
+          "explanation": "Marketplace 是購買第三方軟體的地方。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Trusted Advisor",
+          "explanation": "正確。Basic Support 可以使用部分安全與容錯類別的檢查；Business Support+ 以上可以使用全部檢查。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Pricing Calculator",
+          "explanation": "Pricing Calculator 用來估算費用。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    }
+  ]
+}
