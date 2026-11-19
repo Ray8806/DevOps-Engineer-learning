@@ -643,6 +643,8 @@ export interface DockerState {
 
 export interface InitialState {
   files?: Record<string, string>;
+  /** Commands run by startLab() after the files and cloud are seeded. */
+  setup?: string[];
   cloud?: Record<string, unknown>;
 }
 
@@ -1119,6 +1121,8 @@ function autoscalingView(state: LabState) {
           max: g.max,
           desired: g.desired,
           inService: g.instances.length,
+          availabilityZones: keysTrue(g.subnets.map((sub) => state.aws.vpc.subnets.get(sub)?.availabilityZone ?? "")),
+          instanceZones: keysTrue(g.instances.map((id) => state.aws.ec2.instances.get(id)?.availabilityZone ?? "")),
           healthCheckType: g.healthCheckType,
           targetGroups: keysTrue(g.targetGroups),
           policies: Object.fromEntries([...g.policies].map(([p, v]) => [p, { metric: v.metric, target: v.target }])),

@@ -1,0 +1,92 @@
+{
+  "id": "gcp-ha-review",
+  "title": "找出並修好 Google Cloud 上的單點故障",
+  "description": "接手一個購物網站：全域負載平衡器後面只有 asia-east1-b 的一個 MIG、一台 VM，Cloud SQL 也只在一個可用區。盤點現況，在另一個可用區加上後端並設定自動擴展，把資料庫改成高可用，最後模擬一台 VM 故障。",
+  "provider": "gcp",
+  "estimatedMinutes": 25,
+  "initialState": {
+    "files": {},
+    "cloud": {},
+    "setup": [
+      "gcloud compute instance-templates create shop-template --machine-type=e2-small --tags=http-server",
+      "gcloud compute instance-groups managed create shop-mig-b --template=shop-template --size=1 --zone=asia-east1-b",
+      "gcloud compute instance-groups managed set-named-ports shop-mig-b --named-ports=http:80 --zone=asia-east1-b",
+      "gcloud compute firewall-rules create allow-health-check --allow=tcp:80 --source-ranges=35.191.0.0/16 --target-tags=http-server",
+      "gcloud compute health-checks create http shop-hc --port=80",
+      "gcloud compute backend-services create shop-backend --protocol=HTTP --port-name=http --health-checks=shop-hc --load-balancing-scheme=EXTERNAL_MANAGED --global",
+      "gcloud compute backend-services add-backend shop-backend --instance-group=shop-mig-b --instance-group-zone=asia-east1-b --global",
+      "gcloud compute url-maps create shop-map --default-service=shop-backend",
+      "gcloud compute target-http-proxies create shop-proxy --url-map=shop-map",
+      "gcloud compute forwarding-rules create shop-rule --load-balancing-scheme=EXTERNAL_MANAGED --global --target-http-proxy=shop-proxy --ports=80",
+      "gcloud sql instances create shop-db --database-version=POSTGRES_16 --edition=enterprise --cpu=2 --memory=8GiB --region=asia-east1"
+    ]
+  },
+  "steps": [
+    {
+      "instruction": "先盤點現況：看看後端服務 shop-backend 有哪些後端、健康的 VM 有幾台。asia-east1-b 整個故障的話會怎樣？用同一個範本在 asia-east1-c 建立 MIG shop-mig-c（1 台），設定具名連接埠 http:80，並把它加到 shop-backend。",
+      "hint": "gcloud compute backend-services describe shop-backend --global，gcloud compute backend-services get-health shop-backend --global，gcloud compute instance-groups managed create shop-mig-c --template=shop-template --size=1 --zone=asia-east1-c，gcloud compute instance-groups managed set-named-ports shop-mig-c --named-ports=http:80 --zone=asia-east1-c，gcloud compute backend-services add-backend shop-backend --instance-group=shop-mig-c --instance-group-zone=asia-east1-c --global",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "backendServices",
+          "shop-backend",
+          "backends",
+          "shop-mig-c"
+        ],
+        "exists": true
+      }
+    },
+    {
+      "instruction": "促銷時流量會暴增。幫兩個 MIG 都設定自動擴展：最少 1 台、最多 5 台、CPU 目標 60%。",
+      "hint": "gcloud compute instance-groups managed set-autoscaling shop-mig-b --zone=asia-east1-b --min-num-replicas=1 --max-num-replicas=5 --target-cpu-utilization=0.6，再對 shop-mig-c（--zone=asia-east1-c）做一次",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "migs",
+          "shop-mig-c",
+          "autoscaler"
+        ],
+        "equals": {
+          "min": 1,
+          "max": 5,
+          "cpu": 0.6
+        }
+      }
+    },
+    {
+      "instruction": "Cloud SQL 的 shop-db 也是單點故障。看看它的 availabilityType，改成高可用（REGIONAL）。",
+      "hint": "gcloud sql instances describe shop-db，gcloud sql instances patch shop-db --availability-type=REGIONAL",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "sql",
+          "instances",
+          "shop-db",
+          "availabilityType"
+        ],
+        "equals": "REGIONAL"
+      }
+    },
+    {
+      "instruction": "驗證自動修復：刪除 shop-mig-b 裡的 VM，再看 MIG 是不是用同樣的名稱重建，後端服務是不是仍然有 2 台健康的 VM。",
+      "hint": "gcloud compute instance-groups managed list-instances shop-mig-b --zone=asia-east1-b，gcloud compute instances delete <VM名稱> --zone=asia-east1-b，gcloud compute backend-services get-health shop-backend --global",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "migs",
+          "shop-mig-b",
+          "recreated"
+        ],
+        "equals": 1
+      }
+    }
+  ]
+}

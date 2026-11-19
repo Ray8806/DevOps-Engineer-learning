@@ -1,0 +1,86 @@
+{
+  "id": "ha-website",
+  "title": "案例：高可用網站",
+  "summary": "接手一個只要一台機器、一個可用區出問題就會停擺的購物網站，找出單點故障，一步步改成跨可用區、能自動擴展、資料庫能自動容錯移轉的架構。",
+  "stage": 4,
+  "prerequisites": [
+    "load-balancing",
+    "relational-databases",
+    "dns-cdn",
+    "virtual-networks"
+  ],
+  "providers": {
+    "aws": {
+      "services": [
+        "ELB",
+        "EC2 Auto Scaling",
+        "RDS Multi-AZ",
+        "CloudFront",
+        "ElastiCache"
+      ]
+    },
+    "gcp": {
+      "services": [
+        "Cloud Load Balancing",
+        "MIG",
+        "Cloud SQL HA",
+        "Cloud CDN",
+        "Memorystore"
+      ]
+    }
+  },
+  "compare": [
+    {
+      "aspect": "入口與分流",
+      "aws": "Application Load Balancer，放在至少兩個可用區",
+      "gcp": "全域外部 Application Load Balancer，一個 anycast IP"
+    },
+    {
+      "aspect": "網頁伺服器",
+      "aws": "Auto Scaling 群組，子網路分布在多個可用區",
+      "gcp": "regional MIG（預設分散在三個可用區），或多個 zonal MIG 都加為後端"
+    },
+    {
+      "aspect": "自動修復",
+      "aws": "Auto Scaling 群組替換不健康的執行個體（可使用 ELB 健康檢查）",
+      "gcp": "MIG 自動修復，搭配應用程式的健康檢查"
+    },
+    {
+      "aspect": "關聯式資料庫",
+      "aws": "RDS Multi-AZ：另一個可用區的備用執行個體，同步複寫、自動容錯移轉",
+      "gcp": "Cloud SQL 高可用（REGIONAL）：兩個可用區，自動容錯移轉"
+    },
+    {
+      "aspect": "讀取量大",
+      "aws": "RDS 唯讀複本",
+      "gcp": "Cloud SQL 唯讀複本"
+    },
+    {
+      "aspect": "工作階段與快取",
+      "aws": "ElastiCache（Valkey、Redis OSS、Memcached），可選 Multi-AZ",
+      "gcp": "Memorystore for Redis Standard Tier：跨可用區複本、99.9% SLA"
+    },
+    {
+      "aspect": "靜態檔案",
+      "aws": "S3 + CloudFront",
+      "gcp": "Cloud Storage + Cloud CDN"
+    },
+    {
+      "aspect": "耗時的工作",
+      "aws": "SQS 佇列，由背景的工作者處理",
+      "gcp": "Pub/Sub，由背景的訂閱者處理"
+    },
+    {
+      "aspect": "網頁防護",
+      "aws": "AWS WAF 關聯到 ALB",
+      "gcp": "Cloud Armor 安全政策掛到後端服務"
+    }
+  ],
+  "certDomains": [
+    "saa-c03:2",
+    "clf-c02:3",
+    "gcp-ace:2",
+    "gcp-cdl:4"
+  ],
+  "estimatedMinutes": 60
+}

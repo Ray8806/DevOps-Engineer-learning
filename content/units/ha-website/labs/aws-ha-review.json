@@ -1,0 +1,110 @@
+{
+  "id": "aws-ha-review",
+  "title": "找出並修好 AWS 上的單點故障",
+  "description": "接手一個購物網站：ALB 已經跨兩個可用區，但後面只有一台 EC2、資料庫也只在一個可用區。盤點現況，把網頁伺服器分散到兩個可用區並自動擴展，資料庫改成 Multi-AZ，最後模擬一台機器故障。",
+  "provider": "aws",
+  "estimatedMinutes": 25,
+  "initialState": {
+    "files": {},
+    "cloud": {
+      "aws": {
+        "vpcs": {
+          "vpc-0f3c2a1b9d8e7c6b5": {
+            "cidr": "10.0.0.0/16",
+            "internetGateway": true,
+            "subnets": {
+              "subnet-0a1b2c3d4e5f60718": {
+                "cidr": "10.0.1.0/24",
+                "availabilityZone": "us-east-1a"
+              },
+              "subnet-0b2c3d4e5f6071829": {
+                "cidr": "10.0.2.0/24",
+                "availabilityZone": "us-east-1b"
+              }
+            }
+          }
+        }
+      }
+    },
+    "setup": [
+      "aws ec2 create-launch-template --launch-template-name shop-template --launch-template-data '{\"ImageId\": \"ami-0abcdef1234567890\", \"InstanceType\": \"t3.micro\"}'",
+      "aws elbv2 create-target-group --name shop-tg --protocol HTTP --port 80 --vpc-id vpc-0f3c2a1b9d8e7c6b5 --health-check-path /health",
+      "aws elbv2 create-load-balancer --name shop-alb --subnets subnet-0a1b2c3d4e5f60718 subnet-0b2c3d4e5f6071829",
+      "aws elbv2 create-listener --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/app/shop-alb/a25b3752bf56f4b0 --protocol HTTP --port 80 --default-actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/shop-tg/ffd11ff0aa762598",
+      "aws autoscaling create-auto-scaling-group --auto-scaling-group-name shop-asg --launch-template LaunchTemplateName=shop-template --min-size 1 --max-size 1 --desired-capacity 1 --vpc-zone-identifier \"subnet-0a1b2c3d4e5f60718\" --target-group-arns arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/shop-tg/ffd11ff0aa762598",
+      "aws rds create-db-subnet-group --db-subnet-group-name shop-db-subnets --db-subnet-group-description \"Shop database\" --subnet-ids subnet-0a1b2c3d4e5f60718 subnet-0b2c3d4e5f6071829",
+      "aws rds create-db-instance --db-instance-identifier shop-db --engine mysql --db-instance-class db.t3.micro --allocated-storage 20 --master-username admin --manage-master-user-password --db-subnet-group-name shop-db-subnets --no-publicly-accessible"
+    ]
+  },
+  "steps": [
+    {
+      "instruction": "先盤點現況：看看 Auto Scaling 群組 shop-asg 有幾台機器、用了哪些子網路，再看目標群組的健康狀態。us-east-1a 整個故障的話會怎樣？把 shop-asg 改成使用兩個子網路，最少 2 台、最多 6 台、目前 2 台，讓兩個可用區各有機器。",
+      "hint": "aws autoscaling describe-auto-scaling-groups，aws elbv2 describe-target-health --target-group-arn arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/shop-tg/ffd11ff0aa762598，aws ec2 describe-subnets，aws autoscaling update-auto-scaling-group --auto-scaling-group-name shop-asg --vpc-zone-identifier \"subnet-0a1b2c3d4e5f60718,subnet-0b2c3d4e5f6071829\" --min-size 2 --max-size 6 --desired-capacity 2",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "autoscaling",
+          "groups",
+          "shop-asg",
+          "instanceZones",
+          "us-east-1b"
+        ],
+        "equals": true
+      }
+    },
+    {
+      "instruction": "促銷時流量會暴增。幫 shop-asg 加上目標追蹤政策 cpu50：讓群組的平均 CPU 維持在 50%。",
+      "hint": "aws autoscaling put-scaling-policy --auto-scaling-group-name shop-asg --policy-name cpu50 --policy-type TargetTrackingScaling --target-tracking-configuration '{\"PredefinedMetricSpecification\": {\"PredefinedMetricType\": \"ASGAverageCPUUtilization\"}, \"TargetValue\": 50}'",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "autoscaling",
+          "groups",
+          "shop-asg",
+          "policies",
+          "cpu50"
+        ],
+        "equals": {
+          "metric": "ASGAverageCPUUtilization",
+          "target": 50
+        }
+      }
+    },
+    {
+      "instruction": "資料庫 shop-db 也是單點故障。看看它的 MultiAZ 設定，改成 Multi-AZ，並且立刻套用（不要等到維護時段）。",
+      "hint": "aws rds describe-db-instances --db-instance-identifier shop-db，aws rds modify-db-instance --db-instance-identifier shop-db --multi-az --apply-immediately",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "rds",
+          "instances",
+          "shop-db",
+          "multiAZ"
+        ],
+        "equals": true
+      }
+    },
+    {
+      "instruction": "驗證自動修復：終止 shop-asg 裡的任一台執行個體，再看群組是不是自動補上一台新的，目標群組是不是仍然有 2 個健康的目標。",
+      "hint": "aws autoscaling describe-auto-scaling-groups（找出執行個體 ID），aws ec2 terminate-instances --instance-ids <執行個體ID>，aws autoscaling describe-auto-scaling-groups，aws elbv2 describe-target-health --target-group-arn arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/shop-tg/ffd11ff0aa762598",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "autoscaling",
+          "groups",
+          "shop-asg",
+          "replacedInstances"
+        ],
+        "equals": 1
+      }
+    }
+  ]
+}

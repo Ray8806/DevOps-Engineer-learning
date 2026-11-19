@@ -7,7 +7,7 @@ import { kubectl } from "./kubectl";
 import { terraform } from "./terraform";
 import { linuxCommands } from "./linux";
 import { parseLine } from "./parse";
-import { cloneState, dirname, displayPath, listDir, resolvePath, type LabState } from "./state";
+import { cloneState, createLabState, dirname, displayPath, listDir, resolvePath, type InitialState, type LabState } from "./state";
 
 export interface OutputLine {
   text: string;
@@ -169,6 +169,20 @@ export function execute(state: LabState, line: string): ExecResult {
   }
 
   return { state: draft, lines, clear, exitCode: lastCode };
+}
+
+/**
+ * A lab's starting state: the seeded files and cloud, then its setup
+ * commands. Throws when a setup command fails, since the lab would be broken.
+ */
+export function startLab(initial: InitialState): LabState {
+  let state = createLabState(initial);
+  for (const line of initial.setup ?? []) {
+    const result = execute(state, line);
+    if (result.exitCode !== 0) throw new Error(`Lab setup failed at "${line}": ${result.lines.map((l) => l.text).join(" ")}`);
+    state = result.state;
+  }
+  return { ...state, cwd: createLabState({}).cwd };
 }
 
 /** Shell prompt for the current directory. */

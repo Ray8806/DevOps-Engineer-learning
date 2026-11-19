@@ -176,8 +176,13 @@ export const LabSchema = z.strictObject({
       files: z.record(labPath, z.string()).default({}),
       /** Virtual cloud resources, shape owned by the lab engine. */
       cloud: z.record(z.string(), z.json()).default({}),
+      /**
+       * Commands run before the learner starts, to build an environment the
+       * lab then asks them to inspect or fix. Each must succeed.
+       */
+      setup: z.array(z.string().min(1)).default([]),
     })
-    .default({ files: {}, cloud: {} }),
+    .default({ files: {}, cloud: {}, setup: [] }),
   steps: z
     .array(
       z.strictObject({
