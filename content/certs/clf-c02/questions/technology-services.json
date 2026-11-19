@@ -1,0 +1,2403 @@
+{
+  "questions": [
+    {
+      "id": "clf-c02-d3-101",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 1,
+      "question": "工程師想在不寫程式的情況下，透過網頁介面建立一台 EC2 執行個體來試用。最適合使用哪一種方式？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Direct Connect",
+          "explanation": "Direct Connect 是專線網路連線，不是操作 AWS 的介面。"
+        },
+        {
+          "id": "b",
+          "text": "AWS 管理主控台",
+          "explanation": "正確。主控台是網頁介面，適合一次性的操作與初次探索。"
+        },
+        {
+          "id": "c",
+          "text": "AWS CloudFormation 範本",
+          "explanation": "IaC 適合可重複的部署，對一次性試用來說要先寫範本，比較繁瑣。"
+        },
+        {
+          "id": "d",
+          "text": "AWS SDK",
+          "explanation": "SDK 需要撰寫程式。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-102",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊需要在開發、測試、正式三個環境，反覆建立完全相同的網路與伺服器設定，並能追蹤每次變更。最適合哪一種方式？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把設定步驟寫在文件中，請同事照做",
+          "explanation": "人工照做仍可能出錯，也無法自動化。"
+        },
+        {
+          "id": "b",
+          "text": "用 AWS Marketplace 購買",
+          "explanation": "Marketplace 是購買第三方軟體的地方。"
+        },
+        {
+          "id": "c",
+          "text": "每次都在主控台手動點選建立",
+          "explanation": "手動操作容易出錯，也難以保證三個環境一致。"
+        },
+        {
+          "id": "d",
+          "text": "基礎架構即程式碼（IaC），例如 AWS CloudFormation",
+          "explanation": "正確。用範本描述資源，可以重複建立相同的環境，範本也能放進版本控制追蹤變更。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-103",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "開發人員想在自己的 Python 應用程式中呼叫 AWS 服務（例如把檔案上傳到 S3）。應該使用哪一種方式？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS SDK",
+          "explanation": "正確。SDK 讓應用程式以程式語言呼叫 AWS 的 API。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Artifact",
+          "explanation": "Artifact 提供合規報告。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon WorkSpaces",
+          "explanation": "WorkSpaces 是雲端桌面服務。"
+        },
+        {
+          "id": "d",
+          "text": "AWS 管理主控台",
+          "explanation": "主控台是給人操作的網頁介面，不能從應用程式呼叫。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-104",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "維運人員想在終端機用指令操作 AWS，並寫成 shell 腳本自動執行，但不想在自己的電腦安裝工具。下列哪一項最適合？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS CloudShell",
+          "explanation": "正確。CloudShell 是瀏覽器中的 shell，已經用主控台的憑證完成驗證，並預先安裝了常用工具，例如 AWS CLI。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Pricing Calculator",
+          "explanation": "Pricing Calculator 用來估算費用。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Lex",
+          "explanation": "Lex 用來建立對話介面。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Artifact",
+          "explanation": "Artifact 提供合規報告。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-105",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 1,
+      "question": "一家公司把部分應用程式搬到 AWS，同時保留內部資料中心的系統，兩邊透過網路互相連接。這屬於哪一種部署模型？",
+      "options": [
+        {
+          "id": "a",
+          "text": "多帳戶",
+          "explanation": "多帳戶是帳戶的組織方式，不是部署模型。"
+        },
+        {
+          "id": "b",
+          "text": "雲端（cloud）",
+          "explanation": "雲端部署是應用程式的所有部分都在雲端執行。"
+        },
+        {
+          "id": "c",
+          "text": "混合（hybrid）",
+          "explanation": "正確。混合部署連接雲端資源與不在雲端的既有資源，最常見的是雲端與內部部署的組合。"
+        },
+        {
+          "id": "d",
+          "text": "內部部署（on-premises）",
+          "explanation": "內部部署是資源全部在自己的資料中心。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-106",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司希望在自己的資料中心使用與 AWS 雲端相同的 API、工具與硬體，執行 AWS 的服務，硬體由 AWS 管理與維護。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Lambda",
+          "explanation": "Lambda 是無伺服器運算，在 AWS 雲端執行。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon Lightsail",
+          "explanation": "Lightsail 是在 AWS 雲端啟動虛擬私人伺服器的簡易方式。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Outposts",
+          "explanation": "正確。Outposts 把 AWS 的服務、基礎設施與營運模式帶到資料中心或其他內部場所，硬體由 AWS 全面管理、維護與支援。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon CloudFront",
+          "explanation": "CloudFront 是內容傳遞網路。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-107",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 1,
+      "question": "Amazon CloudFront 透過什麼把內容快取在離使用者較近的地方，以降低延遲？",
+      "options": [
+        {
+          "id": "a",
+          "text": "節點位置（edge locations）",
+          "explanation": "正確。CloudFront 透過遍布全球、稱為節點位置的資料中心傳遞內容；內容已經在延遲最低的節點時，會直接回應。"
+        },
+        {
+          "id": "b",
+          "text": "VPC 子網路",
+          "explanation": "子網路是 VPC 中的 IP 範圍。"
+        },
+        {
+          "id": "c",
+          "text": "IAM 角色",
+          "explanation": "IAM 角色用來授予權限。"
+        },
+        {
+          "id": "d",
+          "text": "可用區（Availability Zone）",
+          "explanation": "可用區是 Region 中的資料中心，不是 CloudFront 快取內容的地方。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-108",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於可用區（Availability Zone），哪些敘述正確？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "每個可用區由一個或多個獨立的資料中心組成，各自有獨立且備援的電力、網路與連線",
+          "explanation": "正確。這讓可用區之間不共用單一故障點。"
+        },
+        {
+          "id": "b",
+          "text": "同一個 Region 的可用區之間有一段距離，以避免同時故障，但又以低延遲的網路相連",
+          "explanation": "正確。所以可以在同一個 Region 跨可用區部署高可用的應用程式。"
+        },
+        {
+          "id": "c",
+          "text": "同一個 Region 的所有可用區共用一套電力系統",
+          "explanation": "可用區有獨立的電力，不共用單一故障點。"
+        },
+        {
+          "id": "d",
+          "text": "一個可用區包含多個 Region",
+          "explanation": "相反，一個 Region 包含多個可用區。"
+        }
+      ],
+      "answer": [
+        "a",
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-109",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "下列哪些是使用多個 AWS Region 的合理原因？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "免除所有資料傳輸費用",
+          "explanation": "跨 Region 傳輸資料通常會產生費用。"
+        },
+        {
+          "id": "b",
+          "text": "災難復原與營運持續，在整個 Region 發生問題時仍能服務",
+          "explanation": "正確。考試指南列出的原因包含災難復原、營運持續。"
+        },
+        {
+          "id": "c",
+          "text": "讓不同國家的使用者連到較近的 Region 以降低延遲，或滿足資料必須存放在特定國家的規定（資料主權）",
+          "explanation": "正確。降低終端使用者的延遲與資料主權都是使用多個 Region 的原因。"
+        },
+        {
+          "id": "d",
+          "text": "讓單一 EC2 執行個體自動變快",
+          "explanation": "Region 的數量不會改變單一執行個體的效能。"
+        }
+      ],
+      "answer": [
+        "b",
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-110",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "全球的使用者都會連到同一個應用程式。公司想用固定的 IP 位址作為入口，透過 AWS 全球網路把流量送到健康的端點，提升可用性與效能。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Glue",
+          "explanation": "Glue 是 ETL 服務。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon Polly",
+          "explanation": "Polly 把文字轉成語音。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Global Accelerator",
+          "explanation": "正確。Global Accelerator 提升提供給全球使用者的應用程式的可用性與效能。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon EBS",
+          "explanation": "EBS 是區塊儲存。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-111",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個批次處理工作需要大量的 CPU 運算，例如媒體轉檔和科學模擬。最適合哪一類 EC2 執行個體？",
+      "options": [
+        {
+          "id": "a",
+          "text": "儲存最佳化（Storage optimized）",
+          "explanation": "儲存最佳化適合需要對本機大型資料集進行大量循序讀寫的工作。"
+        },
+        {
+          "id": "b",
+          "text": "記憶體最佳化（Memory optimized）",
+          "explanation": "記憶體最佳化適合在記憶體中處理大型資料集的工作。"
+        },
+        {
+          "id": "c",
+          "text": "一般用途（General purpose）",
+          "explanation": "一般用途在運算、記憶體與網路之間取得平衡，不是專為大量 CPU 運算設計。"
+        },
+        {
+          "id": "d",
+          "text": "運算最佳化（Compute optimized）",
+          "explanation": "正確。運算最佳化執行個體適合需要高效能處理器的工作，例如批次處理、媒體轉檔、高效能運算與科學模擬。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-112",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個工作負載需要對本機儲存上非常大的資料集，進行大量的循序讀寫與高 IOPS 的隨機存取。最適合哪一類 EC2 執行個體？",
+      "options": [
+        {
+          "id": "a",
+          "text": "儲存最佳化（Storage optimized）",
+          "explanation": "正確。儲存最佳化執行個體為本機大型資料集的高循序讀寫與低延遲隨機 I/O 設計。"
+        },
+        {
+          "id": "b",
+          "text": "運算最佳化（Compute optimized）",
+          "explanation": "運算最佳化著重在處理器效能。"
+        },
+        {
+          "id": "c",
+          "text": "加速運算（Accelerated computing）",
+          "explanation": "加速運算使用 GPU 等硬體加速器。"
+        },
+        {
+          "id": "d",
+          "text": "突發效能（T 系列）",
+          "explanation": "T 系列是一般用途、可以短暫提高 CPU 效能的執行個體。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-113",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個記憶體內資料庫需要在記憶體中處理非常大的資料集。最適合哪一類 EC2 執行個體？",
+      "options": [
+        {
+          "id": "a",
+          "text": "加速運算（Accelerated computing）",
+          "explanation": "加速運算使用 GPU 等硬體加速器。"
+        },
+        {
+          "id": "b",
+          "text": "運算最佳化（Compute optimized）",
+          "explanation": "運算最佳化著重在處理器效能。"
+        },
+        {
+          "id": "c",
+          "text": "記憶體最佳化（Memory optimized）",
+          "explanation": "正確。記憶體最佳化執行個體為在記憶體中處理大型資料集的工作提供快速的效能。"
+        },
+        {
+          "id": "d",
+          "text": "儲存最佳化（Storage optimized）",
+          "explanation": "儲存最佳化著重在本機儲存的讀寫。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-114",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊想用 Kubernetes 執行容器化的應用程式，但不想自己安裝與維運 Kubernetes 的控制平面。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon ECR",
+          "explanation": "ECR 是存放容器映像檔的倉庫。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Lambda",
+          "explanation": "Lambda 執行函式，不是 Kubernetes。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon EKS",
+          "explanation": "正確。Amazon EKS 是代管的 Kubernetes 服務。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon ECS",
+          "explanation": "ECS 是 AWS 自己的容器協調服務，不是 Kubernetes。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-115",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊想執行容器，但不想佈建、修補或擴展執行容器的伺服器叢集，只想指定 CPU 與記憶體。應該搭配 Amazon ECS 使用哪一項？",
+      "options": [
+        {
+          "id": "a",
+          "text": "EC2 啟動類型",
+          "explanation": "EC2 啟動類型給你伺服器層級的控制，但也要自己佈建、修補與擴展伺服器叢集。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon EBS",
+          "explanation": "EBS 是區塊儲存。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Outposts",
+          "explanation": "Outposts 是在內部部署環境執行 AWS 服務。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Fargate",
+          "explanation": "正確。Fargate 是 ECS 的運算引擎，不必管理伺服器或叢集；只要把應用程式打包成容器、指定 CPU 與記憶體即可。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-116",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "電商網站的流量在一天之中變化很大。哪一項服務可以依照你定義的條件，自動增加或移除 EC2 執行個體，提供彈性？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon EC2 Auto Scaling",
+          "explanation": "正確。它依照你定義的條件自動新增或移除執行個體，也能維持機群的健康與可用性。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Backup",
+          "explanation": "Backup 集中管理備份。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Route 53",
+          "explanation": "Route 53 是 DNS 服務。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Artifact",
+          "explanation": "Artifact 提供合規報告。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-117",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "負載平衡器（Elastic Load Balancing）的主要用途是什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把文字轉成語音",
+          "explanation": "這是 Amazon Polly。"
+        },
+        {
+          "id": "b",
+          "text": "把傳入的應用程式流量自動分散到多個目標，例如 EC2 執行個體、容器與 IP 位址",
+          "explanation": "正確。它可以在單一或多個可用區之間分散流量，也會把流量只送到健康的目標。"
+        },
+        {
+          "id": "c",
+          "text": "加密 S3 中的資料",
+          "explanation": "加密由 S3 與 KMS 處理。"
+        },
+        {
+          "id": "d",
+          "text": "把資料庫遷移到 AWS",
+          "explanation": "資料庫遷移使用 AWS DMS。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-118",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "網站的流量是 HTTP/HTTPS，需要依照網址路徑把請求送到不同的微服務。最適合哪一種負載平衡器？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon CloudFront",
+          "explanation": "CloudFront 是內容傳遞網路，不是用來在微服務之間分散流量的負載平衡器。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Direct Connect",
+          "explanation": "Direct Connect 是專線連線。"
+        },
+        {
+          "id": "c",
+          "text": "Application Load Balancer",
+          "explanation": "正確。ALB 最適合 HTTP 與 HTTPS 流量，提供進階的請求路由，適合微服務與容器架構。"
+        },
+        {
+          "id": "d",
+          "text": "Network Load Balancer",
+          "explanation": "NLB 在連線層級運作，最適合需要極高效能的 TCP 流量，不依網址路徑路由。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-119",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 1,
+      "question": "開發人員想上傳 Java 或 Python 的網頁應用程式，讓服務自動處理容量佈建、負載平衡、自動擴展與健康監控，同時保留對底層資源的控制。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon S3",
+          "explanation": "S3 是物件儲存。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Glue",
+          "explanation": "Glue 是 ETL 服務。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Athena",
+          "explanation": "Athena 用 SQL 查詢 S3 的資料。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Elastic Beanstalk",
+          "explanation": "正確。上傳程式碼後，Elastic Beanstalk 自動處理部署、容量佈建、負載平衡、自動擴展與健康監控，你仍可以存取底層資源。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-120",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 1,
+      "question": "一位剛入門的開發者想用最簡單的方式架一台虛擬私人伺服器，方案包含虛擬機、SSD 儲存、資料傳輸、DNS 管理與靜態 IP，價格固定、容易預測。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon Lightsail",
+          "explanation": "正確。Lightsail 是在 AWS 上啟動與管理虛擬私人伺服器最簡單的方式，方案包含這些項目，價格低且可預測。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Outposts",
+          "explanation": "Outposts 是在自己的資料中心執行 AWS 服務。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon EMR",
+          "explanation": "EMR 是大數據處理平台。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Batch",
+          "explanation": "Batch 用來執行大量的批次運算工作。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-121",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "研究人員要執行數十萬個批次運算工作，希望服務依照工作的數量與需求，自動佈建適當數量與類型的運算資源。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Artifact",
+          "explanation": "Artifact 提供合規報告。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Batch",
+          "explanation": "正確。AWS Batch 依照工作的數量與資源需求，動態佈建最適合的運算資源。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Lightsail",
+          "explanation": "Lightsail 適合簡單的虛擬私人伺服器。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon Connect",
+          "explanation": "Amazon Connect 是雲端客服中心。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-122",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想要關聯式資料庫，但不想自己處理硬體佈建、資料庫安裝、修補與備份。下列哪一項最合適？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon S3",
+          "explanation": "S3 是物件儲存，不是關聯式資料庫。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon ElastiCache",
+          "explanation": "ElastiCache 是記憶體內快取。"
+        },
+        {
+          "id": "c",
+          "text": "在 EC2 上自行安裝資料庫",
+          "explanation": "這樣可以完全掌控，但安裝、修補、備份都要自己處理。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon RDS",
+          "explanation": "正確。RDS 自動處理硬體佈建、資料庫設定、修補與備份等耗時的管理工作。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-123",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 3,
+      "question": "下列哪一種情況，比較適合在 EC2 上自行架設資料庫，而不是使用 AWS 的代管資料庫？",
+      "options": [
+        {
+          "id": "a",
+          "text": "需要使用代管服務不支援的資料庫引擎版本，或需要作業系統層級的完整控制",
+          "explanation": "正確。在 EC2 上自行架設可以完全掌控作業系統與資料庫，但也要自己負責安裝、修補、備份與高可用。"
+        },
+        {
+          "id": "b",
+          "text": "團隊人力有限，不想管理伺服器",
+          "explanation": "人力有限時，代管資料庫通常更合適。"
+        },
+        {
+          "id": "c",
+          "text": "想要快速建立多個可用區的備援",
+          "explanation": "代管資料庫通常內建跨可用區的選項，比自己架設容易。"
+        },
+        {
+          "id": "d",
+          "text": "團隊希望 AWS 自動處理備份與修補",
+          "explanation": "這正是代管資料庫的好處。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-124",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於 Amazon Aurora，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Aurora 是 NoSQL 的鍵值資料庫",
+          "explanation": "Aurora 是關聯式資料庫；鍵值資料庫是 DynamoDB。"
+        },
+        {
+          "id": "b",
+          "text": "Aurora 是相容於 MySQL 與 PostgreSQL 的關聯式資料庫引擎，由 Amazon RDS 全代管",
+          "explanation": "正確。它的儲存系統會在三個可用區之間複寫。"
+        },
+        {
+          "id": "c",
+          "text": "Aurora 是記憶體內快取服務",
+          "explanation": "記憶體內快取是 ElastiCache。"
+        },
+        {
+          "id": "d",
+          "text": "Aurora 只能在內部部署的資料中心執行",
+          "explanation": "Aurora 是 AWS 的代管服務。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-125",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個行動遊戲需要儲存玩家資料，要求在任何規模下都有個位數毫秒的效能，而且不想管理伺服器。最適合哪一項資料庫服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon RDS for Oracle",
+          "explanation": "這是關聯式資料庫，題目的需求更適合鍵值資料庫。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon DynamoDB",
+          "explanation": "正確。DynamoDB 是全代管的鍵值與文件資料庫，在任何規模下都能提供個位數毫秒的效能。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Redshift",
+          "explanation": "Redshift 是資料倉儲，用來分析大量資料。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon Neptune",
+          "explanation": "Neptune 是圖形資料庫，適合高度關聯的資料。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-126",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "網站常常重複查詢同一批資料，資料庫負載很高。團隊想把常用資料放在記憶體內的快取，以加快回應速度。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS DMS",
+          "explanation": "DMS 用來遷移資料庫。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon EFS",
+          "explanation": "EFS 是檔案系統。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon ElastiCache",
+          "explanation": "正確。ElastiCache 提供代管的記憶體內快取，讓應用程式不必每次都從較慢的資料庫讀取。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon S3 Glacier",
+          "explanation": "Glacier 是封存儲存，存取速度慢。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-127",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司要把內部部署的資料庫搬到 AWS，希望遷移期間來源資料庫仍可繼續使用。應該使用哪一項服務搬移資料？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Backup",
+          "explanation": "Backup 用來集中管理備份。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon Athena",
+          "explanation": "Athena 用 SQL 查詢 S3 的資料。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Artifact",
+          "explanation": "Artifact 提供合規報告。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Database Migration Service（AWS DMS）",
+          "explanation": "正確。AWS DMS 可以遷移關聯式資料庫、資料倉儲、NoSQL 資料庫等資料存放區，從內部部署到 AWS，或在不同環境之間遷移。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-128",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 3,
+      "question": "公司要把 Oracle 資料庫遷移到 Amazon Aurora PostgreSQL，兩者的資料庫引擎不同。哪一項工具可以把資料庫結構描述（schema）從一種引擎轉換成另一種？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Schema Conversion Tool（AWS SCT）",
+          "explanation": "正確。AWS SCT 把既有的資料庫結構描述從一種資料庫引擎轉換成另一種。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon CloudFront",
+          "explanation": "CloudFront 是內容傳遞網路。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Storage Gateway",
+          "explanation": "Storage Gateway 讓內部部署應用程式使用雲端儲存。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon Kinesis",
+          "explanation": "Kinesis 處理串流資料。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-129",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "在 Amazon VPC 中，公司想讓網頁伺服器可以連上網際網路，資料庫則完全不能從網際網路存取。比較好的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把資料庫放在 S3",
+          "explanation": "S3 是物件儲存，不是關聯式資料庫。"
+        },
+        {
+          "id": "b",
+          "text": "把網頁伺服器放在公有子網路，資料庫放在私有子網路",
+          "explanation": "正確。VPC 文件舉的正是這個例子：面向網際網路的子網路放網頁伺服器，後端的資料庫放在沒有網際網路存取的子網路。"
+        },
+        {
+          "id": "c",
+          "text": "把所有資源放在同一個公有子網路",
+          "explanation": "資料庫也會暴露在可以連上網際網路的位置，增加風險。"
+        },
+        {
+          "id": "d",
+          "text": "不要使用 VPC",
+          "explanation": "EC2 與 RDS 等資源都在 VPC 中執行；網路隔離正是靠 VPC 的設計。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-130",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 3,
+      "question": "關於 VPC 的安全群組（security group）與網路 ACL（network ACL），哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "兩者都只能允許流量，不能拒絕",
+          "explanation": "網路 ACL 可以設定拒絕規則。"
+        },
+        {
+          "id": "b",
+          "text": "網路 ACL 用來掃描執行個體的軟體弱點",
+          "explanation": "掃描軟體弱點是 Amazon Inspector。"
+        },
+        {
+          "id": "c",
+          "text": "安全群組在子網路層級運作；網路 ACL 在執行個體層級運作",
+          "explanation": "相反。安全群組在執行個體層級，網路 ACL 在子網路層級。"
+        },
+        {
+          "id": "d",
+          "text": "安全群組是有狀態的，回應流量會自動允許；網路 ACL 是無狀態的，回應流量必須明確允許",
+          "explanation": "正確。VPC 文件建議以安全群組作為主要的網路存取控制，需要時再用網路 ACL 做較粗略的控制。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-131",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "Amazon Route 53 的主要用途是什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "在 EC2 執行個體之間分散流量",
+          "explanation": "這是 Elastic Load Balancing。"
+        },
+        {
+          "id": "b",
+          "text": "把資料庫遷移到 AWS",
+          "explanation": "這是 AWS DMS。"
+        },
+        {
+          "id": "c",
+          "text": "存放容器映像檔",
+          "explanation": "這是 Amazon ECR。"
+        },
+        {
+          "id": "d",
+          "text": "DNS 服務，可以註冊網域、把網域名稱路由到資源，並做健康檢查",
+          "explanation": "正確。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-132",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司需要從自己的資料中心到 AWS 建立一條專用的私有網路連線，不經過公用網際網路，以獲得更穩定的網路表現。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Direct Connect",
+          "explanation": "正確。Direct Connect 從你的場所到 AWS 建立專用的網路連線，在許多情況下可以降低網路成本、增加頻寬。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Site-to-Site VPN",
+          "explanation": "Site-to-Site VPN 建立的是 IPsec VPN 連線，不是專用線路。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon CloudFront",
+          "explanation": "CloudFront 是內容傳遞網路。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon Route 53",
+          "explanation": "Route 53 是 DNS 服務。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-133",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "分公司想很快地透過網際網路，以加密的方式連到公司在 AWS 的 VPC，不想等專線施工。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Backup",
+          "explanation": "Backup 集中管理備份。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Site-to-Site VPN",
+          "explanation": "正確。AWS VPN 在內部網路、分公司與 AWS 之間建立安全的連線，不需要專用線路。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Direct Connect",
+          "explanation": "Direct Connect 需要建立專用的實體連線，通常需要較長的時間。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon SES",
+          "explanation": "SES 是電子郵件服務。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-134",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 1,
+      "question": "公司要儲存大量的圖片、影片與備份檔，需要用網址存取，容量幾乎沒有上限。最適合哪一種儲存？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon ElastiCache",
+          "explanation": "ElastiCache 是記憶體內快取，不適合長期存放大量檔案。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon EBS",
+          "explanation": "EBS 是掛在 EC2 上的區塊儲存，不是透過網址存取的大量檔案儲存。"
+        },
+        {
+          "id": "c",
+          "text": "物件儲存，例如 Amazon S3",
+          "explanation": "正確。物件儲存適合圖片、影片、備份、資料湖等非結構化資料。"
+        },
+        {
+          "id": "d",
+          "text": "執行個體儲存（instance store）",
+          "explanation": "執行個體儲存是暫時的，執行個體停止後資料就會遺失。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-135",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於 EC2 的執行個體儲存（instance store），哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "它由實體連接在主機上的磁碟提供暫時的區塊儲存，適合緩衝區、快取等經常變動的暫存資料",
+          "explanation": "正確。執行個體重新開機時資料會保留，但重要的長期資料應該放在 EBS 或 S3 等持久的儲存。"
+        },
+        {
+          "id": "b",
+          "text": "它是透過網路存取的共用檔案系統",
+          "explanation": "共用檔案系統是 EFS 或 FSx。"
+        },
+        {
+          "id": "c",
+          "text": "它可以設定成在執行個體終止後繼續存在",
+          "explanation": "執行個體儲存只存在於執行個體的生命週期內。"
+        },
+        {
+          "id": "d",
+          "text": "執行個體停止或終止後，資料仍然保留",
+          "explanation": "執行個體停止、休眠或終止時，執行個體儲存的資料不會保留。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-136",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "一台 EC2 上的資料庫需要持久的區塊儲存，執行個體停止後資料仍要保留，並能建立快照。最適合哪一種儲存？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon EBS",
+          "explanation": "正確。EBS 為 EC2 提供持久的區塊儲存磁碟區，並會在所在的可用區內自動複寫。"
+        },
+        {
+          "id": "b",
+          "text": "執行個體儲存",
+          "explanation": "執行個體停止後資料不會保留。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon S3 Glacier Deep Archive",
+          "explanation": "這是封存用的物件儲存，不是掛在執行個體上的磁碟。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon CloudFront",
+          "explanation": "CloudFront 是內容傳遞網路。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-137",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司的 Windows 應用程式需要透過 SMB 協定存取共用的檔案系統。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon S3",
+          "explanation": "S3 是物件儲存。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon FSx for Windows File Server",
+          "explanation": "正確。它提供建立在 Windows Server 上、全代管的原生 Windows 檔案系統，可以用 SMB 協定存取。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon EFS",
+          "explanation": "EFS 是給 Linux 工作負載使用的檔案系統。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon EBS",
+          "explanation": "EBS 是單一執行個體使用的區塊儲存。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-138",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "多台 Linux 執行個體要同時存取同一個檔案系統，容量要能隨檔案增減自動擴展、縮小。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "執行個體儲存",
+          "explanation": "執行個體儲存只屬於單一執行個體，而且是暫時的。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon ElastiCache",
+          "explanation": "ElastiCache 是記憶體內快取。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon EFS",
+          "explanation": "正確。EFS 為 Linux 工作負載提供簡單、可擴展的彈性檔案系統，會隨著新增與刪除檔案自動增減容量。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon FSx for Windows File Server",
+          "explanation": "這是給 Windows 應用程式使用的檔案系統。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-139",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 3,
+      "question": "一個高效能運算與機器學習工作需要高效能、低延遲的平行檔案系統，並能把 S3 上的資料載入處理、再把結果寫回 S3。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon FSx for Windows File Server",
+          "explanation": "這是給 Windows 應用程式使用的 SMB 檔案系統。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Storage Gateway",
+          "explanation": "Storage Gateway 讓內部部署的應用程式使用雲端儲存。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon EBS",
+          "explanation": "EBS 是單一執行個體使用的區塊儲存。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon FSx for Lustre",
+          "explanation": "正確。FSx for Lustre 為運算密集的工作負載最佳化，並與 S3 整合。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-140",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司內部部署的應用程式希望繼續用原本的方式存取檔案，但資料實際存放在 AWS 雲端，用於備份、封存與分層儲存。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Storage Gateway",
+          "explanation": "正確。它是混合儲存服務，讓內部部署的應用程式使用 AWS 的雲端儲存。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon EFS",
+          "explanation": "EFS 是雲端的檔案系統，不是連接內部部署應用程式與雲端儲存的閘道。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Lambda",
+          "explanation": "Lambda 是無伺服器運算。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon Route 53",
+          "explanation": "Route 53 是 DNS 服務。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-141",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "日誌檔在上傳後 30 天內經常被讀取，之後很少使用，一年後可以刪除。要自動在不同儲存類別間移動並刪除，應該使用 S3 的哪一項功能？",
+      "options": [
+        {
+          "id": "a",
+          "text": "S3 版本控制",
+          "explanation": "版本控制保留物件的多個版本，不會依時間轉換儲存類別。"
+        },
+        {
+          "id": "b",
+          "text": "S3 生命週期組態（lifecycle configuration）",
+          "explanation": "正確。生命週期規則可以在物件建立一段時間後，自動轉換儲存類別或讓物件到期刪除。"
+        },
+        {
+          "id": "c",
+          "text": "S3 跨區域複寫",
+          "explanation": "複寫是把物件複製到另一個 bucket，不會依時間轉換儲存類別。"
+        },
+        {
+          "id": "d",
+          "text": "S3 事件通知",
+          "explanation": "事件通知是在物件變化時發出通知。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-142",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想用一套政策，集中、自動地管理 EBS、RDS、DynamoDB、EFS 等多種服務的備份，以符合法規與內部的資料保護規定。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon Inspector",
+          "explanation": "Inspector 掃描軟體弱點。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Artifact",
+          "explanation": "Artifact 提供合規報告。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Backup",
+          "explanation": "正確。AWS Backup 集中且自動化跨 AWS 服務的資料保護，是以政策為基礎的全代管服務。"
+        },
+        {
+          "id": "d",
+          "text": "AWS CloudTrail",
+          "explanation": "CloudTrail 記錄 API 操作。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-143",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "資料科學團隊想在全代管的環境中建立、訓練並部署自己的機器學習模型。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon Polly",
+          "explanation": "Polly 把文字轉成語音，是現成的 AI 服務，不是用來訓練自己的模型。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon Athena",
+          "explanation": "Athena 用 SQL 查詢 S3 的資料。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Glue",
+          "explanation": "Glue 是 ETL 服務。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon SageMaker AI",
+          "explanation": "正確。SageMaker AI 提供全代管的基礎設施、工具與工作流程，用來建立、訓練與部署機器學習模型。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-144",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 1,
+      "question": "公司想在網站上加入一個能用語音或文字和顧客對話的聊天機器人。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon Lex",
+          "explanation": "正確。Lex 用來設計、建置、測試與部署以語音和文字互動的對話介面。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon Rekognition",
+          "explanation": "Rekognition 分析圖片與影片。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Textract",
+          "explanation": "Textract 從掃描文件中擷取文字與資料。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon Redshift",
+          "explanation": "Redshift 是資料倉儲。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-145",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "下列 AI 服務與用途的配對，哪些正確？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon Rekognition：翻譯文字",
+          "explanation": "Rekognition 分析圖片與影片；翻譯是 Translate。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon Transcribe：把語音轉成文字",
+          "explanation": "正確。Transcribe 是自動語音辨識服務。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Polly：把文字轉成逼真的語音",
+          "explanation": "正確。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon Translate：分析圖片中的物件",
+          "explanation": "Translate 是機器翻譯；分析圖片的是 Rekognition。"
+        }
+      ],
+      "answer": [
+        "b",
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-146",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "保險公司要從大量掃描的理賠表單中，自動擷取文字、表單欄位與表格內容。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon Lex",
+          "explanation": "Lex 用來建立對話介面。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon Polly",
+          "explanation": "Polly 把文字轉成語音。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Textract",
+          "explanation": "正確。Textract 不只是一般的光學字元辨識（OCR），還能辨識表單欄位與表格中的資訊。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon Comprehend",
+          "explanation": "Comprehend 分析文字的意義，例如情緒、關鍵詞，但不負責從掃描影像擷取文字。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-147",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想分析大量顧客評論的情緒，並找出其中提到的關鍵詞、人物與品牌。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon Rekognition",
+          "explanation": "Rekognition 分析圖片與影片。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon Transcribe",
+          "explanation": "Transcribe 把語音轉成文字。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Kinesis",
+          "explanation": "Kinesis 處理即時串流資料。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon Comprehend",
+          "explanation": "正確。Comprehend 用自然語言處理分析非結構化文字，例如辨識語言、擷取關鍵詞與實體，以及判斷情緒。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-148",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "開發團隊想透過 API 使用 Amazon 與其他領先 AI 公司的基礎模型（foundation models），建立生成式 AI 應用程式，不必管理基礎設施。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon Bedrock",
+          "explanation": "正確。Bedrock 是全代管服務，透過 API 提供 Amazon 與其他領先 AI 公司的基礎模型。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon EMR",
+          "explanation": "EMR 是大數據處理平台。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Batch",
+          "explanation": "Batch 執行批次運算工作。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon Lightsail",
+          "explanation": "Lightsail 是簡易的虛擬私人伺服器。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-149",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "網站的點擊紀錄每秒持續產生，團隊需要即時收集這些串流資料進行處理。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon Lightsail",
+          "explanation": "Lightsail 是簡易的虛擬私人伺服器。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon Kinesis Data Streams",
+          "explanation": "正確。它是可大規模擴展的即時資料串流服務，能從大量來源持續收集資料，例如網站點擊流。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon S3 Glacier",
+          "explanation": "Glacier 是封存儲存。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Artifact",
+          "explanation": "Artifact 提供合規報告。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-150",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊想把串流資料可靠地載入 Amazon S3 或 Amazon Redshift，不想自己寫程式管理串流的讀取與寫入。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS DMS",
+          "explanation": "DMS 用來遷移資料庫。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon Lex",
+          "explanation": "Lex 用來建立對話介面。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Data Firehose",
+          "explanation": "正確。Firehose 可以擷取、轉換並載入串流資料到 S3、Redshift、OpenSearch Service 等目的地。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon ElastiCache",
+          "explanation": "ElastiCache 是記憶體內快取。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-151",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "下列分析服務與用途的配對，哪些正確？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon Quick：建立並發布互動式商業智慧儀表板",
+          "explanation": "正確。Amazon Quick（原 QuickSight）是雲端的商業智慧服務。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon Athena：在 EC2 上執行 Kubernetes",
+          "explanation": "Athena 是用標準 SQL 直接查詢 S3 資料的服務。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Redshift：記憶體內快取",
+          "explanation": "Redshift 是雲端資料倉儲；記憶體內快取是 ElastiCache。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Glue：全代管的 ETL（擷取、轉換、載入）服務",
+          "explanation": "正確。"
+        }
+      ],
+      "answer": [
+        "a",
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-152",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "財務分析團隊要用標準 SQL 與既有的商業智慧工具，對 PB 等級的結構化資料執行複雜的分析查詢。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon Redshift",
+          "explanation": "正確。Redshift 是雲端資料倉儲，可以用標準 SQL 與既有的 BI 工具分析大量資料。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon DynamoDB",
+          "explanation": "DynamoDB 是鍵值資料庫，適合低延遲的交易，不是複雜分析。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon ElastiCache",
+          "explanation": "ElastiCache 是記憶體內快取。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon Lex",
+          "explanation": "Lex 用來建立對話介面。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-153",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "訂單系統送出一個事件後，需要同時通知庫存、出貨、電子郵件三個系統（一對多推播）。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Glue",
+          "explanation": "Glue 是 ETL 服務。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon SNS",
+          "explanation": "正確。SNS 是全代管的發布／訂閱（pub/sub）訊息服務，一個主題可以推送給多個訂閱者。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon SQS",
+          "explanation": "SQS 是訊息佇列，一則訊息通常由一個消費者處理；要一對多可以搭配 SNS。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon Redshift",
+          "explanation": "Redshift 是資料倉儲。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-154",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "前端網站收到大量訂單，後端的處理程式速度較慢。團隊想讓訂單先排隊，後端依自己的速度處理，避免訂單遺失。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon Route 53",
+          "explanation": "Route 53 是 DNS 服務。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon EBS",
+          "explanation": "EBS 是區塊儲存。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon SQS",
+          "explanation": "正確。SQS 是全代管的訊息佇列服務，讓元件之間解耦並各自擴展。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon SNS",
+          "explanation": "SNS 主要用於推播給多個訂閱者，不是讓消費者依自己的速度取出處理的佇列。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-155",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 3,
+      "question": "團隊想依照來自自家應用程式、SaaS 應用程式與 AWS 服務的事件，建立事件驅動的應用程式，用規則把事件路由到不同的目標。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon SES",
+          "explanation": "SES 是電子郵件服務。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon Polly",
+          "explanation": "Polly 把文字轉成語音。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Backup",
+          "explanation": "Backup 集中管理備份。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon EventBridge",
+          "explanation": "正確。EventBridge 是無伺服器的事件匯流排，用來以應用程式、整合的 SaaS 與 AWS 服務產生的事件，建立事件驅動的應用程式。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-156",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 1,
+      "question": "公司想從自己的應用程式寄送交易通知信與行銷電子郵件。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon Simple Email Service（Amazon SES）",
+          "explanation": "正確。SES 讓開發人員從任何應用程式寄送電子郵件。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon SQS",
+          "explanation": "SQS 是訊息佇列，不會寄送電子郵件。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Connect",
+          "explanation": "Amazon Connect 是雲端客服中心。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon WorkSpaces",
+          "explanation": "WorkSpaces 是雲端桌面服務。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-157",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想快速建立一個雲端客服中心，讓客服人員接聽顧客的來電並提供服務。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS IoT Core",
+          "explanation": "IoT Core 連接物聯網裝置。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon Connect",
+          "explanation": "正確。Amazon Connect（目前的客服中心產品名稱為 Amazon Connect Customer）是自助式、全通路的雲端客服中心服務。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon SES",
+          "explanation": "SES 是電子郵件服務。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon Lightsail",
+          "explanation": "Lightsail 是簡易的虛擬私人伺服器。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-158",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "下列開發工具與用途的配對，哪些正確？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS CodeBuild：把文字翻譯成其他語言",
+          "explanation": "CodeBuild 是全代管的建置服務，會編譯原始碼、執行測試並產生可部署的套件。"
+        },
+        {
+          "id": "b",
+          "text": "AWS CodeDeploy：分析顧客評論的情緒",
+          "explanation": "CodeDeploy 自動把程式碼部署到 EC2 或內部部署的執行個體等目標。"
+        },
+        {
+          "id": "c",
+          "text": "AWS CodePipeline：自動化發布流程中的建置、測試與部署階段",
+          "explanation": "正確。CodePipeline 是全代管的持續交付服務。"
+        },
+        {
+          "id": "d",
+          "text": "AWS X-Ray：分析與除錯分散式應用程式，了解請求在各服務之間的流向與效能問題",
+          "explanation": "正確。"
+        }
+      ],
+      "answer": [
+        "c",
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-159",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想為員工提供 Windows 或 Linux 的雲端桌面，員工可以從任何地方登入使用，不必在辦公室準備實體電腦。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon Lightsail",
+          "explanation": "Lightsail 提供的是虛擬私人伺服器，不是給員工使用的雲端桌面。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Outposts",
+          "explanation": "Outposts 是在內部部署環境執行 AWS 服務。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Connect",
+          "explanation": "Amazon Connect 是雲端客服中心。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon WorkSpaces",
+          "explanation": "正確。WorkSpaces 是全代管、安全的雲端桌面服務，可以在幾分鐘內佈建 Windows 或 Linux 桌面。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-160",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 3,
+      "question": "學校想讓學生在任何電腦上，透過瀏覽器使用某一套桌面應用程式，而不是提供整個桌面環境。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon AppStream 2.0（目前名稱為 Amazon WorkSpaces Applications）",
+          "explanation": "正確。它是全代管的應用程式串流服務，把桌面應用程式安全地傳送到任何電腦，Windows 使用者也可以用支援 HTML5 的瀏覽器使用。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon WorkSpaces",
+          "explanation": "WorkSpaces 提供完整的雲端桌面，題目只需要串流單一應用程式。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Amplify",
+          "explanation": "Amplify 用來建置與託管網頁和行動應用程式。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon SES",
+          "explanation": "SES 是電子郵件服務。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-161",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "前端團隊想用 Git 的工作流程，持續部署並託管全端的無伺服器網頁應用程式，推送程式碼後自動部署到 AWS 的全球內容傳遞網路。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon Redshift",
+          "explanation": "Redshift 是資料倉儲。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Amplify",
+          "explanation": "正確。Amplify Hosting 以 Git 為基礎的工作流程，託管全端無伺服器網頁應用程式並持續部署。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon WorkSpaces",
+          "explanation": "WorkSpaces 是雲端桌面服務。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Batch",
+          "explanation": "Batch 執行批次運算工作。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-162",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "工廠有大量感測器，需要安全地連接到雲端應用程式，傳送並路由大量的訊息。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon Lex",
+          "explanation": "Lex 用來建立對話介面。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Amplify",
+          "explanation": "Amplify 用來建置網頁與行動應用程式。"
+        },
+        {
+          "id": "c",
+          "text": "AWS IoT Core",
+          "explanation": "正確。IoT Core 是代管的雲端服務，讓連線的裝置能輕鬆、安全地與雲端應用程式及其他裝置互動。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon WorkSpaces",
+          "explanation": "WorkSpaces 是雲端桌面服務。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d3-163",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊想協調多個 Lambda 函式與其他服務，依序或依條件執行，並用視覺化的工作流程呈現每一個步驟。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon SNS",
+          "explanation": "SNS 是推播訊息，不負責依序協調多個步驟。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon S3",
+          "explanation": "S3 是物件儲存。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Polly",
+          "explanation": "Polly 把文字轉成語音。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Step Functions",
+          "explanation": "正確。Step Functions 是全代管服務，用視覺化工作流程協調分散式應用程式與微服務的元件。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    }
+  ]
+}
