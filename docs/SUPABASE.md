@@ -5,14 +5,16 @@
 ## 1. 建立 Supabase 專案
 
 1. 到 Supabase 註冊並建立一個新專案（免費方案即可），區域選離使用者近的（例如東京或新加坡）。
-2. 專案建好後，在專案設定的 **API** 頁面找到：
-   - **Project URL**（`https://<專案代號>.supabase.co`）
-   - **anon public** 金鑰
-   這兩個值是公開的，會放進網頁裡；資料靠下一步的資料列層級安全性（RLS）保護。**不要**使用 `service_role` 金鑰。
+2. 專案建好後，記下：
+   - **Project URL**（`https://<專案代號>.supabase.co`，專案首頁就看得到）
+   - 公開金鑰：Project Settings → **API Keys** 的 **Publishable key**（`sb_publishable_` 開頭），或 Legacy API keys 裡的 **anon public**，兩種都可以
+   這兩個值是公開的，會放進網頁裡；資料靠下一步的授權與資料列層級安全性（RLS）保護。**不要**使用 secret key 或 `service_role` 金鑰。
 
 ## 2. 建立資料表
 
-打開專案的 **SQL Editor**，貼上 `supabase/migrations/0001_progress.sql` 的內容執行。它會建立 `progress` 資料表，並開啟 RLS，讓每個人只能讀寫自己的那一列。
+打開專案的 **SQL Editor**，貼上 `supabase/migrations/0001_progress.sql` 的內容執行。它會建立 `progress` 資料表、授權已登入的使用者（`authenticated`）讀寫這張表，並開啟 RLS，讓每個人只能讀寫自己的那一列。這段 SQL 可以重複執行。
+
+登入後如果帳號頁顯示「同步失敗：permission denied for table progress」，代表少了授權，單獨執行檔案裡的兩行 `grant` 即可。
 
 ## 3. 設定登入後回到網站的網址
 
@@ -41,7 +43,7 @@
 
 ## 5. 設定 Vercel 環境變數並重新部署
 
-在 Vercel 專案的 **Settings → Environment Variables** 加入（Production 和 Preview 都勾選）：
+在 Vercel 專案的 **Settings → Environment Variables** 按 **Add Environment Variable** 加入。Type 選 **Config**（這兩個值是公開的，存了之後還看得到，方便檢查）；Environments 在 Environments 底下勾選 Production 和 Preview。也可以在 Key 欄位直接貼上 `.env` 格式的兩行，一次加入。
 
 | 名稱 | 值 |
 |---|---|
