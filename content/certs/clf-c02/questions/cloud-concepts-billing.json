@@ -1,0 +1,1948 @@
+{
+  "questions": [
+    {
+      "id": "clf-c02-d1-101",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 1,
+      "question": "一家新創公司上線前無法預估會有多少使用者。改用雲端後，可以先用少量資源上線，之後依實際需求增減。這對應到雲端的哪一項效益？",
+      "options": [
+        {
+          "id": "a",
+          "text": "享有大規模的經濟效益",
+          "explanation": "規模經濟是指 AWS 匯集大量客戶的用量，所以單價較低，與不必預估容量無關。"
+        },
+        {
+          "id": "b",
+          "text": "停止花錢經營和維護資料中心",
+          "explanation": "這項效益是指不必自己上架、維護伺服器，題目的重點是容量怎麼決定。"
+        },
+        {
+          "id": "c",
+          "text": "幾分鐘內將服務部署到全球",
+          "explanation": "這是指在多個 Region 部署，降低各地使用者的延遲。"
+        },
+        {
+          "id": "d",
+          "text": "不必再猜測容量",
+          "explanation": "正確。上線前先決定容量，常會買太多而閒置，或買太少而不夠用；雲端可以依實際需求調整。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-102",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 1,
+      "question": "開發團隊過去申請一台測試伺服器要等好幾週，改用雲端後幾分鐘就能取得。這對應到雲端的哪一項效益？",
+      "options": [
+        {
+          "id": "a",
+          "text": "以變動支出取代固定支出",
+          "explanation": "這項效益是指付費方式，從預先投資改成用多少付多少。"
+        },
+        {
+          "id": "b",
+          "text": "提升速度與敏捷性",
+          "explanation": "正確。新的 IT 資源點幾下就能取得，等待時間從幾週縮短到幾分鐘，讓團隊能更快實驗與交付。"
+        },
+        {
+          "id": "c",
+          "text": "享有大規模的經濟效益",
+          "explanation": "規模經濟讓單價較低，和取得資源的速度無關。"
+        },
+        {
+          "id": "d",
+          "text": "不必再猜測容量",
+          "explanation": "這項效益是指依需求調整容量，題目的重點是取得資源要花多久。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-103",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 1,
+      "question": "為什麼 AWS 的用量單價，通常比企業自己建置資料中心更低？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS 只收取資料傳入的費用",
+          "explanation": "資料傳入通常不收費，費用主要來自運算、儲存與傳出的資料。"
+        },
+        {
+          "id": "b",
+          "text": "AWS 不需要負擔電力和硬體成本",
+          "explanation": "AWS 一樣要負擔這些成本。"
+        },
+        {
+          "id": "c",
+          "text": "AWS 匯集了大量客戶的用量，達到更高的規模經濟",
+          "explanation": "正確。數十萬客戶的用量集中在雲端，AWS 能達到更高的規模經濟，反映在較低的隨用隨付價格上。"
+        },
+        {
+          "id": "d",
+          "text": "雲端的資源只能用預留的方式購買",
+          "explanation": "雲端可以隨需使用，不必預留；而且這也不是單價較低的原因。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-104",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 1,
+      "question": "一家公司想把心力放在開發自家產品，而不是採購、上架、供電、維護伺服器。這對應到雲端的哪一項效益？",
+      "options": [
+        {
+          "id": "a",
+          "text": "不必再猜測容量",
+          "explanation": "這是指能依實際需求調整容量。"
+        },
+        {
+          "id": "b",
+          "text": "以變動支出取代固定支出",
+          "explanation": "這是指付費方式的改變，題目的重點是不必自己維運硬體。"
+        },
+        {
+          "id": "c",
+          "text": "停止花錢經營和維護資料中心",
+          "explanation": "正確。雲端讓公司專注在能帶來差異化的專案與客戶上，不必處理實體伺服器的繁重工作。"
+        },
+        {
+          "id": "d",
+          "text": "幾分鐘內將服務部署到全球",
+          "explanation": "這是指能快速在多個 Region 部署。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-105",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 1,
+      "question": "一家台灣的電商要服務歐洲的顧客，希望降低歐洲顧客連線的延遲，又不想自己在歐洲建置機房。雲端的哪一項效益最符合？",
+      "options": [
+        {
+          "id": "a",
+          "text": "不必再猜測容量",
+          "explanation": "這和延遲、地理位置無關。"
+        },
+        {
+          "id": "b",
+          "text": "幾分鐘內將服務部署到全球",
+          "explanation": "正確。可以把應用程式部署到靠近顧客的 Region，降低延遲，而且不必自己建置機房。"
+        },
+        {
+          "id": "c",
+          "text": "提升速度與敏捷性",
+          "explanation": "敏捷性指的是快速取得資源；題目的重點是靠近其他地區的使用者。"
+        },
+        {
+          "id": "d",
+          "text": "享有大規模的經濟效益",
+          "explanation": "規模經濟和部署的地理位置無關。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-106",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 1,
+      "question": "關於 AWS 的 Region 與可用區（Availability Zone），哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "一個可用區包含多個 Region",
+          "explanation": "相反。一個 Region 包含多個可用區。"
+        },
+        {
+          "id": "b",
+          "text": "一個 Region 是世界上的一個實體位置，包含多個可用區",
+          "explanation": "正確。每個可用區由一個或多個資料中心組成，各自有備援的電力、網路與連線。"
+        },
+        {
+          "id": "c",
+          "text": "一個可用區就是一台實體伺服器",
+          "explanation": "可用區由一個或多個獨立的資料中心組成。"
+        },
+        {
+          "id": "d",
+          "text": "所有 Region 共用同一個可用區",
+          "explanation": "每個 Region 有自己的多個可用區。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-107",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "一家公司希望網站在單一資料中心故障時仍能運作，又不想跨到其他國家部署。最適合的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "改用 AWS Marketplace 上的軟體",
+          "explanation": "Marketplace 是購買第三方軟體的地方，和可用性設計無關。"
+        },
+        {
+          "id": "b",
+          "text": "把應用程式部署在同一個 Region 的多個可用區",
+          "explanation": "正確。可用區之間在實體上分開、各自有備援的電力與網路，跨可用區部署可以承受單一資料中心的故障。"
+        },
+        {
+          "id": "c",
+          "text": "把所有伺服器放在同一個可用區，但改用較大的執行個體",
+          "explanation": "放在同一個可用區，這個可用區故障時所有伺服器都會受影響。"
+        },
+        {
+          "id": "d",
+          "text": "購買 Reserved Instances",
+          "explanation": "Reserved Instances 是計費折扣，不會提升可用性。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-108",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "購物網站平常只需要 4 台伺服器，但週年慶時需要 40 台；活動結束後自動縮回 4 台，只為實際使用的部分付費。這描述的是雲端的哪個特性？",
+      "options": [
+        {
+          "id": "a",
+          "text": "規模經濟",
+          "explanation": "規模經濟是 AWS 匯集大量用量帶來較低的單價。"
+        },
+        {
+          "id": "b",
+          "text": "資料主權",
+          "explanation": "資料主權指的是資料存放的地理位置與法規要求。"
+        },
+        {
+          "id": "c",
+          "text": "高可用性",
+          "explanation": "高可用性是指元件故障時服務仍能運作，題目描述的是隨需求增減資源。"
+        },
+        {
+          "id": "d",
+          "text": "彈性（elasticity）",
+          "explanation": "正確。依需求自動擴大、縮小資源，避免長期為尖峰容量付費。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-109",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 1,
+      "question": "AWS Well-Architected Framework 共有幾個支柱？",
+      "options": [
+        {
+          "id": "a",
+          "text": "五個",
+          "explanation": "永續性支柱加入後，共有六個支柱。"
+        },
+        {
+          "id": "b",
+          "text": "六個",
+          "explanation": "正確。卓越營運、安全性、可靠性、效能效率、成本最佳化、永續性。"
+        },
+        {
+          "id": "c",
+          "text": "七個",
+          "explanation": "目前是六個支柱。"
+        },
+        {
+          "id": "d",
+          "text": "四個",
+          "explanation": "目前是六個支柱。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-110",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "AWS Well-Architected Framework 的哪一個支柱，關注的是降低工作負載對環境的影響，例如減少資源的能源消耗？",
+      "options": [
+        {
+          "id": "a",
+          "text": "成本最佳化",
+          "explanation": "成本最佳化關注的是用最適當的價格達成業務成果。雖然減少浪費常同時省錢，但這個支柱的焦點是成本。"
+        },
+        {
+          "id": "b",
+          "text": "效能效率",
+          "explanation": "效能效率關注的是有效率地使用運算資源來滿足需求。"
+        },
+        {
+          "id": "c",
+          "text": "永續性",
+          "explanation": "正確。永續性支柱關注環境影響，特別是工作負載所用資源的能源消耗與效率。"
+        },
+        {
+          "id": "d",
+          "text": "卓越營運",
+          "explanation": "卓越營運關注的是如何組織團隊、執行與持續改善工作負載。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-111",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊想讓新功能與錯誤修正更快、更可靠地交到客戶手上，並持續改善營運流程。這最符合 Well-Architected Framework 的哪一個支柱？",
+      "options": [
+        {
+          "id": "a",
+          "text": "效能效率",
+          "explanation": "效能效率關注的是有效率地使用運算資源。"
+        },
+        {
+          "id": "b",
+          "text": "卓越營運",
+          "explanation": "正確。卓越營運的目標是讓新功能與修正快速、可靠地交到客戶手上，並推動持續整合與持續改善。"
+        },
+        {
+          "id": "c",
+          "text": "可靠性",
+          "explanation": "可靠性關注的是工作負載在預期的時候正確、一致地執行，並能從故障中復原。"
+        },
+        {
+          "id": "d",
+          "text": "安全性",
+          "explanation": "安全性關注的是保護資料、系統與資產。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-112",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司要確保「正確的人與機器，在正確的條件下存取正確的資源」，並能察覺異常活動、回應資安事件。這屬於 Well-Architected Framework 的哪一個支柱？",
+      "options": [
+        {
+          "id": "a",
+          "text": "卓越營運",
+          "explanation": "卓越營運關注的是如何組織團隊、執行與改善工作負載。"
+        },
+        {
+          "id": "b",
+          "text": "成本最佳化",
+          "explanation": "成本最佳化關注的是用最適當的價格達成業務成果。"
+        },
+        {
+          "id": "c",
+          "text": "可靠性",
+          "explanation": "可靠性關注的是工作負載能否正確、一致地執行並從故障中復原。"
+        },
+        {
+          "id": "d",
+          "text": "安全性",
+          "explanation": "正確。安全性支柱涵蓋存取控制、偵測、事件回應，以及保護工作負載和資料。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-113",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊依照實際的效能需求挑選運算資源，並在需求變化、新技術出現時持續調整，維持有效率的使用。這最符合 Well-Architected Framework 的哪一個支柱？",
+      "options": [
+        {
+          "id": "a",
+          "text": "永續性",
+          "explanation": "永續性關注的是環境影響。"
+        },
+        {
+          "id": "b",
+          "text": "可靠性",
+          "explanation": "可靠性關注的是正確、一致地執行與從故障中復原。"
+        },
+        {
+          "id": "c",
+          "text": "安全性",
+          "explanation": "安全性關注的是保護資料、系統與資產。"
+        },
+        {
+          "id": "d",
+          "text": "效能效率",
+          "explanation": "正確。效能效率支柱關注有效率地使用運算資源滿足需求，並在需求與技術改變時維持這個效率。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-114",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 1,
+      "question": "哪一項工具可以免費依照 AWS Well-Architected Framework 檢視自己的工作負載？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Well-Architected Tool",
+          "explanation": "正確。它在 AWS 管理主控台中免費提供，可以對照框架的最佳實務檢視工作負載。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Pricing Calculator",
+          "explanation": "Pricing Calculator 用來估算費用。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Marketplace",
+          "explanation": "Marketplace 用來尋找與購買第三方軟體。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Health Dashboard",
+          "explanation": "Health Dashboard 顯示 AWS 服務與你的資源受到的事件影響。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-115",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於 AWS Well-Architected Framework，哪些敘述正確？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "它是一項會自動修正架構問題的服務",
+          "explanation": "框架是最佳實務與評估方法，不會自動修改你的架構。"
+        },
+        {
+          "id": "b",
+          "text": "它幫助你了解在 AWS 上建置系統時，各種決策的優缺點",
+          "explanation": "正確。框架提供一致的方式，評估架構並找出改善的地方。"
+        },
+        {
+          "id": "c",
+          "text": "它包含成本最佳化與永續性等支柱",
+          "explanation": "正確。六個支柱中包含成本最佳化與永續性。"
+        },
+        {
+          "id": "d",
+          "text": "只有購買 Enterprise Support 的客戶才能使用",
+          "explanation": "框架與 Well-Architected Tool 對所有客戶免費。"
+        }
+      ],
+      "answer": [
+        "b",
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-116",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "AWS Cloud Adoption Framework（AWS CAF）把組織需要的基礎能力分成六個觀點。下列哪一個**不是** AWS CAF 的觀點？",
+      "options": [
+        {
+          "id": "a",
+          "text": "平台（Platform）",
+          "explanation": "平台是六個觀點之一。"
+        },
+        {
+          "id": "b",
+          "text": "定價（Pricing）",
+          "explanation": "正確。六個觀點是業務、人員、治理、平台、安全、營運，沒有定價。"
+        },
+        {
+          "id": "c",
+          "text": "業務（Business）",
+          "explanation": "業務是六個觀點之一。"
+        },
+        {
+          "id": "d",
+          "text": "治理（Governance）",
+          "explanation": "治理是六個觀點之一。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-117",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "在 AWS CAF 中，哪一個觀點扮演技術與業務之間的橋樑，關注組織文化、組織結構、領導力與人才？",
+      "options": [
+        {
+          "id": "a",
+          "text": "營運（Operations）",
+          "explanation": "營運觀點關注雲端服務的交付水準能否滿足業務需求。"
+        },
+        {
+          "id": "b",
+          "text": "業務（Business）",
+          "explanation": "業務觀點關注雲端投資能否加速數位轉型與業務成果。"
+        },
+        {
+          "id": "c",
+          "text": "平台（Platform）",
+          "explanation": "平台觀點關注建置可擴展的雲端平台與現代化工作負載。"
+        },
+        {
+          "id": "d",
+          "text": "人員（People）",
+          "explanation": "正確。人員觀點協助組織建立持續成長、學習的文化，讓改變成為常態。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-118",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "在 AWS CAF 中，哪一個觀點關注達成資料與工作負載的機密性、完整性與可用性，常見的利害關係人是資訊安全長（CISO）？",
+      "options": [
+        {
+          "id": "a",
+          "text": "治理（Governance）",
+          "explanation": "治理觀點關注協調雲端計畫、降低轉型風險，利害關係人包含風險長等。"
+        },
+        {
+          "id": "b",
+          "text": "安全（Security）",
+          "explanation": "正確。安全觀點關注機密性、完整性與可用性。"
+        },
+        {
+          "id": "c",
+          "text": "平台（Platform）",
+          "explanation": "平台觀點的利害關係人主要是技術長、架構師與工程師。"
+        },
+        {
+          "id": "d",
+          "text": "營運（Operations）",
+          "explanation": "營運觀點的利害關係人主要是基礎架構與營運主管、SRE。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-119",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "在 AWS CAF 中，哪一個觀點關注建置企業等級、可擴展的混合雲平台，並把現有工作負載現代化？",
+      "options": [
+        {
+          "id": "a",
+          "text": "治理（Governance）",
+          "explanation": "治理觀點關注協調雲端計畫、降低風險。"
+        },
+        {
+          "id": "b",
+          "text": "平台（Platform）",
+          "explanation": "正確。常見的利害關係人是技術長、技術主管、架構師與工程師。"
+        },
+        {
+          "id": "c",
+          "text": "業務（Business）",
+          "explanation": "業務觀點關注雲端投資帶來的業務成果。"
+        },
+        {
+          "id": "d",
+          "text": "人員（People）",
+          "explanation": "人員觀點關注文化、組織與人才。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-120",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 3,
+      "question": "依照 AWS CAF，雲端轉型旅程分成四個階段。哪一個階段著重在找出六個觀點中的能力缺口、跨組織的相依關係，以及利害關係人的疑慮？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Launch（啟動）",
+          "explanation": "啟動階段著重在把試行計畫放進正式環境，展現逐步的業務價值。"
+        },
+        {
+          "id": "b",
+          "text": "Scale（擴展）",
+          "explanation": "擴展階段著重在把成功的試行擴大到期望的規模。"
+        },
+        {
+          "id": "c",
+          "text": "Envision（構想）",
+          "explanation": "構想階段著重在說明雲端如何加速業務成果，並排定轉型機會的優先順序。"
+        },
+        {
+          "id": "d",
+          "text": "Align（對齊）",
+          "explanation": "正確。對齊階段找出能力缺口與相依關係，制定提升雲端準備度的策略。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-121",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "依照 AWS CAF 的四個階段，在正式環境交付試行計畫（pilot）、展現逐步業務價值的是哪一個階段？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Align（對齊）",
+          "explanation": "對齊階段是找出能力缺口與利害關係人的疑慮。"
+        },
+        {
+          "id": "b",
+          "text": "Launch（啟動）",
+          "explanation": "正確。啟動階段交付有影響力的試行計畫，並從中學習、調整方法。"
+        },
+        {
+          "id": "c",
+          "text": "Scale（擴展）",
+          "explanation": "擴展階段是把試行擴大，並確保效益持續實現。"
+        },
+        {
+          "id": "d",
+          "text": "Envision（構想）",
+          "explanation": "構想階段是找出並排序轉型機會。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-122",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "依照 AWS CAF 的說明，採用 AWS 可以為組織帶來哪些業務成果？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "降低業務風險",
+          "explanation": "正確。AWS CAF 提到 AWS 可以協助降低成本、降低業務風險、提升營運效率等。"
+        },
+        {
+          "id": "b",
+          "text": "創造新的營收來源",
+          "explanation": "正確。AWS CAF 提到可以加快創新、創造新的營收來源。"
+        },
+        {
+          "id": "c",
+          "text": "保證不會再發生任何服務中斷",
+          "explanation": "沒有任何平台能保證完全不中斷；高可用需要依照最佳實務設計。"
+        },
+        {
+          "id": "d",
+          "text": "免除客戶所有的資安責任",
+          "explanation": "在共同責任模型下，客戶仍要負責雲端「之中」的安全，例如資料與存取權限。"
+        }
+      ],
+      "answer": [
+        "a",
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-123",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "一家公司要把數百台內部部署的虛擬機搬到 AWS，希望盡快完成、不修改應用程式。最適合哪一種遷移策略？",
+      "options": [
+        {
+          "id": "a",
+          "text": "保留（Retain）",
+          "explanation": "保留是暫時留在原本的環境。"
+        },
+        {
+          "id": "b",
+          "text": "重新託管（Rehost，lift and shift）",
+          "explanation": "正確。重新託管把機器原封不動搬到 AWS，適合大規模、快速的遷移。"
+        },
+        {
+          "id": "c",
+          "text": "重構（Refactor）",
+          "explanation": "重構要修改架構以充分利用雲端原生功能，是最複雜、成本最高的策略，不適合要快速完成的大規模遷移。"
+        },
+        {
+          "id": "d",
+          "text": "汰除（Retire）",
+          "explanation": "汰除是關閉不再需要的應用程式，不是搬到雲端。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-124",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司把自行管理的資料庫搬到 AWS 時，順便改用全代管的資料庫服務，應用程式只做少量修改。這屬於哪一種遷移策略？",
+      "options": [
+        {
+          "id": "a",
+          "text": "重新購買（Repurchase）",
+          "explanation": "重新購買是換成另一個產品，例如改用 SaaS。"
+        },
+        {
+          "id": "b",
+          "text": "汰除（Retire）",
+          "explanation": "汰除是把應用程式關閉或封存。"
+        },
+        {
+          "id": "c",
+          "text": "重新託管（Rehost）",
+          "explanation": "重新託管不做修改，直接把機器搬過去。"
+        },
+        {
+          "id": "d",
+          "text": "平台重建（Replatform，lift, tinker, and shift）",
+          "explanation": "正確。搬遷時做一些最佳化，例如改用全代管或無伺服器服務，以降低成本、提升效率。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-125",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司決定不再自己維護內部的客戶關係管理系統，改為訂閱廠商提供的 SaaS 版本。這屬於哪一種遷移策略？",
+      "options": [
+        {
+          "id": "a",
+          "text": "重新託管（Rehost）",
+          "explanation": "重新託管是把原本的機器直接搬到雲端。"
+        },
+        {
+          "id": "b",
+          "text": "重構（Refactor）",
+          "explanation": "重構是修改原本應用程式的架構。"
+        },
+        {
+          "id": "c",
+          "text": "搬移（Relocate）",
+          "explanation": "搬移是把大量伺服器從內部部署平台移到該平台的雲端版本，不換產品。"
+        },
+        {
+          "id": "d",
+          "text": "重新購買（Repurchase，drop and shop）",
+          "explanation": "正確。把應用程式換成不同的版本或產品，例如從傳統授權改用 SaaS。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-126",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "盤點時發現幾台伺服器的 CPU 與記憶體使用率長期低於 5%，而且已經沒有業務價值。依照 AWS 的遷移策略，最適合怎麼處理？",
+      "options": [
+        {
+          "id": "a",
+          "text": "重新託管到 AWS",
+          "explanation": "沒有業務價值的應用程式搬過去只會繼續花錢。"
+        },
+        {
+          "id": "b",
+          "text": "汰除（Retire）",
+          "explanation": "正確。這類「殭屍應用程式」可以關閉或封存，關掉對應的伺服器。"
+        },
+        {
+          "id": "c",
+          "text": "重構成微服務",
+          "explanation": "重構成本最高，用在沒有價值的應用程式上並不合理。"
+        },
+        {
+          "id": "d",
+          "text": "購買 Reserved Instances 降低費用",
+          "explanation": "繼續付費執行沒有價值的系統，仍然是浪費。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-127",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 3,
+      "question": "某個應用程式必須等另一個系統先遷移完成，而且還有資料存放地點的法規要求尚未釐清。依照 AWS 的遷移策略，現階段最適合怎麼處理？",
+      "options": [
+        {
+          "id": "a",
+          "text": "重新購買（Repurchase）",
+          "explanation": "題目沒有提到要換成其他產品。"
+        },
+        {
+          "id": "b",
+          "text": "保留（Retain）",
+          "explanation": "正確。因為相依關係、法規或風險需要進一步評估時，可以暫時保留在原本的環境。"
+        },
+        {
+          "id": "c",
+          "text": "汰除（Retire）",
+          "explanation": "這個應用程式仍有業務需要，不是要關閉。"
+        },
+        {
+          "id": "d",
+          "text": "重新託管（Rehost）",
+          "explanation": "相依的系統還沒遷移、法規也沒釐清，現在搬過去風險較高。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-128",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 1,
+      "question": "下列哪一項是內部部署環境需要、但改用 AWS 後通常可以省下的成本？",
+      "options": [
+        {
+          "id": "a",
+          "text": "決定誰可以存取資料的權限設定",
+          "explanation": "依照共同責任模型，存取權限仍是客戶的責任。"
+        },
+        {
+          "id": "b",
+          "text": "挑選適合業務需求的架構",
+          "explanation": "架構設計仍是客戶的工作。"
+        },
+        {
+          "id": "c",
+          "text": "購買與更換實體伺服器、資料中心的電力與冷卻",
+          "explanation": "正確。這些實體設施的成本由 AWS 負擔，客戶改成依用量付費。"
+        },
+        {
+          "id": "d",
+          "text": "開發應用程式功能的人力",
+          "explanation": "應用程式的開發仍然由客戶負責。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-129",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司已經擁有某套商用資料庫依實體核心計算的授權，想在 AWS 上繼續使用（BYOL）。哪一種 EC2 選項提供最完整的 BYOL 支援？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Dedicated Hosts",
+          "explanation": "正確。Dedicated Hosts 是專屬於你的實體伺服器，能看到並控制執行個體的放置，支援依插槽、核心或 VM 計算的授權。"
+        },
+        {
+          "id": "b",
+          "text": "Dedicated Instances",
+          "explanation": "Dedicated Instances 也在專屬硬體上，但不提供放置的可見性與控制，BYOL 支援有限。"
+        },
+        {
+          "id": "c",
+          "text": "Savings Plans",
+          "explanation": "Savings Plans 是計費折扣，和授權無關。"
+        },
+        {
+          "id": "d",
+          "text": "Spot Instances",
+          "explanation": "Spot 是用折扣價格使用閒置容量，和授權綁定實體核心無關。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-130",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "一台 EC2 執行個體長期的 CPU 使用率都很低。依照雲端經濟學的「調整大小（rightsizing）」概念，應該怎麼做？",
+      "options": [
+        {
+          "id": "a",
+          "text": "改成較小、符合實際需求的執行個體類型",
+          "explanation": "正確。依照實際用量挑選大小，就不必為用不到的容量付費。"
+        },
+        {
+          "id": "b",
+          "text": "改成更大的執行個體，以備不時之需",
+          "explanation": "這會為用不到的容量付更多錢。"
+        },
+        {
+          "id": "c",
+          "text": "購買 3 年期的 Reserved Instance 鎖定目前的大小",
+          "explanation": "先調整成正確的大小，再決定要不要承諾用量，才不會鎖定過大的規格。"
+        },
+        {
+          "id": "d",
+          "text": "什麼都不做，因為雲端只依 CPU 使用率計費",
+          "explanation": "EC2 依執行個體類型與時間計費，不是依 CPU 使用率。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-131",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "開發用的伺服器只在上班時間使用。用排程在下班後自動停止、上班前自動啟動，主要帶來什麼效益？",
+      "options": [
+        {
+          "id": "a",
+          "text": "讓執行個體跨更多可用區",
+          "explanation": "排程啟動、停止不會改變執行個體的位置。"
+        },
+        {
+          "id": "b",
+          "text": "不必付執行中的執行個體費用，降低成本",
+          "explanation": "正確。雲端資源沒有在執行時就不必為運算付費；自動化讓這件事不需要人工。"
+        },
+        {
+          "id": "c",
+          "text": "提升資料的耐久性",
+          "explanation": "停止執行個體和資料耐久性無關。"
+        },
+        {
+          "id": "d",
+          "text": "自動取得 Reserved Instances 的折扣",
+          "explanation": "Reserved Instance 的折扣要購買後才會套用。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d1-132",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於內部部署與雲端的成本，哪些敘述正確？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "改用雲端後就不需要管理任何費用",
+          "explanation": "雲端仍需要監控與最佳化費用，例如使用 Budgets、Cost Explorer。"
+        },
+        {
+          "id": "b",
+          "text": "雲端的價格一定只能以 3 年期合約購買",
+          "explanation": "On-Demand 不需要長期承諾；承諾用量只是取得折扣的選項之一。"
+        },
+        {
+          "id": "c",
+          "text": "內部部署需要在知道實際用量之前，就先投資資料中心與伺服器",
+          "explanation": "正確。這是固定支出；雲端可以改成用多少付多少的變動支出。"
+        },
+        {
+          "id": "d",
+          "text": "在雲端，執行個體停止時通常不必支付運算費用",
+          "explanation": "正確。這是雲端可以透過關閉不用的資源來降低成本的原因。"
+        }
+      ],
+      "answer": [
+        "c",
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d4-101",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 4
+        }
+      ],
+      "difficulty": 1,
+      "question": "一個應用程式的用量穩定，會持續執行好幾年。團隊願意承諾每小時固定的運算花費，但希望之後能自由更換執行個體家族、Region，甚至改用 Fargate 或 Lambda。哪一種方式最適合？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Compute Savings Plans",
+          "explanation": "正確。承諾 1 或 3 年每小時固定金額的用量；不論執行個體家族、大小、作業系統、租用方式或 Region 都能套用，也適用於 Fargate 和 Lambda。"
+        },
+        {
+          "id": "b",
+          "text": "On-Demand Instances",
+          "explanation": "On-Demand 不需承諾，但也沒有長期承諾的折扣。"
+        },
+        {
+          "id": "c",
+          "text": "Spot Instances",
+          "explanation": "Spot 可能被中斷，不適合需要持續執行的應用程式。"
+        },
+        {
+          "id": "d",
+          "text": "可用區範圍的 Reserved Instances",
+          "explanation": "Reserved Instances 承諾的是特定的執行個體設定，彈性不如 Compute Savings Plans，也不適用 Lambda。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d4-102",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於 Spot Instances，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Spot Instances 的價格永遠高於 On-Demand",
+          "explanation": "Spot 使用閒置容量，價格低於 On-Demand。"
+        },
+        {
+          "id": "b",
+          "text": "Spot Instances 保證不會被中斷",
+          "explanation": "當 EC2 需要收回容量時，Spot Instances 可能被終止、停止或休眠。"
+        },
+        {
+          "id": "c",
+          "text": "EC2 需要收回容量時，會在中斷前兩分鐘發出通知",
+          "explanation": "正確。Spot Instance 中斷通知會在中斷前兩分鐘發出。"
+        },
+        {
+          "id": "d",
+          "text": "Spot Instances 需要承諾 1 年或 3 年",
+          "explanation": "Spot 不需要長期承諾。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d4-103",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司有一個關鍵的工作負載，必須確保在特定可用區隨時有 EC2 容量可用，但不想做 1 年或 3 年的承諾。哪一種選項最適合？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Spot Instances",
+          "explanation": "Spot 可能被中斷，也不保證有容量。"
+        },
+        {
+          "id": "b",
+          "text": "Compute Savings Plans",
+          "explanation": "Savings Plans 是計費折扣，不會保留容量。"
+        },
+        {
+          "id": "c",
+          "text": "立即生效的 On-Demand Capacity Reservations",
+          "explanation": "正確。立即生效的 Capacity Reservation 沒有期限承諾，可以隨時取消來釋放容量並停止計費。"
+        },
+        {
+          "id": "d",
+          "text": "區域範圍的 Reserved Instances",
+          "explanation": "區域範圍的 Reserved Instances 不會保留容量，而且需要 1 或 3 年的承諾。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d4-104",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 4
+        }
+      ],
+      "difficulty": 3,
+      "question": "關於區域（Regional）與可用區（Zonal）範圍的 Reserved Instances，哪些敘述正確？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "區域範圍的 Reserved Instance 的折扣可以套用到該 Region 內任何可用區的用量",
+          "explanation": "正確。區域範圍的 Reserved Instance 提供可用區的彈性。"
+        },
+        {
+          "id": "b",
+          "text": "可用區範圍的 Reserved Instance 價格比區域範圍的便宜",
+          "explanation": "範圍不影響價格，兩者價格相同。"
+        },
+        {
+          "id": "c",
+          "text": "Reserved Instance 是一台額外的實體執行個體",
+          "explanation": "Reserved Instance 不是實體執行個體，而是套用在符合條件的執行個體上的計費折扣。"
+        },
+        {
+          "id": "d",
+          "text": "可用區範圍的 Reserved Instance 會在指定的可用區保留容量",
+          "explanation": "正確。區域範圍的則不會保留容量。"
+        }
+      ],
+      "answer": [
+        "a",
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d4-105",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司已經有一台執行中的 On-Demand 執行個體，接著購買了規格相符的 Reserved Instance。會發生什麼事？",
+      "options": [
+        {
+          "id": "a",
+          "text": "必須重新啟動執行個體，折扣才會生效",
+          "explanation": "不必重新啟動。"
+        },
+        {
+          "id": "b",
+          "text": "計費折扣會立即、自動套用到這台執行個體",
+          "explanation": "正確。Reserved Instance 是計費折扣，符合規格的執行中執行個體會自動享有。"
+        },
+        {
+          "id": "c",
+          "text": "AWS 會另外啟動一台新的執行個體",
+          "explanation": "Reserved Instance 不是實體執行個體，不會另外啟動。"
+        },
+        {
+          "id": "d",
+          "text": "要等到下一個月，折扣才會開始套用",
+          "explanation": "符合規格時會立即套用。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d4-106",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司因為法規要求，執行個體不能和其他 AWS 帳戶共用實體硬體；但不需要控制執行個體放在哪一台主機，也沒有綁定實體核心的授權。哪一種選項最適合？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Savings Plans",
+          "explanation": "Savings Plans 是計費折扣，不改變執行個體的租用方式。"
+        },
+        {
+          "id": "b",
+          "text": "Dedicated Instances",
+          "explanation": "正確。Dedicated Instances 在專屬於單一帳戶的硬體上執行，與其他帳戶在主機硬體層級實體隔離；但不提供放置的可見性與控制。"
+        },
+        {
+          "id": "c",
+          "text": "Dedicated Hosts",
+          "explanation": "Dedicated Hosts 也符合隔離需求，但它的主要差異是放置的可見性、控制與完整的 BYOL 支援，題目不需要這些。"
+        },
+        {
+          "id": "d",
+          "text": "Spot Instances",
+          "explanation": "Spot 使用共用的閒置容量，不保證實體隔離。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d4-107",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "一家公司在 AWS Organizations 中有多個帳戶。開啟合併帳單（consolidated billing）有哪些好處？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "合併帳單需要另外付費",
+          "explanation": "合併帳單不額外收費。"
+        },
+        {
+          "id": "b",
+          "text": "成員帳戶的資源會自動合併成一個帳戶",
+          "explanation": "帳戶仍然各自獨立，只是帳單與付款合併。"
+        },
+        {
+          "id": "c",
+          "text": "多個帳戶的費用合併成一張帳單，由管理帳戶支付",
+          "explanation": "正確。管理帳戶支付所有成員帳戶的費用。"
+        },
+        {
+          "id": "d",
+          "text": "合併各帳戶的用量，共享用量階梯折扣、Reserved Instance 與 Savings Plans 的折扣",
+          "explanation": "正確。合併用量可能讓整體費用比各自獨立的帳戶更低。"
+        }
+      ],
+      "answer": [
+        "c",
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d4-108",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 4
+        }
+      ],
+      "difficulty": 3,
+      "question": "公司在 AWS Organizations 中購買了 Savings Plans，希望折扣只分享給特定幾個帳戶，而不是組織中的所有帳戶。由誰、在哪裡設定？",
+      "options": [
+        {
+          "id": "a",
+          "text": "由管理帳戶在 Reserved Instance 與 Savings Plans 的折扣分享偏好設定中控制",
+          "explanation": "正確。管理帳戶可以為各帳戶開啟或關閉分享，也可以指定哪些帳戶能使用特定承諾的折扣。"
+        },
+        {
+          "id": "b",
+          "text": "向 AWS Support 開案件，請 AWS 手動調整",
+          "explanation": "這是管理帳戶可以自行設定的功能。"
+        },
+        {
+          "id": "c",
+          "text": "Savings Plans 的折扣無法在帳戶之間分享",
+          "explanation": "Savings Plans 與 Reserved Instance 的折扣都可以在組織內分享。"
+        },
+        {
+          "id": "d",
+          "text": "每個成員帳戶各自設定，管理帳戶無法控制",
+          "explanation": "相反，折扣分享由組織的管理帳戶控制。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d4-109",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "財務部門想在帳單上依「部門」和「專案」分別統計 AWS 費用。應該怎麼做？",
+      "options": [
+        {
+          "id": "a",
+          "text": "替資源加上標籤，並在帳單與成本管理主控台啟用為成本分配標籤",
+          "explanation": "正確。啟用後，就能在 Cost Explorer 或成本分配報告中依標籤分組費用。"
+        },
+        {
+          "id": "b",
+          "text": "購買 Enterprise Support",
+          "explanation": "支援方案不會依部門拆分費用。"
+        },
+        {
+          "id": "c",
+          "text": "把所有資源放在同一個可用區",
+          "explanation": "資源的位置與費用分類無關。"
+        },
+        {
+          "id": "d",
+          "text": "使用 AWS Pricing Calculator",
+          "explanation": "Pricing Calculator 用來在建置前估算費用，不會分析實際的帳單。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d4-110",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊想把最詳細的成本與用量資料（可以細到每小時、每個資源）定期送到自己的 S3 bucket，再用 Athena 分析。應該使用哪一項功能？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Trusted Advisor",
+          "explanation": "Trusted Advisor 檢查你的環境並提出建議，不是完整的帳單資料。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Cost and Usage Reports（CUR）",
+          "explanation": "正確。CUR 把帳單報告發布到你的 S3 bucket，可以依小時、天、月細分，並能設定成方便 Athena 等服務分析。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Budgets",
+          "explanation": "Budgets 用來設定預算並在超過門檻時通知。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Pricing Calculator",
+          "explanation": "Pricing Calculator 用來在建置前估算費用。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d4-111",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 4
+        }
+      ],
+      "difficulty": 1,
+      "question": "一家公司還沒開始使用 AWS，想在建置之前估算一個架構每個月大概要花多少錢。應該使用哪一項工具？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Cost and Usage Reports",
+          "explanation": "CUR 提供的是實際用量的帳單資料。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Budgets",
+          "explanation": "Budgets 追蹤實際與預測的花費，需要已經有用量。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Cost Explorer",
+          "explanation": "Cost Explorer 分析的是已經發生的費用與用量。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Pricing Calculator",
+          "explanation": "正確。它是免費的網頁工具，可以在建置之前模擬方案並估算費用，不需要 AWS 使用經驗。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d4-112",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於 AWS 的資料傳輸費用，哪一項敘述通常是正確的？",
+      "options": [
+        {
+          "id": "a",
+          "text": "傳入與傳出的資料都完全免費",
+          "explanation": "傳出的資料要收費，在帳單上顯示為 AWS Data Transfer Out。"
+        },
+        {
+          "id": "b",
+          "text": "傳入的資料收費，傳出的資料免費",
+          "explanation": "相反。"
+        },
+        {
+          "id": "c",
+          "text": "資料傳輸費用只和使用的支援方案有關",
+          "explanation": "資料傳輸費用和傳輸的方向、量有關，和支援方案無關。"
+        },
+        {
+          "id": "d",
+          "text": "從網際網路傳入 AWS 的資料，通常不收費；從 AWS 傳出到網際網路的資料則要收費",
+          "explanation": "正確。運算、儲存與傳出的資料是 AWS 費用的三個主要來源；傳入的資料在大多數情況下不收費。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d4-113",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "一批資料的存取模式無法預測，團隊希望 S3 自動把很久沒被存取的物件移到較便宜的存取層，而且不影響效能。應該使用哪一種儲存類別？",
+      "options": [
+        {
+          "id": "a",
+          "text": "S3 Standard",
+          "explanation": "S3 Standard 是預設的儲存類別，不會自動在存取層之間移動物件。"
+        },
+        {
+          "id": "b",
+          "text": "S3 Intelligent-Tiering",
+          "explanation": "正確。它收取少量的監控與自動化費用，自動把連續 30 天沒有存取的物件移到 Infrequent Access 層，以降低儲存成本。"
+        },
+        {
+          "id": "c",
+          "text": "S3 Express One Zone",
+          "explanation": "Express One Zone 是為極低延遲設計的單一可用區儲存類別。"
+        },
+        {
+          "id": "d",
+          "text": "EBS 磁碟區",
+          "explanation": "EBS 是掛在 EC2 上的區塊儲存，不是 S3 的儲存類別。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "clf-c02-d4-114",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司使用的是 Basic Support 方案。下列哪一項是它**包含**的功能？",
+      "options": [
+        {
+          "id": "a",
+          "text": "所有 Trusted Advisor 檢查",
+          "explanation": "Basic Support 只能使用部分 Trusted Advisor 檢查。"
+        },
+        {
+          "id": "b",
+          "text": "指定的技術客戶經理（TAM）",
+          "explanation": "TAM 是 Enterprise Support 以上的方案才有。"
+        },
+        {
+          "id": "c",
+          "text": "24 小時全年無休與 Cloud Support Engineer 的電話、網頁與聊天支援",
+          "explanation": "這是 Business Support+ 以上的方案才有。"
+        },
+        {
+          "id": "d",
+          "text": "帳戶與帳單問題的一對一回覆，以及文件、白皮書與最佳實務指南",
+          "explanation": "正確。所有客戶都自動擁有 Basic Support，包含帳戶與帳單問題的回覆、支援論壇、服務健康檢查與文件。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d4-115",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司需要一位指定的技術客戶經理（TAM），而且正式環境關鍵案件的回應時間最多 15 分鐘。最低要選哪一個支援方案？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Enterprise Support",
+          "explanation": "正確。Enterprise Support 在 Business Support+ 的基礎上，加上指定的 TAM 與最快 15 分鐘的正式環境關鍵案件回應。"
+        },
+        {
+          "id": "b",
+          "text": "不需要支援方案，Basic 就有 TAM",
+          "explanation": "Basic Support 沒有 TAM。"
+        },
+        {
+          "id": "c",
+          "text": "Basic Support",
+          "explanation": "Basic Support 沒有技術支援案件與 TAM。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Business Support+",
+          "explanation": "Business Support+ 提供全天候的工程師支援，但沒有指定的 TAM。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d4-116",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "哪一項服務會檢查你的 AWS 環境，針對節省費用、提升可用性與效能、修補安全缺口等方面提出建議？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Pricing Calculator",
+          "explanation": "Pricing Calculator 用來估算尚未建置的架構費用。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Marketplace",
+          "explanation": "Marketplace 是購買第三方軟體的目錄。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Cost and Usage Reports",
+          "explanation": "CUR 提供詳細的帳單資料，不會檢查環境。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Trusted Advisor",
+          "explanation": "正確。Trusted Advisor 依照服務大量客戶得到的最佳實務檢查環境並提出建議。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "clf-c02-d4-117",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "工程師想知道某個 AWS 服務的事件，是否正在影響自己帳戶中的資源，也想事先知道排定的維護活動。應該查看哪裡？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Health Dashboard",
+          "explanation": "正確。它對所有客戶免費、不需設定，顯示服務與資源變化如何影響你的應用程式，以及排定的活動。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Trusted Advisor",
+          "explanation": "Trusted Advisor 提供最佳實務建議，不是事件通知。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Pricing Calculator",
+          "explanation": "Pricing Calculator 用來估算費用。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Marketplace",
+          "explanation": "Marketplace 是購買第三方軟體的目錄。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "clf-c02-d4-118",
+      "type": "multiple",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 4
+        }
+      ],
+      "difficulty": 3,
+      "question": "關於 AWS Health，哪些敘述正確？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Health 會自動修復受影響的資源",
+          "explanation": "AWS Health 提供事件資訊與通知，不會自動修復資源。"
+        },
+        {
+          "id": "b",
+          "text": "所有客戶都能免費使用 AWS Health Dashboard",
+          "explanation": "正確。它不需要設定，驗證過的使用者就能使用。"
+        },
+        {
+          "id": "c",
+          "text": "所有客戶都能免費透過 Amazon EventBridge 接收 AWS Health 事件",
+          "explanation": "正確。"
+        },
+        {
+          "id": "d",
+          "text": "所有客戶都能使用 AWS Health API 整合內部系統",
+          "explanation": "AWS Health API 需要 Business Support+、Enterprise Support 或 Unified Operations 等方案。"
+        }
+      ],
+      "answer": [
+        "b",
+        "c"
+      ]
+    },
+    {
+      "id": "clf-c02-d4-119",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 4
+        }
+      ],
+      "difficulty": 1,
+      "question": "公司想尋找並購買可以在 AWS 上執行的第三方軟體（例如資安工具），並讓費用直接出現在 AWS 帳單上。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AWS Health Dashboard",
+          "explanation": "Health Dashboard 顯示服務事件。"
+        },
+        {
+          "id": "b",
+          "text": "AWS Organizations",
+          "explanation": "Organizations 用來管理多個 AWS 帳戶。"
+        },
+        {
+          "id": "c",
+          "text": "AWS Marketplace",
+          "explanation": "正確。它是經過審核的數位目錄，可以尋找、購買、部署第三方軟體、資料與服務，費用會成為 AWS 帳單的一部分。"
+        },
+        {
+          "id": "d",
+          "text": "AWS Trusted Advisor",
+          "explanation": "Trusted Advisor 檢查你的環境並提出建議。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    }
+  ]
+}
