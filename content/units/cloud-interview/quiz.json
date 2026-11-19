@@ -1,0 +1,509 @@
+{
+  "questions": [
+    {
+      "id": "cloud-interview-001",
+      "type": "single",
+      "provider": "general",
+      "unitId": "cloud-interview",
+      "difficulty": 2,
+      "question": "面試官問：「設計一個高可用的網站」。你的第一句話最好是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "先確認需求：使用者規模與位置、可以接受停機多久與遺失多少資料、預算",
+          "explanation": "正確。需求決定要做到什麼程度。"
+        },
+        {
+          "id": "b",
+          "text": "「我會用 Kubernetes」",
+          "explanation": "沒有需求就先選工具，看不出思考過程。"
+        },
+        {
+          "id": "c",
+          "text": "「我會跨三個區域部署」",
+          "explanation": "可能遠超過需求，成本也高。"
+        },
+        {
+          "id": "d",
+          "text": "「我沒有做過這種系統」",
+          "explanation": "可以誠實，但還是要展示你的思考方式。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "cloud-interview-002",
+      "type": "single",
+      "provider": "general",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "unitId": "cloud-interview",
+      "difficulty": 2,
+      "question": "安全群組允許了 HTTPS 進來，但沒有設定任何出站的回應規則。用戶端收得到回應嗎？",
+      "options": [
+        {
+          "id": "a",
+          "text": "收得到。安全群組是有狀態的，回應流量會自動放行",
+          "explanation": "正確。"
+        },
+        {
+          "id": "b",
+          "text": "收不到，要再加一條出站規則允許回應",
+          "explanation": "那是無狀態的網路 ACL 才需要的。"
+        },
+        {
+          "id": "c",
+          "text": "只有第一個封包收得到",
+          "explanation": "有狀態的防火牆會追蹤整個連線。"
+        },
+        {
+          "id": "d",
+          "text": "要看用戶端的作業系統",
+          "explanation": "和用戶端無關。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "cloud-interview-003",
+      "type": "single",
+      "provider": "general",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "unitId": "cloud-interview",
+      "difficulty": 2,
+      "question": "私有子網路的伺服器要下載作業系統更新，但不能讓網際網路主動連進來。應該怎麼做？",
+      "options": [
+        {
+          "id": "a",
+          "text": "透過 NAT（AWS 的 NAT 閘道、Google Cloud 的 Cloud NAT）連出去",
+          "explanation": "正確。NAT 只讓裡面的機器主動連出去。"
+        },
+        {
+          "id": "b",
+          "text": "把伺服器改放到公有子網路並給它公有 IP",
+          "explanation": "外面就能直接連進來，違反需求。"
+        },
+        {
+          "id": "c",
+          "text": "關掉所有防火牆",
+          "explanation": "大幅降低安全性。"
+        },
+        {
+          "id": "d",
+          "text": "在私有子網路的路由表加上指向網際網路閘道的路由",
+          "explanation": "這會讓它變成公有子網路。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "cloud-interview-004",
+      "type": "single",
+      "provider": "general",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 1
+        }
+      ],
+      "unitId": "cloud-interview",
+      "difficulty": 1,
+      "question": "應用程式要存取雲端的物件儲存。下列哪個做法最符合最佳實務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "給執行環境一個角色或服務帳戶，用臨時憑證，並只授予需要的權限",
+          "explanation": "正確。"
+        },
+        {
+          "id": "b",
+          "text": "把管理員的存取金鑰寫在設定檔",
+          "explanation": "金鑰容易外洩，權限也過大。"
+        },
+        {
+          "id": "c",
+          "text": "把 bucket 設成公開",
+          "explanation": "任何人都能存取。"
+        },
+        {
+          "id": "d",
+          "text": "每個開發者共用同一組金鑰",
+          "explanation": "無法追蹤，也難以撤銷。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "cloud-interview-005",
+      "type": "single",
+      "provider": "general",
+      "unitId": "cloud-interview",
+      "difficulty": 3,
+      "question": "故障排除題：「網站突然全部連不上」。下列哪個回答最能展現有系統的方法？",
+      "options": [
+        {
+          "id": "a",
+          "text": "先確認範圍與最近的變更，再沿著 DNS、負載平衡器、執行個體、應用程式、資料庫依序查看指標和日誌",
+          "explanation": "正確。"
+        },
+        {
+          "id": "b",
+          "text": "先把所有伺服器重新開機",
+          "explanation": "沒有找原因，問題可能再發生，也可能讓狀況更糟。"
+        },
+        {
+          "id": "c",
+          "text": "直接把資料庫改大一點",
+          "explanation": "還不知道瓶頸在哪裡。"
+        },
+        {
+          "id": "d",
+          "text": "等它自己恢復",
+          "explanation": "沒有任何行動。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "cloud-interview-006",
+      "type": "single",
+      "provider": "general",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "unitId": "cloud-interview",
+      "difficulty": 2,
+      "question": "Google Cloud 的外部負載平衡器後面的 VM 都正常，健康檢查卻全部失敗。最先該檢查的是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "防火牆是否允許 Google 健康檢查的來源 IP 範圍（例如 35.191.0.0/16）",
+          "explanation": "正確。VPC 預設拒絕所有輸入連線。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud SQL 是否設成高可用",
+          "explanation": "和負載平衡器的健康檢查無關。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud CDN 是否開啟",
+          "explanation": "和健康檢查無關。"
+        },
+        {
+          "id": "d",
+          "text": "VM 的磁碟大小",
+          "explanation": "和健康檢查能否連線無關。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "cloud-interview-007",
+      "type": "single",
+      "provider": "general",
+      "unitId": "cloud-interview",
+      "difficulty": 2,
+      "question": "改了 DNS 紀錄後，部分使用者仍連到舊的伺服器好幾個小時。最可能的原因是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "解析器依舊紀錄的 TTL 快取了答案，還沒過期",
+          "explanation": "正確。切換前應先把 TTL 調短。"
+        },
+        {
+          "id": "b",
+          "text": "DNS 紀錄沒有存檔",
+          "explanation": "紀錄已經生效，只是快取還在。"
+        },
+        {
+          "id": "c",
+          "text": "伺服器的磁碟太小",
+          "explanation": "和 DNS 快取無關。"
+        },
+        {
+          "id": "d",
+          "text": "負載平衡器的健康檢查失敗",
+          "explanation": "和 DNS 解析無關。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "cloud-interview-008",
+      "type": "single",
+      "provider": "general",
+      "unitId": "cloud-interview",
+      "difficulty": 3,
+      "question": "消費者處理一則 SQS 訊息需要 2 分鐘，最近發現同一筆訂單被處理了兩次。下列哪個修正最完整？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把可見性逾時調長到超過處理時間，並讓處理冪等（用訂單編號檢查是否已處理）",
+          "explanation": "正確。即使調長逾時，至少傳送一次仍可能重複，所以冪等也要做。"
+        },
+        {
+          "id": "b",
+          "text": "只要把可見性逾時調長",
+          "explanation": "還是可能收到重複的訊息。"
+        },
+        {
+          "id": "c",
+          "text": "把佇列刪掉重建",
+          "explanation": "問題會再發生。"
+        },
+        {
+          "id": "d",
+          "text": "減少消費者的數量到一個",
+          "explanation": "單一消費者仍可能收到重複的訊息，也失去擴展性。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "cloud-interview-009",
+      "type": "single",
+      "provider": "general",
+      "unitId": "cloud-interview",
+      "difficulty": 2,
+      "question": "新建立的 EKS 叢集（標準模式），部署後 Pod 一直停在 Pending。最可能的原因是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "叢集還沒有節點，要建立節點群組",
+          "explanation": "正確。"
+        },
+        {
+          "id": "b",
+          "text": "Service 的類型設錯",
+          "explanation": "Service 不會讓 Pod 停在 Pending。"
+        },
+        {
+          "id": "c",
+          "text": "映像檔太大",
+          "explanation": "Pending 是還沒排到節點，不是下載映像檔的問題。"
+        },
+        {
+          "id": "d",
+          "text": "沒有設定 DNS",
+          "explanation": "和 Pod 排程無關。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "cloud-interview-010",
+      "type": "single",
+      "provider": "general",
+      "unitId": "cloud-interview",
+      "difficulty": 2,
+      "question": "網站換了新的 logo 圖片，但使用者看到的還是舊的。最直接的處理方式是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "清除 CDN 上這個路徑的快取，或改用帶版本號的檔名",
+          "explanation": "正確。"
+        },
+        {
+          "id": "b",
+          "text": "把網站伺服器重新開機",
+          "explanation": "CDN 的快取不會因此清除。"
+        },
+        {
+          "id": "c",
+          "text": "刪除 DNS 紀錄",
+          "explanation": "會讓網站無法連線。"
+        },
+        {
+          "id": "d",
+          "text": "等一年",
+          "explanation": "不切實際。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "cloud-interview-011",
+      "type": "single",
+      "provider": "general",
+      "unitId": "cloud-interview",
+      "difficulty": 2,
+      "question": "行為題用 STAR 架構回答時，A（Action）的部分最該強調什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "你自己具體做了什麼",
+          "explanation": "正確。面試官想知道你的貢獻，而不是整個團隊的。"
+        },
+        {
+          "id": "b",
+          "text": "團隊有多少人",
+          "explanation": "這是背景，不是你的行動。"
+        },
+        {
+          "id": "c",
+          "text": "當時用了哪些工具的名字",
+          "explanation": "工具是細節，重點是你的判斷與行動。"
+        },
+        {
+          "id": "d",
+          "text": "別人犯了什麼錯",
+          "explanation": "把重點放在責怪別人會留下負面印象。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "cloud-interview-012",
+      "type": "single",
+      "provider": "general",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 2
+        }
+      ],
+      "unitId": "cloud-interview",
+      "difficulty": 3,
+      "question": "情境題：「整個區域故障時，一小時內恢復、最多遺失五分鐘的資料」。下列哪個策略最合適？",
+      "options": [
+        {
+          "id": "a",
+          "text": "pilot light 或 warm standby：資料庫跨區域持續複寫，備援區域預先準備環境",
+          "explanation": "正確。符合 RPO 和 RTO，成本也比 active/active 低。"
+        },
+        {
+          "id": "b",
+          "text": "每天一次備份，出事時再從頭建環境",
+          "explanation": "RPO 是一天，RTO 也可能超過一小時。"
+        },
+        {
+          "id": "c",
+          "text": "只在同一個區域跨可用區部署",
+          "explanation": "整個區域故障時無法恢復。"
+        },
+        {
+          "id": "d",
+          "text": "什麼都不用準備，雲端業者會處理",
+          "explanation": "災難復原需要自己規劃。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "cloud-interview-013",
+      "type": "multiple",
+      "provider": "general",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 2
+        }
+      ],
+      "unitId": "cloud-interview",
+      "difficulty": 3,
+      "question": "使用者上傳照片後要自動產生縮圖。下列哪些是好的設計？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "用物件儲存的事件通知觸發函式或佇列後面的工作者產生縮圖",
+          "explanation": "正確。"
+        },
+        {
+          "id": "b",
+          "text": "縮圖寫到另一個 bucket 或前綴，避免再次觸發事件形成無限迴圈",
+          "explanation": "正確。"
+        },
+        {
+          "id": "c",
+          "text": "把縮圖寫回原圖所在、會觸發通知的同一個路徑",
+          "explanation": "會形成無限迴圈。"
+        },
+        {
+          "id": "d",
+          "text": "讓網頁伺服器每秒列出 bucket 的所有物件檢查有沒有新照片",
+          "explanation": "浪費資源，也比事件通知慢。"
+        }
+      ],
+      "answer": [
+        "a",
+        "b"
+      ]
+    },
+    {
+      "id": "cloud-interview-014",
+      "type": "single",
+      "provider": "general",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "unitId": "cloud-interview",
+      "difficulty": 2,
+      "question": "雲端帳單持續上升。在決定購買 Savings Plans 或承諾使用折扣之前，應該先做什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "先用標籤找出費用來源、清掉閒置資源並調整規格過大的機器",
+          "explanation": "正確。先清浪費，再為穩定的用量做承諾。"
+        },
+        {
+          "id": "b",
+          "text": "直接承諾三年的最大用量",
+          "explanation": "可能為浪費的資源付了三年錢。"
+        },
+        {
+          "id": "c",
+          "text": "關掉所有監控以節省費用",
+          "explanation": "失去判斷依據，風險更高。"
+        },
+        {
+          "id": "d",
+          "text": "把所有工作都改用 Spot",
+          "explanation": "不是所有工作都能被中斷。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    }
+  ]
+}

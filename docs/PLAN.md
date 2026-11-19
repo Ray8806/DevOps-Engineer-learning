@@ -185,7 +185,7 @@ src/
 <Compare />
 ```
 
-可用元件：`ProviderTabs`、`Provider`、`Callout`、`Compare`（由 `unit.json` 的 `compare` 產生差異表）、`Flow`（流程動畫，見下一節）。`unit.json` 宣告的每個平台都必須有對應的 `<Provider>` 區塊。MDX 內不能使用 `{ }` JavaScript 運算式。
+可用元件：`ProviderTabs`、`Provider`、`Callout`、`Compare`（由 `unit.json` 的 `compare` 產生差異表）、`Flow`（流程動畫，見下一節）、`Answer`（預設收起的「看回答重點」，用在面試題）。`unit.json` 宣告的每個平台都必須有對應的 `<Provider>` 區塊。MDX 內不能使用 `{ }` JavaScript 運算式。
 
 ### flows/<flow-id>.json（流程動畫）
 
@@ -397,8 +397,7 @@ interface Progress {
 | 1 雲端核心 | 全部 8 個單元 | 完成 |
 | 2 維運 | 全部 5 個單元 | 完成 |
 | 3 自動化 | 全部 5 個單元 | 完成 |
-| 4 實戰 | 案例：高可用網站、資料管線、災難復原 | 完成 |
-| 4 實戰 | 面試題 | 待寫 |
+| 4 實戰 | 案例：高可用網站、資料管線、災難復原；雲端工程師面試題 | 完成 |
 
 雲端服務單元的內容要對照官方文件再寫（環境已開放 `docs.aws.amazon.com` 和 `docs.cloud.google.com`）。用 `curl` 下載後閱讀，不要憑記憶寫限制、預設值和用語。
 
