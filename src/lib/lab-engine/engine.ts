@@ -53,6 +53,7 @@ const HELP = `可用的指令：
               aws cloudformation validate-template | create-stack | describe-stacks | create-change-set | execute-change-set | detect-stack-drift | delete-stack（輸入 aws cloudformation 看完整清單）
               aws codebuild create-project | update-project | list-projects | start-build | batch-get-builds | list-builds-for-project
               aws sqs create-queue | send-message | receive-message | delete-message | get-queue-attributes | set-queue-attributes（輸入 aws sqs 看完整清單），aws sns publish
+              aws s3api put-bucket-notification-configuration | get-bucket-notification-configuration（S3 事件通知送到 SQS）
   GCP         gcloud storage buckets create | delete | list | describe
               gcloud storage ls | cp | mv | rm | cat      （也支援 gsutil）
               gcloud iam service-accounts create | list | delete
@@ -81,6 +82,7 @@ const HELP = `可用的指令：
               gcloud container clusters create-auto | create | list | describe | get-credentials | resize | delete
               gcloud builds submit --config=cloudbuild.yaml [--substitutions=_KEY=value] [--region=…] | list | log | describe
               gcloud pubsub topics create | list | publish | add-iam-policy-binding，gcloud pubsub subscriptions create | update | pull | ack | describe
+              gcloud storage buckets notifications create | list | delete（Cloud Storage 事件通知送到 Pub/Sub）
   其他        clear  help  whoami
 支援 > 與 >> 輸出到檔案、用 | 把輸出交給下一個指令（cat、base64、docker login --password-stdin 會讀取）、用 && 或 ; 串接指令。按 Tab 補完路徑，上下鍵瀏覽歷史指令。
 `;

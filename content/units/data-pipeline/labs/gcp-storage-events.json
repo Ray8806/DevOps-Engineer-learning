@@ -1,0 +1,63 @@
+{
+  "id": "gcp-storage-events",
+  "title": "新檔案上傳到 Cloud Storage，自動發布到 Pub/Sub",
+  "description": "建立原始資料的 bucket，設定 Pub/Sub 通知：只有 incoming/ 底下新完成的物件才發布到主題。觀察訂閱建立前上傳的檔案收不到通知，讀取通知訊息的屬性，最後把檔案整理到分區的路徑。",
+  "provider": "gcp",
+  "estimatedMinutes": 20,
+  "initialState": {
+    "files": {
+      "~/sales-2026-11-16.csv": "order_id,store,amount\n1001,taipei,1200\n1002,taichung,560\n1003,taipei,890\n",
+      "~/sales-2026-11-17.csv": "order_id,store,amount\n1004,kaohsiung,430\n1005,taipei,2100\n"
+    },
+    "cloud": {}
+  },
+  "steps": [
+    {
+      "instruction": "建立 bucket my-project-sales-raw（asia-east1），設定通知：主題 new-files、只通知 OBJECT_FINALIZE、只看 incoming/ 開頭的物件。看看 gcloud 幫你做了哪些事，再列出這個 bucket 的通知設定。",
+      "hint": "gcloud storage buckets create gs://my-project-sales-raw --location=asia-east1，gcloud storage buckets notifications create gs://my-project-sales-raw --topic=new-files --event-types=OBJECT_FINALIZE --object-prefix=incoming/，gcloud storage buckets notifications list gs://my-project-sales-raw",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "storageNotifications",
+          "my-project-sales-raw",
+          "1"
+        ],
+        "equals": "new-files"
+      }
+    },
+    {
+      "instruction": "把 ~/sales-2026-11-16.csv 上傳到 incoming/，然後才建立訂閱 new-files-sub 並拉取：收得到剛才的通知嗎？再上傳 ~/sales-2026-11-17.csv，用 --auto-ack 拉取，看看 ATTRIBUTES 裡的 eventType、objectId。",
+      "hint": "gcloud storage cp sales-2026-11-16.csv gs://my-project-sales-raw/incoming/，gcloud pubsub subscriptions create new-files-sub --topic=new-files，gcloud pubsub subscriptions pull new-files-sub，gcloud storage cp sales-2026-11-17.csv gs://my-project-sales-raw/incoming/，gcloud pubsub subscriptions pull new-files-sub --auto-ack",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "pubsub",
+          "subscriptions",
+          "new-files-sub",
+          "ackedAny"
+        ],
+        "equals": true
+      }
+    },
+    {
+      "instruction": "處理程式把檔案整理到依日期分區的路徑 sales/dt=2026-11-17/，之後載入 BigQuery 的分區資料表時只處理需要的日期。複製過去後再拉一次：有新的通知嗎？",
+      "hint": "gcloud storage cp gs://my-project-sales-raw/incoming/sales-2026-11-17.csv gs://my-project-sales-raw/sales/dt=2026-11-17/sales.csv，gcloud storage ls --recursive gs://my-project-sales-raw，gcloud pubsub subscriptions pull new-files-sub",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcs",
+          "buckets",
+          "my-project-sales-raw",
+          "objects",
+          "sales/dt=2026-11-17/sales.csv"
+        ],
+        "exists": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "id": "data-pipeline",
+  "title": "案例：資料管線",
+  "summary": "每天有大量的銷售資料從各分店上傳，要自動收進來、整理好，讓分析人員用 SQL 查詢。設計從收集、儲存、處理到分析的資料管線，並用事件通知讓新檔案一上傳就觸發處理。",
+  "stage": 4,
+  "prerequisites": [
+    "object-storage",
+    "message-queues",
+    "serverless"
+  ],
+  "providers": {
+    "aws": {
+      "services": [
+        "S3",
+        "S3 事件通知",
+        "Kinesis",
+        "Glue",
+        "Athena"
+      ]
+    },
+    "gcp": {
+      "services": [
+        "Cloud Storage",
+        "Pub/Sub",
+        "Dataflow",
+        "BigQuery"
+      ]
+    }
+  },
+  "compare": [
+    {
+      "aspect": "資料湖（原始與整理後的檔案）",
+      "aws": "Amazon S3",
+      "gcp": "Cloud Storage"
+    },
+    {
+      "aspect": "新檔案上傳時通知",
+      "aws": "S3 事件通知：送到 SQS、SNS、Lambda 或 EventBridge；目的地的政策要允許 S3",
+      "gcp": "Pub/Sub notifications for Cloud Storage：gcloud 會自動建立主題並授權 Cloud Storage 服務代理"
+    },
+    {
+      "aspect": "即時串流收集",
+      "aws": "Kinesis Data Streams；Amazon Data Firehose 把串流送進 S3 等目的地",
+      "gcp": "Pub/Sub"
+    },
+    {
+      "aspect": "轉換處理（ETL）",
+      "aws": "AWS Glue：無伺服器的資料整合與 ETL，並有集中的 Data Catalog",
+      "gcp": "Dataflow：以 Apache Beam 撰寫，批次與串流用同一套模型"
+    },
+    {
+      "aspect": "用 SQL 分析",
+      "aws": "Amazon Athena：直接查詢 S3 上的資料，無伺服器、依查詢付費",
+      "gcp": "BigQuery：無伺服器的資料倉儲，儲存與運算分開"
+    },
+    {
+      "aspect": "降低查詢掃描量",
+      "aws": "分區（例如 year=2026/month=11/）、Parquet／ORC 等欄式格式",
+      "gcp": "分區資料表（查詢時只掃描符合的分區）、只選需要的欄位"
+    },
+    {
+      "aspect": "查詢的計費方式",
+      "aws": "依查詢付費",
+      "gcp": "隨選計費依處理的資料量（每 TiB）；可以先試跑（dry run）估算"
+    },
+    {
+      "aspect": "命令列工具",
+      "aws": "aws s3、aws s3api、aws sqs",
+      "gcp": "gcloud storage、gcloud pubsub"
+    }
+  ],
+  "certDomains": [
+    "saa-c03:3",
+    "clf-c02:3",
+    "gcp-cdl:2",
+    "gcp-ace:2"
+  ],
+  "estimatedMinutes": 55
+}

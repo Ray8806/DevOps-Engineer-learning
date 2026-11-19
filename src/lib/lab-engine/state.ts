@@ -90,6 +90,8 @@ export interface AwsState {
   ecr: { repositories: Map<string, { mutability: "MUTABLE" | "IMMUTABLE"; scanOnPush: boolean; images: Map<string, string> }> };
   /** Stacks by name; deleted stacks stay with status DELETE_COMPLETE. */
   cloudformation: { stacks: Map<string, CfnStack> };
+  /** S3 event notification configurations by bucket name. */
+  s3Notifications: Map<string, S3QueueNotification[]>;
   /** SQS queues by name. */
   sqs: { queues: Map<string, SqsQueue>; counter: number };
   /** CodeBuild projects by name and builds by id ("project:uuid"). */
@@ -177,6 +179,26 @@ export interface CloudWatchAlarm {
   state: "OK" | "ALARM" | "INSUFFICIENT_DATA";
 }
 
+export interface S3QueueNotification {
+  id: string;
+  /** SQS queue ARN or SNS topic ARN. */
+  destination: string;
+  kind: "queue" | "topic";
+  /** e.g. "s3:ObjectCreated:*" */
+  events: string[];
+  prefix: string;
+  suffix: string;
+}
+
+export interface GcsNotification {
+  id: string;
+  topic: string;
+  /** Empty means every event type. */
+  eventTypes: string[];
+  prefix: string;
+  payload: "json" | "none";
+}
+
 export interface SqsMessage {
   id: string;
   body: string;
@@ -188,6 +210,8 @@ export interface SqsMessage {
   /** Receipt handle of the latest receive; deleting needs this one. */
   receipt: string | null;
   fromSns: boolean;
+  /** An S3 event notification (not the s3:TestEvent). */
+  fromS3Event?: boolean;
 }
 
 export interface SqsQueue {
@@ -195,7 +219,7 @@ export interface SqsQueue {
   attributes: Record<string, string>;
   createdAt: number;
   messages: SqsMessage[];
-  stats: { sent: number; deleted: number; redelivered: boolean; movedToDeadLetter: number; receivedFromSns: boolean };
+  stats: { sent: number; deleted: number; redelivered: boolean; movedToDeadLetter: number; receivedFromSns: boolean; receivedS3Event?: boolean };
 }
 
 export interface PubsubMessage {
@@ -554,6 +578,8 @@ export interface GcpState {
   gke: { clusters: Map<string, { location: string; mode: "autopilot" | "standard"; numNodes: number; k8s: K8sObjects }> };
   /** Artifact Registry repositories keyed "location/name"; images keyed "image:tag" -> image id. */
   artifacts: { repositories: Map<string, { format: string; description: string; immutableTags: boolean; images: Map<string, string> }> };
+  /** Cloud Storage → Pub/Sub notification configurations by bucket name. */
+  storageNotifications: Map<string, GcsNotification[]>;
   /** Pub/Sub topics and subscriptions by id. */
   pubsub: {
     topics: Map<string, { iam: Map<string, Set<string>>; published: number }>;
@@ -786,6 +812,7 @@ function awsFrom(cloud: Record<string, unknown>): AwsState {
     cloudformation: { stacks: new Map() },
     codebuild: { projects: new Map(), builds: new Map(), counter: 0 },
     sqs: { queues: new Map(), counter: 0 },
+    s3Notifications: new Map(),
     ecs: { clusters: new Set(), taskDefinitions: new Map(), services: new Map() },
     eks: { clusters: new Map() },
     budgets: new Map(),
@@ -975,6 +1002,7 @@ function gcpFrom(cloud: Record<string, unknown>): GcpState {
     artifacts: { repositories: new Map() },
     cloudbuild: { builds: new Map(), counter: 0 },
     pubsub: { topics: new Map(), subscriptions: new Map(), counter: 0 },
+    storageNotifications: new Map(),
     gke: { clusters: new Map() },
     billing: {
       accountId: isRecord(gcp.billingAccount) && typeof gcp.billingAccount.id === "string" ? gcp.billingAccount.id : "0X0X0X-0X0X0X-0X0X0X",
@@ -1308,6 +1336,7 @@ function awsView(state: LabState) {
         [...aws.ecr.repositories].map(([n, r]) => [n, { mutability: r.mutability, scanOnPush: r.scanOnPush, images: Object.fromEntries(r.images) }]),
       ),
     },
+    s3Notifications: Object.fromEntries([...aws.s3Notifications].map(([b, cs]) => [b, Object.fromEntries(cs.map((c) => [c.id, c.destination.split(":").at(-1)!]))])),
     sqs: {
       queues: Object.fromEntries(
         [...aws.sqs.queues].map(([n, q]) => {
@@ -1325,6 +1354,7 @@ function awsView(state: LabState) {
               redelivered: q.stats.redelivered,
               movedToDeadLetter: q.stats.movedToDeadLetter > 0,
               receivedFromSns: q.stats.receivedFromSns,
+              receivedS3Event: q.stats.receivedS3Event ?? false,
             },
           ];
         }),
@@ -1590,6 +1620,7 @@ function gcpView(state: LabState) {
     artifacts: {
       repositories: Object.fromEntries([...gcp.artifacts.repositories].map(([k, r]) => [k, { format: r.format, images: Object.fromEntries(r.images) }])),
     },
+    storageNotifications: Object.fromEntries([...gcp.storageNotifications].map(([b, cs]) => [b, Object.fromEntries(cs.map((c) => [c.id, c.topic]))])),
     pubsub: {
       topics: Object.fromEntries([...gcp.pubsub.topics].map(([n, t]) => [n, { published: t.published, iam: Object.fromEntries([...t.iam].map(([r, m]) => [r, keysTrue([...m])])) }])),
       subscriptions: Object.fromEntries(
@@ -1761,7 +1792,8 @@ function repoView(state: LabState, root: string, repo: GitRepo) {
  *   cloud.gcp.artifacts.repositories["location/name"].{format, images["image:tag"] = image id},
  *   kube.currentContext, terraform["~/dir"].{initialized, resources[address], outputs, driftRepairs, applies},
  *   cloud.aws.cloudformation.stacks[name].{status, resources[logicalId] = physical id, outputs, parameters, drift, retained[logicalId]},
- *   cloud.aws.sqs.queues[name].{messages, visibilityTimeout, deadLetterQueue, maxReceiveCount, hasPolicy, sent, deletedAny, redelivered, movedToDeadLetter, receivedFromSns},
+ *   cloud.aws.s3Notifications[bucket][id] = queue name, cloud.gcp.storageNotifications[bucket][id] = topic,
+ *   cloud.aws.sqs.queues[name].{messages, visibilityTimeout, deadLetterQueue, maxReceiveCount, hasPolicy, sent, deletedAny, redelivered, movedToDeadLetter, receivedFromSns, receivedS3Event},
  *   cloud.gcp.pubsub.topics[id].{published, iam[role][member]}, cloud.gcp.pubsub.subscriptions[id].{topic, ackDeadline, backlog, deadLetterTopic, maxDeliveryAttempts, iam[role][member], ackedAny, redelivered, ackedAfterRedelivery, forwardedToDeadLetter},
  *   cloud.aws.codebuild.projects[name].{source, image, privilegedMode, lastBuild, failedBuilds}, cloud.gcp.cloudbuild.{lastBuild, failedBuilds, builds[id].{status, steps}},
  *   cloud.aws.eks.clusters[name].{status, nodegroups[name].{desired, min, max}, k8s}, cloud.gcp.gke.clusters[name].{location, mode, k8s},

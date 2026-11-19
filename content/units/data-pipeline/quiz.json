@@ -1,0 +1,487 @@
+{
+  "questions": [
+    {
+      "id": "data-pipeline-001",
+      "type": "single",
+      "provider": "general",
+      "unitId": "data-pipeline",
+      "difficulty": 1,
+      "question": "資料管線為什麼建議先把「原始資料」原封不動存起來，再另外存放整理後的資料？",
+      "options": [
+        {
+          "id": "a",
+          "text": "處理程式出錯時，可以從原始資料重新處理",
+          "explanation": "正確。原始資料是可以重來的依據。"
+        },
+        {
+          "id": "b",
+          "text": "原始資料比較小，比較省錢",
+          "explanation": "原始資料通常比整理後的更大。"
+        },
+        {
+          "id": "c",
+          "text": "分析人員只能查詢原始資料",
+          "explanation": "分析通常使用整理後的資料。"
+        },
+        {
+          "id": "d",
+          "text": "雲端業者規定一定要保留",
+          "explanation": "這是設計上的建議，不是規定。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "data-pipeline-002",
+      "type": "single",
+      "provider": "general",
+      "unitId": "data-pipeline",
+      "difficulty": 2,
+      "question": "處理程式被新檔案的上傳事件觸發，處理完把結果寫回同一個 bucket 的同一個路徑。這會造成什麼問題？",
+      "options": [
+        {
+          "id": "a",
+          "text": "寫回的檔案又觸發一次事件，形成無限迴圈",
+          "explanation": "正確。要寫到另一個 bucket，或用前綴篩選只對收件路徑發通知。"
+        },
+        {
+          "id": "b",
+          "text": "不會有任何問題",
+          "explanation": "寫回會觸發通知的位置就會再觸發處理。"
+        },
+        {
+          "id": "c",
+          "text": "檔案會被自動刪除",
+          "explanation": "寫入不會刪除檔案。"
+        },
+        {
+          "id": "d",
+          "text": "bucket 會被鎖定",
+          "explanation": "不會鎖定。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "data-pipeline-003",
+      "type": "single",
+      "provider": "general",
+      "unitId": "data-pipeline",
+      "difficulty": 2,
+      "question": "物件儲存的事件通知是「至少送達一次」。處理程式應該怎麼設計？",
+      "options": [
+        {
+          "id": "a",
+          "text": "能承受重複的事件，例如記錄已處理過的物件，重複的就略過",
+          "explanation": "正確。"
+        },
+        {
+          "id": "b",
+          "text": "假設每個事件只會收到一次",
+          "explanation": "可能重複。"
+        },
+        {
+          "id": "c",
+          "text": "假設事件一定依照上傳順序抵達",
+          "explanation": "不保證順序。"
+        },
+        {
+          "id": "d",
+          "text": "收到事件後立刻刪除原始檔案",
+          "explanation": "刪掉原始資料就無法重新處理。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "data-pipeline-004",
+      "type": "single",
+      "provider": "general",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "unitId": "data-pipeline",
+      "difficulty": 2,
+      "question": "分析服務依掃描的資料量計費。下列哪個做法最能降低「只查詢昨天資料」的查詢成本？",
+      "options": [
+        {
+          "id": "a",
+          "text": "依日期分區存放資料，查詢時在條件中指定日期",
+          "explanation": "正確。只會掃描符合的分區。"
+        },
+        {
+          "id": "b",
+          "text": "把所有資料放在同一個大檔案",
+          "explanation": "查詢時要掃描整個檔案。"
+        },
+        {
+          "id": "c",
+          "text": "使用 SELECT *",
+          "explanation": "讀取所有欄位，掃描量更大。"
+        },
+        {
+          "id": "d",
+          "text": "每次查詢前先下載資料到本機",
+          "explanation": "和雲端查詢的掃描量無關，還增加傳輸。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "data-pipeline-005",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "clf-c02",
+          "domain": 3
+        }
+      ],
+      "unitId": "data-pipeline",
+      "difficulty": 1,
+      "question": "哪個 AWS 服務可以用標準 SQL 直接查詢存放在 Amazon S3 上的資料，而且不需要管理伺服器？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon Athena",
+          "explanation": "正確。無伺服器、依查詢付費。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon EC2",
+          "explanation": "EC2 是虛擬機。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon Route 53",
+          "explanation": "Route 53 是 DNS 服務。"
+        },
+        {
+          "id": "d",
+          "text": "AWS CloudFormation",
+          "explanation": "CloudFormation 用範本管理資源。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "data-pipeline-006",
+      "type": "single",
+      "provider": "aws",
+      "unitId": "data-pipeline",
+      "difficulty": 2,
+      "question": "設定 S3 事件通知送到 SQS 佇列時，出現「Unable to validate the following destination configurations」。最可能的原因是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "佇列的存取政策沒有允許 s3.amazonaws.com 送訊息到這個佇列",
+          "explanation": "正確。S3 設定時會先送一則測試訊息，沒有權限就驗證失敗。"
+        },
+        {
+          "id": "b",
+          "text": "bucket 裡還沒有任何物件",
+          "explanation": "設定通知不需要先有物件。"
+        },
+        {
+          "id": "c",
+          "text": "佇列的可見性逾時太短",
+          "explanation": "和驗證目的地無關。"
+        },
+        {
+          "id": "d",
+          "text": "必須改用 FIFO 佇列",
+          "explanation": "FIFO 佇列反而不能當 S3 事件通知的目的地。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "data-pipeline-007",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "unitId": "data-pipeline",
+      "difficulty": 2,
+      "question": "網站每秒產生大量點擊紀錄，要即時收集並交給多個應用程式處理（例如即時儀表板與異常偵測）。應該使用？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon Kinesis Data Streams",
+          "explanation": "正確。用來即時收集與處理大量的資料串流。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon S3 Glacier",
+          "explanation": "Glacier 是封存用的儲存類別。"
+        },
+        {
+          "id": "c",
+          "text": "AWS CloudFormation",
+          "explanation": "和資料串流無關。"
+        },
+        {
+          "id": "d",
+          "text": "Amazon Route 53",
+          "explanation": "DNS 服務。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "data-pipeline-008",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "unitId": "data-pipeline",
+      "difficulty": 2,
+      "question": "要把串流資料自動緩衝後送進 S3，而且不想自己撰寫和維護讀取串流的程式，最適合的服務是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon Data Firehose",
+          "explanation": "正確。全代管，把串流資料送到 S3、Redshift 等目的地。"
+        },
+        {
+          "id": "b",
+          "text": "Amazon SQS",
+          "explanation": "SQS 是佇列，不會自動寫檔到 S3。"
+        },
+        {
+          "id": "c",
+          "text": "Amazon EBS",
+          "explanation": "EBS 是區塊儲存。"
+        },
+        {
+          "id": "d",
+          "text": "AWS KMS",
+          "explanation": "KMS 管理加密金鑰。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "data-pipeline-009",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 4
+        }
+      ],
+      "unitId": "data-pipeline",
+      "difficulty": 3,
+      "question": "Athena 查詢存在 S3 的大量 CSV 檔，費用很高、速度也慢。下列哪個改善最有效？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把資料轉成 Parquet 等欄式格式，並依日期分區",
+          "explanation": "正確。欄式格式只讀需要的欄位、可壓縮；分區讓查詢只掃描需要的日期。"
+        },
+        {
+          "id": "b",
+          "text": "把 CSV 改成更多個更小的 CSV 檔",
+          "explanation": "沒有減少要掃描的資料量。"
+        },
+        {
+          "id": "c",
+          "text": "把 S3 的儲存類別改成 Glacier",
+          "explanation": "封存的資料無法直接查詢。"
+        },
+        {
+          "id": "d",
+          "text": "每次查詢都改用 SELECT *",
+          "explanation": "讀取更多欄位，掃描量更大。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "data-pipeline-010",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "unitId": "data-pipeline",
+      "difficulty": 1,
+      "question": "哪個 Google Cloud 服務是無伺服器的資料倉儲，可以用 SQL 分析大量資料？",
+      "options": [
+        {
+          "id": "a",
+          "text": "BigQuery",
+          "explanation": "正確。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud DNS",
+          "explanation": "DNS 服務。"
+        },
+        {
+          "id": "c",
+          "text": "Compute Engine",
+          "explanation": "虛擬機服務。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud Armor",
+          "explanation": "網頁應用程式防火牆。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "data-pipeline-011",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "unitId": "data-pipeline",
+      "difficulty": 2,
+      "question": "一個團隊想用同一套程式模型處理批次與串流資料，並由全代管的服務自動配置工作者。應該使用？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Dataflow（以 Apache Beam 撰寫管線）",
+          "explanation": "正確。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud Storage",
+          "explanation": "Cloud Storage 存放物件，不執行處理。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud SQL",
+          "explanation": "關聯式資料庫。"
+        },
+        {
+          "id": "d",
+          "text": "Artifact Registry",
+          "explanation": "存放套件和映像檔。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "data-pipeline-012",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "unitId": "data-pipeline",
+      "difficulty": 2,
+      "question": "一份 BigQuery 查詢在沒有叢集的大型資料表上執行 SELECT * … LIMIT 10，費用還是很高。原因是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "對沒有叢集的資料表，LIMIT 不會減少處理的資料量；應該只選需要的欄位、利用分區",
+          "explanation": "正確。隨選計費依處理的位元組數。"
+        },
+        {
+          "id": "b",
+          "text": "LIMIT 10 會讓 BigQuery 處理 10 倍的資料",
+          "explanation": "LIMIT 不會增加處理量，只是不會減少。"
+        },
+        {
+          "id": "c",
+          "text": "BigQuery 依查詢的列數計費",
+          "explanation": "隨選計費依處理的資料量。"
+        },
+        {
+          "id": "d",
+          "text": "沒有開啟 Cloud CDN",
+          "explanation": "和 BigQuery 的計費無關。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "data-pipeline-013",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "unitId": "data-pipeline",
+      "difficulty": 3,
+      "question": "設定了 Cloud Storage 的 Pub/Sub 通知後上傳了檔案，接著才建立訂閱，卻拉不到剛才那個檔案的通知。原因是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "訂閱只會收到建立之後才發布的訊息",
+          "explanation": "正確。要先建立訂閱，再開始上傳。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud Storage 不支援 Pub/Sub 通知",
+          "explanation": "有支援。"
+        },
+        {
+          "id": "c",
+          "text": "一定要使用 push 訂閱",
+          "explanation": "pull 訂閱也可以。"
+        },
+        {
+          "id": "d",
+          "text": "通知只會在刪除物件時發送",
+          "explanation": "可以通知 OBJECT_FINALIZE 等事件。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    }
+  ]
+}

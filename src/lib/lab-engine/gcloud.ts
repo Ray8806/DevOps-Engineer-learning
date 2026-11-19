@@ -1,4 +1,5 @@
 import { builds } from "./cicd";
+import { objectChanged, storageNotifications } from "./bucket-events";
 import { pubsub } from "./gcloud-pubsub";
 import { parseArgs, type Command, type Ctx } from "./context";
 import { compute } from "./gcloud-compute";
@@ -16,7 +17,7 @@ import { byteLength, listPrefix, parseLocation, transfer, type TransferStyle } f
 import { DEFAULT_GCS_LOCATION, displayPath, type Bucket } from "./state";
 
 const SUPPORTED =
-  "這個模擬終端機目前支援 gcloud storage 的 buckets create／delete／list／describe，以及 ls、cp、mv、rm、cat。";
+  "這個模擬終端機目前支援 gcloud storage 的 buckets create／delete／list／describe、buckets notifications create／list／delete，以及 ls、cp、mv、rm、cat。";
 const GROUPS =
   "這個模擬終端機支援的 gcloud 指令群組：storage、iam service-accounts、projects、compute instances、compute firewall-rules、compute networks、compute routers、compute disks、compute snapshots、run、sql、firestore、logging、monitoring、dns、kms、billing、artifacts、auth configure-docker、container clusters、builds、pubsub、config。";
 
@@ -151,6 +152,7 @@ function remove(ctx: Ctx, command: string, args: string[], recursive: boolean): 
     }
     for (const key of targets) {
       bucket.objects.delete(key);
+      objectChanged(ctx.state, "gs", loc.bucket, key, "delete");
       ctx.out(`Removing gs://${loc.bucket}/${key}...\n`);
     }
     if (wholeBucket) {
@@ -181,6 +183,7 @@ function catObjects(ctx: Ctx, command: string, args: string[]): number {
 function storage(ctx: Ctx, args: string[]): number {
   const [group, ...rest] = args;
 
+  if (group === "buckets" && rest[0] === "notifications") return storageNotifications(ctx, rest.slice(1));
   if (group === "buckets") {
     const [action, ...actionArgs] = rest;
     const command = `gcloud.storage.buckets.${action}`;

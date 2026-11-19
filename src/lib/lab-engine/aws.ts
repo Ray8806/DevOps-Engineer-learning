@@ -7,6 +7,7 @@ import { ECR_COMMANDS, ECS_COMMANDS, ecr, ecs } from "./aws-ecs";
 import { CLOUDFORMATION_COMMANDS, cloudformation } from "./cloudformation";
 import { CODEBUILD_COMMANDS, codebuild } from "./cicd";
 import { SQS_COMMANDS, sqs } from "./aws-sqs";
+import { objectChanged, s3api } from "./bucket-events";
 import { EKS_COMMANDS, eks } from "./kube-clusters";
 import { KMS_COMMANDS, WAFV2_COMMANDS, kms, wafv2 } from "./aws-security";
 import { AUTOSCALING_COMMANDS, ELBV2_COMMANDS, autoscaling, elbv2 } from "./aws-elb";
@@ -18,7 +19,7 @@ import { LISTING_TIME, byteLength, listPrefix, parseLocation, relativeToCwd, tra
 import { DEFAULT_S3_REGION } from "./state";
 
 const S3_SUPPORTED = "這個模擬終端機目前支援 aws s3 的 mb、rb、ls、cp、mv、rm。";
-const SUPPORTED = `這個模擬終端機支援的 AWS 服務：s3（mb、rb、ls、cp、mv、rm）、iam（${IAM_COMMANDS}）、ec2（${EC2_COMMANDS}）、rds（${RDS_COMMANDS.join("、")}）、lambda（${LAMBDA_COMMANDS.join("、")}）、dynamodb（${DYNAMODB_COMMANDS.join("、")}）、elbv2（${ELBV2_COMMANDS.join("、")}）、autoscaling（${AUTOSCALING_COMMANDS.join("、")}）、cloudwatch（${CLOUDWATCH_COMMANDS.join("、")}）、logs（${LOGS_COMMANDS.join("、")}）、sns（${SNS_COMMANDS.join("、")}）、cloudtrail（${CLOUDTRAIL_COMMANDS.join("、")}）、route53（${ROUTE53_COMMANDS.join("、")}）、cloudfront（${CLOUDFRONT_COMMANDS.join("、")}）、kms（${KMS_COMMANDS.join("、")}）、wafv2（${WAFV2_COMMANDS.join("、")}）、ce（${CE_COMMANDS.join("、")}）、budgets（${BUDGETS_COMMANDS.join("、")}）、ecr（${ECR_COMMANDS.join("、")}）、ecs（${ECS_COMMANDS.join("、")}）、eks（${EKS_COMMANDS.join("、")}）、cloudformation（${CLOUDFORMATION_COMMANDS.join("、")}）、codebuild（${CODEBUILD_COMMANDS.join("、")}）、sqs（${SQS_COMMANDS.join("、")}）。`;
+const SUPPORTED = `這個模擬終端機支援的 AWS 服務：s3（mb、rb、ls、cp、mv、rm）、iam（${IAM_COMMANDS}）、ec2（${EC2_COMMANDS}）、rds（${RDS_COMMANDS.join("、")}）、lambda（${LAMBDA_COMMANDS.join("、")}）、dynamodb（${DYNAMODB_COMMANDS.join("、")}）、elbv2（${ELBV2_COMMANDS.join("、")}）、autoscaling（${AUTOSCALING_COMMANDS.join("、")}）、cloudwatch（${CLOUDWATCH_COMMANDS.join("、")}）、logs（${LOGS_COMMANDS.join("、")}）、sns（${SNS_COMMANDS.join("、")}）、cloudtrail（${CLOUDTRAIL_COMMANDS.join("、")}）、route53（${ROUTE53_COMMANDS.join("、")}）、cloudfront（${CLOUDFRONT_COMMANDS.join("、")}）、kms（${KMS_COMMANDS.join("、")}）、wafv2（${WAFV2_COMMANDS.join("、")}）、ce（${CE_COMMANDS.join("、")}）、budgets（${BUDGETS_COMMANDS.join("、")}）、ecr（${ECR_COMMANDS.join("、")}）、ecs（${ECS_COMMANDS.join("、")}）、eks（${EKS_COMMANDS.join("、")}）、cloudformation（${CLOUDFORMATION_COMMANDS.join("、")}）、codebuild（${CODEBUILD_COMMANDS.join("、")}）、sqs（${SQS_COMMANDS.join("、")}）、s3api（put-bucket-notification-configuration、get-bucket-notification-configuration）。`;
 
 const apiError = (code: string, operation: string, message: string) =>
   `An error occurred (${code}) when calling the ${operation} operation: ${message}`;
@@ -155,6 +156,7 @@ function s3(ctx: Ctx, args: string[]): number {
       if (flags.has("--recursive")) {
         for (const key of [...bucket.objects.keys()].filter((k) => k.startsWith(loc.key)).sort()) {
           bucket.objects.delete(key);
+          objectChanged(ctx.state, "s3", loc.bucket, key, "delete");
           ctx.out(`delete: s3://${loc.bucket}/${key}\n`);
         }
         return 0;
@@ -164,7 +166,7 @@ function s3(ctx: Ctx, args: string[]): number {
         return 252;
       }
       // S3 deletes are idempotent: removing a missing key still reports success.
-      bucket.objects.delete(loc.key);
+      if (bucket.objects.delete(loc.key)) objectChanged(ctx.state, "s3", loc.bucket, loc.key, "delete");
       ctx.out(`delete: s3://${loc.bucket}/${loc.key}\n`);
       return 0;
     }
@@ -204,6 +206,7 @@ export const aws: Command = (ctx, args) => {
   if (args[0] === "cloudformation") return cloudformation(ctx, args.slice(1));
   if (args[0] === "codebuild") return codebuild(ctx, args.slice(1));
   if (args[0] === "sqs") return sqs(ctx, args.slice(1));
+  if (args[0] === "s3api") return s3api(ctx, args.slice(1));
   ctx.err(args[0] ? `aws: 不支援的服務 '${args[0]}'。${SUPPORTED}` : `usage: aws <service> <command> [parameters]\n${SUPPORTED}`);
   return 252;
 };
