@@ -1,0 +1,60 @@
+{
+  "id": "dead-letter",
+  "title": "一直處理失敗的訊息去哪裡",
+  "nodes": [
+    {
+      "id": "queue",
+      "label": "佇列",
+      "detail": "orders",
+      "col": 0,
+      "row": 1
+    },
+    {
+      "id": "worker",
+      "label": "消費者",
+      "col": 1,
+      "row": 1
+    },
+    {
+      "id": "dlq",
+      "label": "dead-letter",
+      "detail": "orders-dlq",
+      "col": 0,
+      "row": 0
+    },
+    {
+      "id": "ops",
+      "label": "工程師",
+      "detail": "查原因",
+      "col": 1,
+      "row": 0
+    }
+  ],
+  "steps": [
+    {
+      "from": "queue",
+      "to": "worker",
+      "text": "一則格式錯誤的訊息被送給消費者，第 1 次處理失敗。"
+    },
+    {
+      "from": "queue",
+      "to": "worker",
+      "text": "逾時後重新傳送，第 2 次、第 3 次也都失敗。",
+      "status": "fail"
+    },
+    {
+      "from": "queue",
+      "to": "dlq",
+      "text": "超過設定的最大次數（SQS 的 maxReceiveCount、Pub/Sub 的最多傳送次數），訊息被移到 dead-letter。"
+    },
+    {
+      "from": "worker",
+      "text": "其他正常的訊息不再被這則訊息卡住，消費者繼續處理。"
+    },
+    {
+      "from": "dlq",
+      "to": "ops",
+      "text": "工程師從 dead-letter 取出訊息找原因，修好程式後再把訊息送回去處理。"
+    }
+  ]
+}

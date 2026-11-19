@@ -26,6 +26,7 @@ export interface ExecResult {
 
 const HELP = `可用的指令：
   檔案與目錄  pwd  ls  cd  mkdir  touch  cat  echo  cp  mv  rm  rmdir  zip  base64
+  時間        sleep 秒數（快轉模擬時鐘，例如 sleep 30）
   Git         git init | status | add | commit | log | branch | switch | checkout | merge
   Docker      docker build | images | tag | run | ps | stop | rm | rmi | login | push | pull，curl http://localhost:連接埠
   Kubernetes  kubectl apply -f | create | expose | get | describe | scale | set image | rollout status | history | undo | delete | config
@@ -51,6 +52,7 @@ const HELP = `可用的指令：
               aws eks create-cluster | describe-cluster | create-nodegroup | update-nodegroup-config | update-kubeconfig
               aws cloudformation validate-template | create-stack | describe-stacks | create-change-set | execute-change-set | detect-stack-drift | delete-stack（輸入 aws cloudformation 看完整清單）
               aws codebuild create-project | update-project | list-projects | start-build | batch-get-builds | list-builds-for-project
+              aws sqs create-queue | send-message | receive-message | delete-message | get-queue-attributes | set-queue-attributes（輸入 aws sqs 看完整清單），aws sns publish
   GCP         gcloud storage buckets create | delete | list | describe
               gcloud storage ls | cp | mv | rm | cat      （也支援 gsutil）
               gcloud iam service-accounts create | list | delete
@@ -78,6 +80,7 @@ const HELP = `可用的指令：
               gcloud artifacts repositories create | list | describe | delete，artifacts docker images list，auth configure-docker
               gcloud container clusters create-auto | create | list | describe | get-credentials | resize | delete
               gcloud builds submit --config=cloudbuild.yaml [--substitutions=_KEY=value] [--region=…] | list | log | describe
+              gcloud pubsub topics create | list | publish | add-iam-policy-binding，gcloud pubsub subscriptions create | update | pull | ack | describe
   其他        clear  help  whoami
 支援 > 與 >> 輸出到檔案、用 | 把輸出交給下一個指令（cat、base64、docker login --password-stdin 會讀取）、用 && 或 ; 串接指令。按 Tab 補完路徑，上下鍵瀏覽歷史指令。
 `;

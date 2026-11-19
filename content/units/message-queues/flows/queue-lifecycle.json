@@ -1,0 +1,64 @@
+{
+  "id": "queue-lifecycle",
+  "title": "一則訊息在佇列裡的一生",
+  "nodes": [
+    {
+      "id": "producer",
+      "label": "生產者",
+      "detail": "下單的網站",
+      "col": 0,
+      "row": 1
+    },
+    {
+      "id": "queue",
+      "label": "佇列",
+      "col": 1,
+      "row": 1
+    },
+    {
+      "id": "worker-a",
+      "label": "消費者 A",
+      "detail": "處理訂單",
+      "col": 2,
+      "row": 0
+    },
+    {
+      "id": "worker-b",
+      "label": "消費者 B",
+      "detail": "處理訂單",
+      "col": 2,
+      "row": 2
+    }
+  ],
+  "steps": [
+    {
+      "from": "producer",
+      "to": "queue",
+      "text": "網站把「訂單 1001」送進佇列就回應使用者，不用等訂單處理完。"
+    },
+    {
+      "from": "queue",
+      "to": "worker-a",
+      "text": "消費者 A 收到這則訊息。訊息還在佇列裡，只是暫時對其他消費者隱藏（可見性逾時／確認期限）。"
+    },
+    {
+      "from": "worker-a",
+      "text": "消費者 A 處理到一半當掉了，沒有刪除（確認）這則訊息。",
+      "status": "fail"
+    },
+    {
+      "from": "queue",
+      "text": "時間到了，訊息重新變成可以接收。訊息沒有遺失。"
+    },
+    {
+      "from": "queue",
+      "to": "worker-b",
+      "text": "消費者 B 收到同一則訊息，這是它第 2 次被傳送。所以處理程式要能承受重複的訊息。"
+    },
+    {
+      "from": "worker-b",
+      "to": "queue",
+      "text": "處理完成後刪除（確認）訊息，它才真正離開佇列。"
+    }
+  ]
+}

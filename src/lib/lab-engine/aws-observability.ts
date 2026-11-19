@@ -1,6 +1,8 @@
+import { deliverFromSns } from "./aws-sqs";
 import type { Ctx } from "./context";
+import { resolvePath } from "./state";
 
-export const SNS_COMMANDS = ["create-topic", "list-topics", "delete-topic", "subscribe", "list-subscriptions-by-topic"];
+export const SNS_COMMANDS = ["create-topic", "list-topics", "delete-topic", "subscribe", "list-subscriptions-by-topic", "publish"];
 export const CLOUDWATCH_COMMANDS = ["put-metric-alarm", "describe-alarms", "delete-alarms", "set-alarm-state"];
 export const LOGS_COMMANDS = [
   "create-log-group", "describe-log-groups", "delete-log-group", "put-retention-policy", "delete-retention-policy",
@@ -21,20 +23,20 @@ const COMPARISONS: Record<string, string> = {
 const STATISTICS = ["Average", "Sum", "Minimum", "Maximum", "SampleCount"];
 const LOOKUP_KEYS = ["EventName", "Username", "ResourceName", "EventSource"];
 
-const json = (ctx: Ctx, value: unknown) => ctx.out(`${JSON.stringify(value, null, 4)}\n`);
+export const json = (ctx: Ctx, value: unknown) => ctx.out(`${JSON.stringify(value, null, 4)}\n`);
 
-function fail(ctx: Ctx, code: string, operation: string, message: string): number {
+export function fail(ctx: Ctx, code: string, operation: string, message: string): number {
   ctx.err(`\nAn error occurred (${code}) when calling the ${operation} operation: ${message}`);
   return 254;
 }
 
-interface Parsed {
+export interface Parsed {
   options: Map<string, string[]>;
   flags: Set<string>;
   unknown?: string;
 }
 
-function parse(args: string[], options: string[], lists: string[], flags: string[] = []): Parsed {
+export function parse(args: string[], options: string[], lists: string[], flags: string[] = []): Parsed {
   const result: Parsed = { options: new Map(), flags: new Set() };
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -54,7 +56,7 @@ function parse(args: string[], options: string[], lists: string[], flags: string
   return result;
 }
 
-function shorthand(text: string): Record<string, string> | null {
+export function shorthand(text: string): Record<string, string> | null {
   const out: Record<string, string> = {};
   for (const pair of text.split(",")) {
     const eq = pair.indexOf("=");
@@ -64,27 +66,27 @@ function shorthand(text: string): Record<string, string> | null {
   return out;
 }
 
-const operationName = (sub: string) => sub.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join("");
+export const operationName = (sub: string) => sub.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join("");
 
-function unsupported(ctx: Ctx, service: string, sub: string | undefined, supported: string[]): number {
+export function unsupported(ctx: Ctx, service: string, sub: string | undefined, supported: string[]): number {
   ctx.err(sub ? `aws: 不支援的 ${service} 指令 '${sub}'。支援：${supported.join("、")}` : `usage: aws ${service} <command> [parameters]\n支援：${supported.join("、")}`);
   return 252;
 }
 
-function requiredCheck(ctx: Ctx, parsed: Parsed, names: string[]): boolean {
+export function requiredCheck(ctx: Ctx, parsed: Parsed, names: string[]): boolean {
   const missing = names.filter((n) => !parsed.options.has(`--${n}`));
   if (missing.length) ctx.err(`\naws: error: the following arguments are required: ${missing.map((n) => `--${n}`).join(", ")}`);
   return missing.length === 0;
 }
 
-const topicArn = (name: string) => `arn:aws:sns:${REGION}:${ACCOUNT}:${name}`;
+export const topicArn = (name: string) => `arn:aws:sns:${REGION}:${ACCOUNT}:${name}`;
 
 // ---------------------------------------------------------------------- SNS
 
 export function sns(ctx: Ctx, args: string[]): number {
   const [sub, ...rest] = args;
   if (sub === undefined || !SNS_COMMANDS.includes(sub)) return unsupported(ctx, "sns", sub, SNS_COMMANDS);
-  const parsed = parse(rest, ["--name", "--topic-arn", "--protocol", "--notification-endpoint", "--region", "--output"], []);
+  const parsed = parse(rest, ["--name", "--topic-arn", "--protocol", "--notification-endpoint", "--message", "--subject", "--region", "--output"], []);
   if (parsed.unknown) {
     ctx.err(`\nUnknown options: ${parsed.unknown}`);
     return 252;
@@ -100,7 +102,7 @@ export function sns(ctx: Ctx, args: string[]): number {
       const name = opt("name")!;
       if (!/^[A-Za-z0-9_-]{1,256}$/.test(name)) return fail(ctx, "InvalidParameter", operation, "Invalid parameter: Topic Name（只能用英數字、連字號和底線）");
       // CreateTopic returns the existing topic when the name is already used.
-      if (!topics.has(name)) topics.set(name, { subscriptions: new Map() });
+      if (!topics.has(name)) topics.set(name, { subscriptions: new Map(), published: 0 });
       json(ctx, { TopicArn: topicArn(name) });
       return 0;
     }
@@ -129,6 +131,28 @@ export function sns(ctx: Ctx, args: string[]): number {
       const status = protocol.startsWith("email") || protocol.startsWith("http") ? "PendingConfirmation" : "Confirmed";
       topic.subscriptions.set(`${protocol}:${endpoint}`, status);
       json(ctx, { SubscriptionArn: status === "PendingConfirmation" ? "pending confirmation" : `${topicArn(name!)}:00000000-0000-0000-0000-00000000000${topic.subscriptions.size}` });
+      return 0;
+    }
+    case "publish": {
+      if (!requiredCheck(ctx, parsed, ["topic-arn", "message"])) return 252;
+      const name = topicName(opt("topic-arn")!);
+      const topic = name === null ? undefined : topics.get(name);
+      if (!topic) return notFound();
+      let message = opt("message")!;
+      if (message.startsWith("file://")) {
+        const content = ctx.state.files.get(resolvePath(ctx.state.cwd, message.slice(7)));
+        if (content === undefined) {
+          ctx.err(`\nError parsing parameter '--message': Unable to load paramfile ${message}`);
+          return 252;
+        }
+        message = content;
+      }
+      const messageId = `${((++topic.published * 2654435761) >>> 0).toString(16).padStart(8, "0")}-1a2b-4c3d-9e8f-${String(topic.published).padStart(12, "0")}`;
+      // Each confirmed SQS subscription gets a copy, if the queue policy lets SNS send to it.
+      for (const [key, status] of topic.subscriptions) {
+        if (status === "Confirmed" && key.startsWith("sqs:")) deliverFromSns(ctx.state, key.slice(4), topicArn(name!), opt("subject"), message, messageId);
+      }
+      json(ctx, { MessageId: messageId });
       return 0;
     }
     default: {

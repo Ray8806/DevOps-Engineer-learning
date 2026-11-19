@@ -1,4 +1,5 @@
 import { builds } from "./cicd";
+import { pubsub } from "./gcloud-pubsub";
 import { parseArgs, type Command, type Ctx } from "./context";
 import { compute } from "./gcloud-compute";
 import { projects, serviceAccounts } from "./gcloud-iam";
@@ -17,7 +18,7 @@ import { DEFAULT_GCS_LOCATION, displayPath, type Bucket } from "./state";
 const SUPPORTED =
   "這個模擬終端機目前支援 gcloud storage 的 buckets create／delete／list／describe，以及 ls、cp、mv、rm、cat。";
 const GROUPS =
-  "這個模擬終端機支援的 gcloud 指令群組：storage、iam service-accounts、projects、compute instances、compute firewall-rules、compute networks、compute routers、compute disks、compute snapshots、run、sql、firestore、logging、monitoring、dns、kms、billing、artifacts、auth configure-docker、container clusters、builds、config。";
+  "這個模擬終端機支援的 gcloud 指令群組：storage、iam service-accounts、projects、compute instances、compute firewall-rules、compute networks、compute routers、compute disks、compute snapshots、run、sql、firestore、logging、monitoring、dns、kms、billing、artifacts、auth configure-docker、container clusters、builds、pubsub、config。";
 
 const style = (command: string): TransferStyle => ({
   scheme: "gs",
@@ -265,6 +266,7 @@ export const gcloud: Command = (ctx, args) => {
   if (args[0] === "billing") return billing(ctx, args.slice(1));
   if (args[0] === "artifacts") return artifacts(ctx, args.slice(1));
   if (args[0] === "builds") return builds(ctx, args.slice(1));
+  if (args[0] === "pubsub") return pubsub(ctx, args.slice(1));
   if (args[0] === "container") return container(ctx, args.slice(1));
   if (args[0] === "auth" && args[1] === "configure-docker") return configureDocker(ctx, args.slice(2));
   if (args[0] === "logging" || args[0] === "monitoring") return observability(ctx, args)!;

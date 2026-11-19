@@ -45,7 +45,8 @@
         "containers",
         "kubernetes",
         "infrastructure-as-code",
-        "ci-cd"
+        "ci-cd",
+        "message-queues"
       ]
     },
     {

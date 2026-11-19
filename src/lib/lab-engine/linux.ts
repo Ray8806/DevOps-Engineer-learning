@@ -188,6 +188,26 @@ const echo: Command = (ctx, args) => {
   return 0;
 };
 
+/**
+ * Moves the simulated clock forward (no real waiting), so timeouts such as
+ * SQS visibility and Pub/Sub ack deadlines can expire. Accepts 30, 30s, 2m, 1h.
+ */
+const sleep: Command = (ctx, args) => {
+  const m = args.length === 1 ? args[0].match(/^(\d+(?:\.\d+)?)([smh]?)$/) : null;
+  if (!m) {
+    ctx.err(args.length ? `sleep: invalid time interval '${args.join(" ")}'` : "sleep: missing operand");
+    return 1;
+  }
+  const seconds = Number(m[1]) * ({ "": 1, s: 1, m: 60, h: 3600 } as Record<string, number>)[m[2]];
+  if (seconds > 86400) {
+    ctx.err("sleep: 這個模擬終端機一次最多快轉 1 天（86400 秒）");
+    return 1;
+  }
+  ctx.state.clock += seconds;
+  ctx.out(`（模擬終端機：時間快轉了 ${m[1]}${m[2] || "s"}，不用真的等）\n`);
+  return 0;
+};
+
 /** Files and directories at or below `abs`, as paths relative to it ("" = itself). */
 function subtree(state: LabState, abs: string): { dirs: string[]; files: string[] } {
   return {
@@ -370,4 +390,4 @@ const zip: Command = (ctx, args) => {
   return 0;
 };
 
-export const linuxCommands: Record<string, Command> = { pwd, whoami, cd, ls, mkdir, touch, cat, base64, echo, cp, mv, rm, rmdir, zip };
+export const linuxCommands: Record<string, Command> = { pwd, whoami, cd, ls, mkdir, touch, cat, base64, echo, cp, mv, rm, rmdir, zip, sleep };

@@ -76,7 +76,7 @@ export interface AwsState {
   };
   autoscaling: { groups: Map<string, AutoScalingGroup> };
   /** SNS topics by name; subscriptions keyed "protocol:endpoint" -> status. */
-  sns: { topics: Map<string, { subscriptions: Map<string, string> }> };
+  sns: { topics: Map<string, { subscriptions: Map<string, string>; published: number }> };
   cloudwatch: { alarms: Map<string, CloudWatchAlarm> };
   logs: { groups: Map<string, LogGroup> };
   /** CloudTrail event history (seeded by the lab). */
@@ -90,6 +90,8 @@ export interface AwsState {
   ecr: { repositories: Map<string, { mutability: "MUTABLE" | "IMMUTABLE"; scanOnPush: boolean; images: Map<string, string> }> };
   /** Stacks by name; deleted stacks stay with status DELETE_COMPLETE. */
   cloudformation: { stacks: Map<string, CfnStack> };
+  /** SQS queues by name. */
+  sqs: { queues: Map<string, SqsQueue>; counter: number };
   /** CodeBuild projects by name and builds by id ("project:uuid"). */
   codebuild: { projects: Map<string, CodeBuildProject>; builds: Map<string, { project: string } & BuildRecord>; counter: number };
   eks: {
@@ -173,6 +175,51 @@ export interface CloudWatchAlarm {
   /** SNS topic names notified when the alarm goes to ALARM. */
   alarmActions: string[];
   state: "OK" | "ALARM" | "INSUFFICIENT_DATA";
+}
+
+export interface SqsMessage {
+  id: string;
+  body: string;
+  /** Simulated clock (seconds) when it was sent. */
+  sentAt: number;
+  receiveCount: number;
+  /** Hidden from receivers until this time (delay or visibility timeout). */
+  invisibleUntil: number;
+  /** Receipt handle of the latest receive; deleting needs this one. */
+  receipt: string | null;
+  fromSns: boolean;
+}
+
+export interface SqsQueue {
+  /** Settable attributes as strings, the way SQS returns them. */
+  attributes: Record<string, string>;
+  createdAt: number;
+  messages: SqsMessage[];
+  stats: { sent: number; deleted: number; redelivered: boolean; movedToDeadLetter: number; receivedFromSns: boolean };
+}
+
+export interface PubsubMessage {
+  id: string;
+  data: string;
+  attributes: Record<string, string>;
+  publishedAt: number;
+  /** Times delivered to a subscriber. */
+  attempts: number;
+  /** Attempts Pub/Sub counts towards the dead-letter limit (only with the IAM roles in place). */
+  countedAttempts: number;
+  /** Outstanding (not redelivered) until this time. */
+  outstandingUntil: number;
+  ackId: string | null;
+}
+
+export interface PubsubSubscription {
+  topic: string;
+  ackDeadline: number;
+  deadLetter: { topic: string; maxAttempts: number } | null;
+  /** Resource IAM policy: role -> members. */
+  iam: Map<string, Set<string>>;
+  messages: PubsubMessage[];
+  stats: { acked: number; redelivered: boolean; ackedAfterRedelivery: boolean; forwarded: number };
 }
 
 export interface CodeBuildProject {
@@ -507,6 +554,12 @@ export interface GcpState {
   gke: { clusters: Map<string, { location: string; mode: "autopilot" | "standard"; numNodes: number; k8s: K8sObjects }> };
   /** Artifact Registry repositories keyed "location/name"; images keyed "image:tag" -> image id. */
   artifacts: { repositories: Map<string, { format: string; description: string; immutableTags: boolean; images: Map<string, string> }> };
+  /** Pub/Sub topics and subscriptions by id. */
+  pubsub: {
+    topics: Map<string, { iam: Map<string, Set<string>>; published: number }>;
+    subscriptions: Map<string, PubsubSubscription>;
+    counter: number;
+  };
   /** Cloud Build builds by id. */
   cloudbuild: { builds: Map<string, BuildRecord>; counter: number };
   /** The billing account linked to the project and its budgets (by display name). */
@@ -542,6 +595,8 @@ export interface LabState {
   terraform: Map<string, TfWorkspace>;
   aws: AwsState;
   gcp: GcpState;
+  /** Simulated seconds since the lab started; `sleep` moves it forward. */
+  clock: number;
 }
 
 export interface DockerImage {
@@ -698,6 +753,7 @@ export function createLabState(initial: InitialState = {}): LabState {
     docker: { images: new Map(), containers: new Map(), logins: new Set() },
     kube: { contexts: new Map(), current: null },
     terraform: new Map(),
+    clock: 0,
     aws: awsFrom(cloud),
     gcp: gcpFrom(cloud),
   };
@@ -727,6 +783,7 @@ function awsFrom(cloud: Record<string, unknown>): AwsState {
     ecr: { repositories: new Map() },
     cloudformation: { stacks: new Map() },
     codebuild: { projects: new Map(), builds: new Map(), counter: 0 },
+    sqs: { queues: new Map(), counter: 0 },
     ecs: { clusters: new Set(), taskDefinitions: new Map(), services: new Map() },
     eks: { clusters: new Map() },
     budgets: new Map(),
@@ -915,6 +972,7 @@ function gcpFrom(cloud: Record<string, unknown>): GcpState {
     securityPolicies: new Map(),
     artifacts: { repositories: new Map() },
     cloudbuild: { builds: new Map(), counter: 0 },
+    pubsub: { topics: new Map(), subscriptions: new Map(), counter: 0 },
     gke: { clusters: new Map() },
     billing: {
       accountId: isRecord(gcp.billingAccount) && typeof gcp.billingAccount.id === "string" ? gcp.billingAccount.id : "0X0X0X-0X0X0X-0X0X0X",
@@ -946,6 +1004,7 @@ export function cloneState(state: LabState): LabState {
     docker: structuredClone(state.docker),
     kube: structuredClone(state.kube),
     terraform: structuredClone(state.terraform),
+    clock: state.clock,
     aws: structuredClone(state.aws),
     gcp: structuredClone(state.gcp),
   };
@@ -1245,6 +1304,28 @@ function awsView(state: LabState) {
         [...aws.ecr.repositories].map(([n, r]) => [n, { mutability: r.mutability, scanOnPush: r.scanOnPush, images: Object.fromEntries(r.images) }]),
       ),
     },
+    sqs: {
+      queues: Object.fromEntries(
+        [...aws.sqs.queues].map(([n, q]) => {
+          const redrive = q.attributes.RedrivePolicy ? (JSON.parse(q.attributes.RedrivePolicy) as { deadLetterTargetArn: string; maxReceiveCount: number | string }) : null;
+          return [
+            n,
+            {
+              messages: q.messages.length,
+              visibilityTimeout: Number(q.attributes.VisibilityTimeout),
+              deadLetterQueue: redrive ? redrive.deadLetterTargetArn.split(":").at(-1)! : null,
+              maxReceiveCount: redrive ? Number(redrive.maxReceiveCount) : null,
+              hasPolicy: Boolean(q.attributes.Policy),
+              sent: q.stats.sent,
+              deletedAny: q.stats.deleted > 0,
+              redelivered: q.stats.redelivered,
+              movedToDeadLetter: q.stats.movedToDeadLetter > 0,
+              receivedFromSns: q.stats.receivedFromSns,
+            },
+          ];
+        }),
+      ),
+    },
     codebuild: {
       projects: Object.fromEntries(
         [...aws.codebuild.projects].map(([n, p]) => {
@@ -1505,6 +1586,26 @@ function gcpView(state: LabState) {
     artifacts: {
       repositories: Object.fromEntries([...gcp.artifacts.repositories].map(([k, r]) => [k, { format: r.format, images: Object.fromEntries(r.images) }])),
     },
+    pubsub: {
+      topics: Object.fromEntries([...gcp.pubsub.topics].map(([n, t]) => [n, { published: t.published, iam: Object.fromEntries([...t.iam].map(([r, m]) => [r, keysTrue([...m])])) }])),
+      subscriptions: Object.fromEntries(
+        [...gcp.pubsub.subscriptions].map(([n, sub]) => [
+          n,
+          {
+            topic: sub.topic,
+            ackDeadline: sub.ackDeadline,
+            backlog: sub.messages.length,
+            deadLetterTopic: sub.deadLetter?.topic ?? null,
+            maxDeliveryAttempts: sub.deadLetter?.maxAttempts ?? null,
+            iam: Object.fromEntries([...sub.iam].map(([r, m]) => [r, keysTrue([...m])])),
+            ackedAny: sub.stats.acked > 0,
+            redelivered: sub.stats.redelivered,
+            ackedAfterRedelivery: sub.stats.ackedAfterRedelivery,
+            forwardedToDeadLetter: sub.stats.forwarded > 0,
+          },
+        ]),
+      ),
+    },
     cloudbuild: {
       builds: Object.fromEntries([...gcp.cloudbuild.builds].map(([id, b]) => [id, { status: b.status, steps: b.steps.map((x) => x.status) }])),
       lastBuild: [...gcp.cloudbuild.builds.values()].at(-1)?.status ?? null,
@@ -1656,6 +1757,8 @@ function repoView(state: LabState, root: string, repo: GitRepo) {
  *   cloud.gcp.artifacts.repositories["location/name"].{format, images["image:tag"] = image id},
  *   kube.currentContext, terraform["~/dir"].{initialized, resources[address], outputs, driftRepairs, applies},
  *   cloud.aws.cloudformation.stacks[name].{status, resources[logicalId] = physical id, outputs, parameters, drift, retained[logicalId]},
+ *   cloud.aws.sqs.queues[name].{messages, visibilityTimeout, deadLetterQueue, maxReceiveCount, hasPolicy, sent, deletedAny, redelivered, movedToDeadLetter, receivedFromSns},
+ *   cloud.gcp.pubsub.topics[id].{published, iam[role][member]}, cloud.gcp.pubsub.subscriptions[id].{topic, ackDeadline, backlog, deadLetterTopic, maxDeliveryAttempts, iam[role][member], ackedAny, redelivered, ackedAfterRedelivery, forwardedToDeadLetter},
  *   cloud.aws.codebuild.projects[name].{source, image, privilegedMode, lastBuild, failedBuilds}, cloud.gcp.cloudbuild.{lastBuild, failedBuilds, builds[id].{status, steps}},
  *   cloud.aws.eks.clusters[name].{status, nodegroups[name].{desired, min, max}, k8s}, cloud.gcp.gke.clusters[name].{location, mode, k8s},
  *     k8s = {namespaces[name], deployments["ns/name"].{replicas, readyReplicas, images, revision}, services["ns/name"].{type, port, targetPort, endpoints, externalIp}},

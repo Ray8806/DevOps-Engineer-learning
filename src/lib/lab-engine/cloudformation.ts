@@ -66,7 +66,7 @@ const TYPES: Record<string, ResourceType> = {
     exists: (s, p) => s.aws.sns.topics.has(p),
     create: (s, p) => {
       if (s.aws.sns.topics.has(p)) return `${p} already exists in stack`;
-      s.aws.sns.topics.set(p, { subscriptions: new Map() });
+      s.aws.sns.topics.set(p, { subscriptions: new Map(), published: 0 });
       return null;
     },
     update: () => {},
