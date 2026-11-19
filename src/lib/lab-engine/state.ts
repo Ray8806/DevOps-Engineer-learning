@@ -490,6 +490,8 @@ export interface RdsInstance {
   backupRetentionPeriod: number;
   deletionProtection: boolean;
   readReplicaSource: string | null;
+  /** AWS Region; missing means us-east-1. */
+  region?: string;
 }
 
 export interface CloudSqlInstance {
@@ -1227,6 +1229,7 @@ function rdsView(aws: AwsState) {
           backupRetentionPeriod: i.backupRetentionPeriod,
           deletionProtection: i.deletionProtection,
           readReplicaSource: i.readReplicaSource,
+          region: i.region ?? "us-east-1",
         },
       ]),
     ),
@@ -1748,7 +1751,7 @@ function repoView(state: LabState, root: string, repo: GitRepo) {
  *   cloud.aws.vpcs[vpcCidr].{id, internetGateway, internetRoute, publicSubnets[cidr],
  *     subnets[cidr].{id, availabilityZone, public, mapPublicIpOnLaunch}},
  *   cloud.aws.rds.subnetGroups[name].{subnets[id], availabilityZones[az]},
- *   cloud.aws.rds.instances[id].{engine, instanceClass, multiAZ, publiclyAccessible, subnetGroup,
+ *   cloud.aws.rds.instances[id].{engine, instanceClass, multiAZ, publiclyAccessible, subnetGroup, region, readReplicaSource,
  *     backupRetentionPeriod, deletionProtection, readReplicaSource}, cloud.aws.rds.snapshots[id].instance,
  *   cloud.gcp.instances[name].networkInterface = { network, subnet, externalIp },
  *   cloud.gcp.firewallRules[name].{network, allow["tcp:80"],sourceRanges[cidr],targetTags[tag]},

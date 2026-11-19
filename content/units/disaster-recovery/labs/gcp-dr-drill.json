@@ -1,0 +1,80 @@
+{
+  "id": "gcp-dr-drill",
+  "title": "把 Cloud SQL 切換到另一個區域的演練",
+  "description": "正式環境的 Cloud SQL 在 asia-east1，已經是高可用（REGIONAL），但整個區域故障時還是會停擺。在 asia-northeast1 建立跨區域唯讀複本，演練升格，再讓新的主要執行個體有高可用和新的跨區域複本，完成完整的災難復原流程。",
+  "provider": "gcp",
+  "estimatedMinutes": 20,
+  "initialState": {
+    "files": {},
+    "cloud": {},
+    "setup": [
+      "gcloud sql instances create shop-db --database-version=MYSQL_8_0 --edition=enterprise --cpu=2 --memory=8GiB --region=asia-east1 --availability-type=REGIONAL"
+    ]
+  },
+  "steps": [
+    {
+      "instruction": "先看現況：shop-db 在哪個區域、可用性類型是什麼？高可用為什麼不能防範整個區域故障？在 asia-northeast1 建立跨區域唯讀複本 shop-db-dr。",
+      "hint": "gcloud sql instances describe shop-db，gcloud sql instances create shop-db-dr --master-instance-name=shop-db --region=asia-northeast1",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "sql",
+          "instances",
+          "shop-db-dr",
+          "masterInstanceName"
+        ],
+        "equals": "shop-db"
+      }
+    },
+    {
+      "instruction": "演練：假設 asia-east1 整個故障了。把 shop-db-dr 升格成主要執行個體。",
+      "hint": "gcloud sql instances promote-replica shop-db-dr，gcloud sql instances describe shop-db-dr",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "sql",
+          "instances",
+          "shop-db-dr",
+          "masterInstanceName"
+        ],
+        "equals": null
+      }
+    },
+    {
+      "instruction": "新的主要執行個體只在一個可用區，也沒有備份。把它改成高可用（REGIONAL）：直接改會發生什麼事？先啟用自動備份再改。",
+      "hint": "gcloud sql instances patch shop-db-dr --availability-type=REGIONAL，gcloud sql instances patch shop-db-dr --backup --availability-type=REGIONAL",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "sql",
+          "instances",
+          "shop-db-dr",
+          "availabilityType"
+        ],
+        "equals": "REGIONAL"
+      }
+    },
+    {
+      "instruction": "最後讓新的主要執行個體也有跨區域的備援：在 asia-east1 建立它的唯讀複本 shop-db-tw。",
+      "hint": "gcloud sql instances create shop-db-tw --master-instance-name=shop-db-dr --region=asia-east1",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcp",
+          "sql",
+          "instances",
+          "shop-db-tw",
+          "masterInstanceName"
+        ],
+        "equals": "shop-db-dr"
+      }
+    }
+  ]
+}

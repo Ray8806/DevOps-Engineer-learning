@@ -102,14 +102,24 @@ function instances(ctx: Ctx, args: string[]): number {
     table(ctx, ["NAME", "DATABASE_VERSION", "LOCATION", "TIER", "STATUS"], [...all].sort(([a], [b]) => (a < b ? -1 : 1)).map(([n, i]) => row(n, i)));
     return 0;
   }
-  if (!["create", "describe", "patch", "delete"].includes(action ?? "")) {
-    return error(ctx, "gcloud.sql.instances", `不支援的指令 '${action ?? ""}'。支援 create、list、describe、patch、delete。`);
+  if (!["create", "describe", "patch", "delete", "promote-replica"].includes(action ?? "")) {
+    return error(ctx, "gcloud.sql.instances", `不支援的指令 '${action ?? ""}'。支援 create、list、describe、patch、delete、promote-replica。`);
   }
   const name = parsed.positional[0];
   if (!name) return error(ctx, command, "argument INSTANCE: Must be specified.");
   const availability = opt("--availability-type")?.toUpperCase();
   if (availability !== undefined && availability !== "ZONAL" && availability !== "REGIONAL") {
     return error(ctx, command, `argument --availability-type: Invalid choice: '${opt("--availability-type")}'. 請使用 zonal 或 regional。`);
+  }
+
+  if (action === "promote-replica") {
+    const replica = all.get(name);
+    if (!replica) return error(ctx, command, `HTTPError 404: The Cloud SQL instance does not exist. (${name})`);
+    if (!replica.masterInstanceName) return error(ctx, command, `HTTPError 400: The instance ${name} is not a read replica.（只有唯讀複本可以升格）`);
+    // The promoted replica becomes a standalone primary; it keeps its settings (backups stay off until enabled).
+    replica.masterInstanceName = null;
+    ctx.out(`Promoting a Cloud SQL read replica...done.\nPromoted [${instanceUrl(gcp.project, name)}].\n`);
+    return 0;
   }
 
   if (action === "create") {
