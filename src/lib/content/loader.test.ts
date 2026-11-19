@@ -192,3 +192,35 @@ describe("broken content is rejected", () => {
     expect(problems.some((p) => p.includes("ghost-unit"))).toBe(true);
   });
 });
+
+describe("flows", () => {
+  const flowFile = (dir: string) => path.join(dir, "units", "ci-cd", "flows", "pipeline.json");
+
+  it("loads flows used by lessons", () => {
+    const unit = loadContent().units.get("ci-cd")!;
+    expect(unit.flows.map((f) => f.id)).toContain("pipeline");
+  });
+
+  it("rejects steps that refer to unknown nodes", () => {
+    const dir = copyOfContent();
+    editJson(flowFile(dir), (d) => (d.steps[0].to = "nowhere"));
+    expect(problemsOf(dir).join("\n")).toMatch(/step 1 refers to unknown node "nowhere"/);
+  });
+
+  it("rejects two nodes in the same cell and nodes off the grid", () => {
+    const dir = copyOfContent();
+    editJson(flowFile(dir), (d) => (d.nodes[1].col = 0));
+    expect(problemsOf(dir).join("\n")).toMatch(/shares col 0, row 0/);
+    editJson(flowFile(dir), (d) => (d.nodes[1].row = 9));
+    expect(problemsOf(dir).join("\n")).toMatch(/pipeline\.json/);
+  });
+
+  it("rejects flows the lesson does not use, and <Flow> without a file", () => {
+    const dir = copyOfContent();
+    const lesson = path.join(dir, "units", "ci-cd", "lesson.mdx");
+    fs.writeFileSync(lesson, fs.readFileSync(lesson, "utf8").replace('<Flow id="pipeline" />', '<Flow id="missing" />'));
+    const problems = problemsOf(dir).join("\n");
+    expect(problems).toMatch(/flow "pipeline" is not used in lesson\.mdx/);
+    expect(problems).toMatch(/<Flow id="missing"> has no flows\/missing\.json/);
+  });
+});

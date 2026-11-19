@@ -116,6 +116,7 @@ content/
     lesson.mdx         # 課文
     quiz.json          # 單元測驗
     labs/<lab-id>.json # Lab
+    flows/<flow-id>.json # 課文裡的流程動畫
   certs/<cert-id>/
     cert.json          # 考試資訊與 domain
     questions/*.json   # 題庫
@@ -183,7 +184,33 @@ src/
 <Compare />
 ```
 
-可用元件：`ProviderTabs`、`Provider`、`Callout`、`Compare`（由 `unit.json` 的 `compare` 產生差異表）。`unit.json` 宣告的每個平台都必須有對應的 `<Provider>` 區塊。MDX 內不能使用 `{ }` JavaScript 運算式。
+可用元件：`ProviderTabs`、`Provider`、`Callout`、`Compare`（由 `unit.json` 的 `compare` 產生差異表）、`Flow`（流程動畫，見下一節）。`unit.json` 宣告的每個平台都必須有對應的 `<Provider>` 區塊。MDX 內不能使用 `{ }` JavaScript 運算式。
+
+### flows/<flow-id>.json（流程動畫）
+
+課文寫 `<Flow id="pipeline" />`，就會顯示 `flows/pipeline.json` 定義的動畫：方塊和箭頭組成的圖，可以播放或一步步看，每一步有說明文字。
+
+```json
+{
+  "id": "pipeline",
+  "title": "一次提交怎麼走完管線",
+  "nodes": [
+    { "id": "dev", "label": "開發者", "col": 0, "row": 0 },
+    { "id": "build", "label": "建置", "detail": "編譯、單元測試", "col": 1, "row": 0 }
+  ],
+  "steps": [
+    { "from": "dev", "to": "build", "text": "推送提交，啟動建置。" },
+    { "from": "build", "text": "只寫 from：強調這個方塊。" },
+    { "from": "build", "to": "dev", "text": "status 是 fail 時用紅色顯示。", "status": "fail" }
+  ]
+}
+```
+
+- 方塊放在格子上：`col` 0–4、`row` 0–2，不能兩個方塊同一格。手機上欄列互換（橫向的流程變成直向）。
+- `label` 最多 12 字、`detail` 最多 20 字；全形字的 label 建議 8 個字以內。
+- 箭頭由步驟的 `from`→`to` 產生；同一對方塊兩個方向都用到時，會畫成兩條平行線。
+- 載入時會檢查：步驟引用的方塊存在、檔名和 `id` 一致、每個 flow 都有在課文用到、課文的 `<Flow id>` 都有對應的檔案。
+- 系統設定「減少動態效果」時不播放移動的動畫，只切換高亮。
 
 ### 題目（單元測驗與證照題庫共用）
 

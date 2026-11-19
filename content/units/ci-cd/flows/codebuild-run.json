@@ -1,0 +1,64 @@
+{
+  "id": "codebuild-run",
+  "title": "一次 CodeBuild 建置",
+  "nodes": [
+    {
+      "id": "s3",
+      "label": "S3",
+      "detail": "app.zip",
+      "col": 0,
+      "row": 1
+    },
+    {
+      "id": "cb",
+      "label": "CodeBuild",
+      "detail": "建置環境",
+      "col": 1,
+      "row": 1
+    },
+    {
+      "id": "ecr",
+      "label": "ECR",
+      "detail": "映像檔",
+      "col": 2,
+      "row": 1
+    },
+    {
+      "id": "logs",
+      "label": "CloudWatch",
+      "detail": "Logs",
+      "col": 1,
+      "row": 0
+    }
+  ],
+  "steps": [
+    {
+      "from": "s3",
+      "to": "cb",
+      "text": "DOWNLOAD_SOURCE：下載原始碼並解開，根目錄要有 buildspec.yml。"
+    },
+    {
+      "from": "cb",
+      "text": "PRE_BUILD：照 buildspec 執行指令，登入 ECR。"
+    },
+    {
+      "from": "cb",
+      "text": "BUILD：執行 docker build。沒有開啟特權模式時會出現 Cannot connect to the Docker daemon，建置失敗。",
+      "status": "fail"
+    },
+    {
+      "from": "cb",
+      "to": "logs",
+      "text": "每個指令的輸出都寫進 CloudWatch Logs，從日誌找出失敗的原因。"
+    },
+    {
+      "from": "cb",
+      "text": "把建置專案改成特權模式（privilegedMode）後重新建置，BUILD 成功。"
+    },
+    {
+      "from": "cb",
+      "to": "ecr",
+      "text": "POST_BUILD：docker push，把映像檔推送到 ECR。"
+    }
+  ]
+}

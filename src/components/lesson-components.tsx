@@ -1,6 +1,7 @@
 import type { ComponentProps, ReactNode } from "react";
-import type { Provider as ProviderId, UnitMeta } from "@/lib/content/schema";
+import type { Flow as FlowData, Provider as ProviderId, UnitMeta } from "@/lib/content/schema";
 import { PROVIDERS } from "@/lib/content/schema";
+import { Flow } from "./Flow";
 import { ProviderTabs } from "./ProviderTabs";
 
 function ProviderSection({ name, children }: { name: ProviderId; children: ReactNode }) {
@@ -46,7 +47,7 @@ function CompareTable({ rows }: { rows: UnitMeta["compare"] }) {
 }
 
 /** Components available inside lesson.mdx, bound to the unit being rendered. */
-export function lessonComponents(meta: UnitMeta) {
+export function lessonComponents(meta: UnitMeta, flows: FlowData[] = []) {
   const providers = PROVIDERS.filter((p) => meta.providers[p]);
   return {
     ProviderTabs: ({ children }: { children: ReactNode }) => (
@@ -55,6 +56,8 @@ export function lessonComponents(meta: UnitMeta) {
     Provider: ProviderSection,
     Callout,
     Compare: () => <CompareTable rows={meta.compare} />,
+    // The loader checks every <Flow id> has a flows/<id>.json.
+    Flow: ({ id }: { id: string }) => <Flow flow={flows.find((f) => f.id === id)!} />,
     table: (props: ComponentProps<"table">) => (
       <div className="table-scroll">
         <table {...props} />

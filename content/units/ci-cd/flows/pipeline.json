@@ -1,0 +1,64 @@
+{
+  "id": "pipeline",
+  "title": "一次提交怎麼走完管線",
+  "nodes": [
+    {
+      "id": "dev",
+      "label": "開發者",
+      "col": 0,
+      "row": 0
+    },
+    {
+      "id": "repo",
+      "label": "Git 儲存庫",
+      "col": 1,
+      "row": 0
+    },
+    {
+      "id": "build",
+      "label": "建置",
+      "detail": "編譯、單元測試",
+      "col": 2,
+      "row": 0
+    },
+    {
+      "id": "staging",
+      "label": "測試環境",
+      "detail": "整合測試",
+      "col": 3,
+      "row": 0
+    },
+    {
+      "id": "prod",
+      "label": "正式環境",
+      "col": 4,
+      "row": 0
+    }
+  ],
+  "steps": [
+    {
+      "from": "dev",
+      "to": "repo",
+      "text": "開發者合併 pull request，把新的提交推送到儲存庫。"
+    },
+    {
+      "from": "repo",
+      "to": "build",
+      "text": "來源階段偵測到新的提交，啟動管線，把原始碼交給建置階段。"
+    },
+    {
+      "from": "build",
+      "text": "建置階段編譯程式、執行單元測試，產生成品（例如容器映像檔）。"
+    },
+    {
+      "from": "build",
+      "to": "staging",
+      "text": "成品交給下一個階段：部署到測試環境，執行整合測試。"
+    },
+    {
+      "from": "staging",
+      "to": "prod",
+      "text": "測試通過後部署到正式環境。中間需要有人核准是持續交付；全部自動就是持續部署。"
+    }
+  ]
+}

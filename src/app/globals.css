@@ -115,3 +115,19 @@ body {
 .provider-tabs[data-active="gcp"] [data-provider]:not([data-provider="gcp"]) {
   display: none;
 }
+
+/* ---- <Flow> animated diagrams ---- */
+.flow-token {
+  animation: flow-token 0.9s ease-in-out forwards;
+}
+@keyframes flow-token {
+  from { transform: translate(0, 0); }
+  to { transform: translate(var(--dx), var(--dy)); }
+}
+.flow-fail-mark {
+  opacity: 0;
+  animation: flow-fade-in 0.3s ease-out 0.9s forwards;
+}
+@keyframes flow-fade-in {
+  to { opacity: 1; }
+}

@@ -3,12 +3,14 @@ import path from "node:path";
 import { z } from "zod";
 import {
   CertSchema,
+  FlowSchema,
   LabSchema,
   QuizFileSchema,
   StagesFileSchema,
   UnitMetaSchema,
   PROVIDERS,
   type Cert,
+  type Flow,
   type Lab,
   type Question,
   type Stage,
@@ -23,6 +25,8 @@ export interface Unit {
   lesson: string;
   quiz: Question[];
   labs: Lab[];
+  /** Animated diagrams from flows/*.json, used in the lesson with <Flow id="…" />. */
+  flows: Flow[];
 }
 
 export interface Content {
@@ -207,12 +211,46 @@ export function loadContent(contentDir: string = CONTENT_DIR): Content {
       labs.push(lab);
     }
 
+    // flows/*.json
+    const flows: Flow[] = [];
+    const flowsDir = path.join(unitDir, "flows");
+    const flowFiles = fs.existsSync(flowsDir)
+      ? fs.readdirSync(flowsDir).filter((f) => f.endsWith(".json")).sort()
+      : [];
+    for (const f of flowFiles) {
+      const flowFile = path.join(flowsDir, f);
+      const flow = readJson(flowFile, FlowSchema);
+      if (!flow) continue;
+      const where = rel(flowFile);
+      if (`${flow.id}.json` !== f) problems.push(`${where}: id "${flow.id}" must match file name`);
+      const ids = new Set<string>();
+      const cells = new Set<string>();
+      for (const n of flow.nodes) {
+        if (ids.has(n.id)) problems.push(`${where}: node id "${n.id}" is used twice`);
+        ids.add(n.id);
+        const cell = `${n.col},${n.row}`;
+        if (cells.has(cell)) problems.push(`${where}: node "${n.id}" shares col ${n.col}, row ${n.row} with another node`);
+        cells.add(cell);
+      }
+      flow.steps.forEach((step, i) => {
+        for (const id of [step.from, step.to]) {
+          if (id !== undefined && !ids.has(id)) problems.push(`${where}: step ${i + 1} refers to unknown node "${id}"`);
+        }
+        if (step.from === step.to) problems.push(`${where}: step ${i + 1} goes from "${step.from}" to itself; leave out "to" instead`);
+      });
+      if (!new RegExp(`<Flow\\s+id="${flow.id}"`).test(lesson)) problems.push(`${where}: flow "${flow.id}" is not used in lesson.mdx`);
+      flows.push(flow);
+    }
+    for (const m of lesson.matchAll(/<Flow\s+id="([^"]*)"/g)) {
+      if (!flows.some((f) => f.id === m[1])) problems.push(`${rel(lessonFile)}: <Flow id="${m[1]}"> has no flows/${m[1]}.json`);
+    }
+
     for (const ref of meta.certDomains) {
       const [certId, domain] = ref.split(":");
       checkCertDomain(`${rel(metaFile)}: certDomains "${ref}"`, certId, Number(domain));
     }
 
-    units.set(meta.id, { meta, lesson, quiz, labs });
+    units.set(meta.id, { meta, lesson, quiz, labs, flows });
   }
 
   /** Domain numbers can only be checked once that cert's cert.json exists. */

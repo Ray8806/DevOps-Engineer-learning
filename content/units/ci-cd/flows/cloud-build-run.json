@@ -1,0 +1,65 @@
+{
+  "id": "cloud-build-run",
+  "title": "一次 Cloud Build 建置",
+  "nodes": [
+    {
+      "id": "src",
+      "label": "原始碼",
+      "detail": "上傳成 .tgz",
+      "col": 0,
+      "row": 1
+    },
+    {
+      "id": "cb",
+      "label": "Cloud Build",
+      "detail": "依序執行步驟",
+      "col": 1,
+      "row": 1
+    },
+    {
+      "id": "ar",
+      "label": "儲存庫",
+      "detail": "Artifact Registry",
+      "col": 2,
+      "row": 1
+    },
+    {
+      "id": "run",
+      "label": "Cloud Run",
+      "detail": "服務",
+      "col": 1,
+      "row": 0
+    }
+  ],
+  "steps": [
+    {
+      "from": "src",
+      "to": "cb",
+      "text": "gcloud builds submit 把目錄打包上傳，Cloud Build 讀取 cloudbuild.yaml。"
+    },
+    {
+      "from": "cb",
+      "text": "步驟 #0：用 docker 映像檔執行 docker build。$PROJECT_ID、$BUILD_ID 先換成實際的值。"
+    },
+    {
+      "from": "cb",
+      "to": "ar",
+      "text": "步驟 #1：docker push。儲存庫不存在，這個步驟失敗，後面的步驟不會執行。",
+      "status": "fail"
+    },
+    {
+      "from": "cb",
+      "text": "建立 Artifact Registry 儲存庫後重新提交，這次推送成功。"
+    },
+    {
+      "from": "cb",
+      "to": "ar",
+      "text": "步驟 #1：映像檔推送到 Artifact Registry。"
+    },
+    {
+      "from": "cb",
+      "to": "run",
+      "text": "步驟 #2：用 Cloud SDK 映像檔執行 gcloud run deploy，部署新版本。"
+    }
+  ]
+}
