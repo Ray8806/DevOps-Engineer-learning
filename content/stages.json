@@ -55,7 +55,8 @@
       "description": "架構設計案例與面試題，把前面學的組合起來。",
       "units": [
         "ha-website",
-        "data-pipeline"
+        "data-pipeline",
+        "disaster-recovery"
       ]
     }
   ]

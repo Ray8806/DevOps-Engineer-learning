@@ -1,0 +1,71 @@
+{
+  "id": "pilot-light-failover",
+  "title": "pilot light 的容錯移轉",
+  "nodes": [
+    {
+      "id": "dns",
+      "label": "DNS",
+      "detail": "資料庫的網址",
+      "col": 0,
+      "row": 1
+    },
+    {
+      "id": "primary",
+      "label": "主要資料庫",
+      "detail": "區域 A",
+      "col": 1,
+      "row": 0
+    },
+    {
+      "id": "replica",
+      "label": "跨區域複本",
+      "detail": "區域 B",
+      "col": 1,
+      "row": 2
+    },
+    {
+      "id": "app-a",
+      "label": "應用程式",
+      "detail": "區域 A",
+      "col": 2,
+      "row": 0
+    },
+    {
+      "id": "app-b",
+      "label": "應用程式",
+      "detail": "區域 B（平常關閉）",
+      "col": 2,
+      "row": 2
+    }
+  ],
+  "steps": [
+    {
+      "from": "primary",
+      "to": "replica",
+      "text": "平常：資料以非同步的方式持續複寫到區域 B 的複本。區域 B 的應用程式伺服器先不開，或只開最少的數量。"
+    },
+    {
+      "from": "primary",
+      "text": "區域 A 整個故障。因為是非同步複寫，最後幾秒的資料可能還沒送到 B，RPO 不是零。",
+      "status": "fail"
+    },
+    {
+      "from": "replica",
+      "text": "團隊確認災難、決定容錯移轉：把複本升格成可以寫入的主要資料庫。"
+    },
+    {
+      "from": "app-b",
+      "to": "replica",
+      "text": "在區域 B 啟動（或擴大）應用程式伺服器，連到新的主要資料庫。"
+    },
+    {
+      "from": "dns",
+      "to": "replica",
+      "text": "把 DNS 或負載平衡器的流量切到區域 B，使用者恢復服務。"
+    },
+    {
+      "from": "replica",
+      "text": "最後別忘了：新的主要資料庫也要有自己的跨區域複本，否則下一次災難就沒有備援了。"
+    }
+  ]
+}

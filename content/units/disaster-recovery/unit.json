@@ -1,0 +1,78 @@
+{
+  "id": "disaster-recovery",
+  "title": "案例：災難復原",
+  "summary": "整個區域都故障時，服務要多久恢復、最多可以遺失多少資料？從 RTO、RPO 出發，比較備份還原、pilot light、warm standby、多站點 active/active 四種策略的成本與速度，並實際演練把資料庫切換到另一個區域。",
+  "stage": 4,
+  "prerequisites": [
+    "ha-website",
+    "relational-databases",
+    "dns-cdn",
+    "block-file-storage"
+  ],
+  "providers": {
+    "aws": {
+      "services": [
+        "AWS Backup",
+        "RDS 跨區域唯讀複本",
+        "S3 跨區域複寫",
+        "Route 53"
+      ]
+    },
+    "gcp": {
+      "services": [
+        "Cloud SQL 跨區域複本",
+        "Cloud Storage 雙區域",
+        "Cloud DNS"
+      ]
+    }
+  },
+  "compare": [
+    {
+      "aspect": "高可用（同一個區域內）",
+      "aws": "跨可用區：Multi-AZ、Auto Scaling 群組",
+      "gcp": "跨可用區：Cloud SQL 高可用、regional MIG"
+    },
+    {
+      "aspect": "災難復原（整個區域故障）",
+      "aws": "把資料和環境複製到另一個 Region",
+      "gcp": "把資料和環境複製到另一個區域"
+    },
+    {
+      "aspect": "策略的分類",
+      "aws": "備份還原、pilot light、warm standby、多站點 active/active",
+      "gcp": "cold、warm、hot（備胎的比喻）"
+    },
+    {
+      "aspect": "跨區域的備份",
+      "aws": "AWS Backup 可以把備份複製到其他 Region",
+      "gcp": "備份與快照可以存放在其他區域或多區域位置"
+    },
+    {
+      "aspect": "資料庫跨區域複寫",
+      "aws": "RDS 跨區域唯讀複本（非同步），故障時升格成獨立的執行個體",
+      "gcp": "Cloud SQL 跨區域唯讀複本（非同步），故障時升格成主要執行個體"
+    },
+    {
+      "aspect": "物件儲存",
+      "aws": "S3 跨區域複寫（非同步，搭配版本控制）",
+      "gcp": "雙區域或多區域 bucket；雙區域可開 turbo replication（15 分鐘內複寫）"
+    },
+    {
+      "aspect": "把流量切過去",
+      "aws": "Route 53（容錯移轉路由與健康檢查）、Global Accelerator",
+      "gcp": "Cloud DNS 的容錯移轉路由政策、全域負載平衡器"
+    },
+    {
+      "aspect": "重建環境",
+      "aws": "CloudFormation（StackSets 跨帳戶、跨 Region）",
+      "gcp": "Terraform、Infrastructure Manager"
+    }
+  ],
+  "certDomains": [
+    "saa-c03:2",
+    "clf-c02:3",
+    "gcp-cdl:6",
+    "gcp-ace:3"
+  ],
+  "estimatedMinutes": 55
+}

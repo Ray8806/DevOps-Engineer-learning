@@ -4,8 +4,11 @@ import type { RdsInstance } from "./state";
 export const RDS_COMMANDS = [
   "create-db-subnet-group", "describe-db-subnet-groups", "delete-db-subnet-group",
   "create-db-instance", "describe-db-instances", "modify-db-instance", "delete-db-instance",
-  "create-db-instance-read-replica", "create-db-snapshot", "describe-db-snapshots",
+  "create-db-instance-read-replica", "promote-read-replica", "create-db-snapshot", "describe-db-snapshots",
 ];
+const DEFAULT_REGION = "us-east-1";
+const ACCOUNT = "123456789012";
+const REGION_NAME = /^[a-z]{2}(-gov)?-[a-z]+-\d$/;
 
 const ENGINES: Record<string, { port: number; maxPassword: number }> = {
   mysql: { port: 3306, maxPassword: 41 },
@@ -60,7 +63,12 @@ export function rds(ctx: Ctx, args: string[]): number {
     if (missing.length) ctx.err(`\naws: error: the following arguments are required: ${missing.map((n) => `--${n}`).join(", ")}`);
     return missing.length === 0;
   }
-  const noInstance = (id: string) => fail(ctx, "DBInstanceNotFound", operation, `DBInstance ${id} not found.`);
+  /** Commands act on the Region given with --region (default us-east-1), like the CLI. */
+  const region = opt("region") ?? DEFAULT_REGION;
+  const regionOf = (id: string) => db.instances.get(id)?.region ?? DEFAULT_REGION;
+  const here = (id: string) => (db.instances.has(id) && regionOf(id) === region ? db.instances.get(id) : undefined);
+  const noInstance = (id: string) =>
+    fail(ctx, "DBInstanceNotFound", operation, `DBInstance ${id} not found.${db.instances.has(id) ? `（這個執行個體在 ${regionOf(id)}，請加上 --region ${regionOf(id)}）` : ""}`);
   const replicasOf = (id: string) => [...db.instances].filter(([, i]) => i.readReplicaSource === id).map(([r]) => r);
 
   const groupJson = (name: string) => {
@@ -81,7 +89,8 @@ export function rds(ctx: Ctx, args: string[]): number {
       Engine: i.engine,
       DBInstanceStatus: status,
       MasterUsername: i.masterUsername,
-      ...(status === "available" ? { Endpoint: { Address: `${id}.c0example1abc.us-east-1.rds.amazonaws.com`, Port: ENGINES[i.engine].port } } : {}),
+      DBInstanceArn: `arn:aws:rds:${i.region ?? DEFAULT_REGION}:${ACCOUNT}:db:${id}`,
+      ...(status === "available" ? { Endpoint: { Address: `${id}.c0example1abc.${i.region ?? DEFAULT_REGION}.rds.amazonaws.com`, Port: ENGINES[i.engine].port } } : {}),
       AllocatedStorage: i.allocatedStorage,
       BackupRetentionPeriod: i.backupRetentionPeriod,
       DBSubnetGroup: i.subnetGroup ? groupJson(i.subnetGroup) : { DBSubnetGroupName: "default" },
@@ -194,6 +203,7 @@ export function rds(ctx: Ctx, args: string[]): number {
         backupRetentionPeriod: retention,
         deletionProtection: flag("deletion-protection"),
         readReplicaSource: null,
+        region,
       };
       db.instances.set(id, instance);
       json(ctx, { DBInstance: instanceJson(id, "creating") });
@@ -201,14 +211,14 @@ export function rds(ctx: Ctx, args: string[]): number {
     }
     case "describe-db-instances": {
       const id = opt("db-instance-identifier")?.toLowerCase();
-      if (id !== undefined && !db.instances.has(id)) return noInstance(id);
-      json(ctx, { DBInstances: [...db.instances.keys()].filter((i) => id === undefined || i === id).map((i) => instanceJson(i, "available")) });
+      if (id !== undefined && !here(id)) return noInstance(id);
+      json(ctx, { DBInstances: [...db.instances.keys()].filter((i) => (id === undefined || i === id) && regionOf(i) === region).map((i) => instanceJson(i, "available")) });
       return 0;
     }
     case "modify-db-instance": {
       if (!required("db-instance-identifier")) return 252;
       const id = opt("db-instance-identifier")!.toLowerCase();
-      const instance = db.instances.get(id);
+      const instance = here(id);
       if (!instance) return noInstance(id);
       if (opt("backup-retention-period") !== undefined) {
         const retention = Number(opt("backup-retention-period"));
@@ -234,7 +244,7 @@ export function rds(ctx: Ctx, args: string[]): number {
     case "delete-db-instance": {
       if (!required("db-instance-identifier")) return 252;
       const id = opt("db-instance-identifier")!.toLowerCase();
-      const instance = db.instances.get(id);
+      const instance = here(id);
       if (!instance) return noInstance(id);
       if (instance.deletionProtection) {
         return fail(ctx, "InvalidParameterCombination", operation, "Cannot delete protected DB Instance, please disable deletion protection and try again.");
@@ -267,12 +277,21 @@ export function rds(ctx: Ctx, args: string[]): number {
       const sourceId = opt("source-db-instance-identifier")!.toLowerCase();
       if (!IDENTIFIER.test(id) || id.endsWith("-")) return fail(ctx, "InvalidParameterValue", operation, `Invalid DB instance identifier: ${id}. ${IDENTIFIER_RULE}`);
       if (db.instances.has(id)) return fail(ctx, "DBInstanceAlreadyExists", operation, "DB instance already exists");
-      const source = db.instances.get(sourceId);
-      if (!source) return noInstance(sourceId);
-      if (source.backupRetentionPeriod === 0) {
-        return fail(ctx, "InvalidDBInstanceState", operation, `Automated backups are not enabled for this database instance (${sourceId}). 建立唯讀複本前，來源必須啟用自動備份（備份保留期間不是 0）。`);
+      // A replica in another Region names its source by ARN: arn:aws:rds:<source region>:<account>:db:<id>.
+      const arn = sourceId.match(/^arn:aws:rds:([a-z0-9-]+):(\d{12}):db:([a-z0-9-]+)$/);
+      const sourceName = arn ? arn[3] : sourceId;
+      const source = db.instances.get(sourceName);
+      if (!source || (arn ? regionOf(sourceName) !== arn[1] : regionOf(sourceName) !== region)) {
+        if (!arn && source) {
+          return fail(ctx, "DBInstanceNotFound", operation, `DBInstance ${sourceId} not found.（跨區域的唯讀複本，來源要用 ARN 指定：arn:aws:rds:${regionOf(sourceName)}:${ACCOUNT}:db:${sourceName}）`);
+        }
+        return noInstance(sourceName);
       }
-      if (replicasOf(sourceId).length >= MAX_REPLICAS) return fail(ctx, "InvalidParameterValue", operation, `一個資料庫執行個體最多只能有 ${MAX_REPLICAS} 個唯讀複本。`);
+      if (!REGION_NAME.test(region)) return fail(ctx, "InvalidParameterValue", operation, `Invalid region: ${region}`);
+      if (source.backupRetentionPeriod === 0) {
+        return fail(ctx, "InvalidDBInstanceState", operation, `Automated backups are not enabled for this database instance (${sourceName}). 建立唯讀複本前，來源必須啟用自動備份（備份保留期間不是 0）。`);
+      }
+      if (replicasOf(sourceName).length >= MAX_REPLICAS) return fail(ctx, "InvalidParameterValue", operation, `一個資料庫執行個體最多只能有 ${MAX_REPLICAS} 個唯讀複本。`);
       db.instances.set(id, {
         ...source,
         instanceClass: opt("db-instance-class") ?? source.instanceClass,
@@ -281,9 +300,27 @@ export function rds(ctx: Ctx, args: string[]): number {
         backupRetentionPeriod: 0,
         deletionProtection: false,
         managedPassword: false,
-        readReplicaSource: sourceId,
+        readReplicaSource: sourceName,
+        region,
+        // A replica in another Region cannot use the source's subnet group.
+        subnetGroup: region === regionOf(sourceName) ? source.subnetGroup : null,
       });
       json(ctx, { DBInstance: instanceJson(id, "creating") });
+      return 0;
+    }
+
+    case "promote-read-replica": {
+      if (!required("db-instance-identifier")) return 252;
+      const id = opt("db-instance-identifier")!.toLowerCase();
+      const instance = here(id);
+      if (!instance) return noInstance(id);
+      if (!instance.readReplicaSource) return fail(ctx, "InvalidDBInstanceState", operation, `DB Instance ${id} is not a read replica.`);
+      const retention = opt("backup-retention-period") === undefined ? 1 : Number(opt("backup-retention-period"));
+      if (!Number.isInteger(retention) || retention < 0 || retention > 35) return fail(ctx, "InvalidParameterValue", operation, "BackupRetentionPeriod 必須介於 0 到 35 天。");
+      const source = instance.readReplicaSource;
+      instance.readReplicaSource = null;
+      instance.backupRetentionPeriod = retention;
+      json(ctx, { DBInstance: { ...instanceJson(id, "modifying"), ReadReplicaSourceDBInstanceIdentifier: source } });
       return 0;
     }
 
@@ -292,7 +329,7 @@ export function rds(ctx: Ctx, args: string[]): number {
       if (!required("db-snapshot-identifier", "db-instance-identifier")) return 252;
       const snapshotId = opt("db-snapshot-identifier")!.toLowerCase();
       const id = opt("db-instance-identifier")!.toLowerCase();
-      const instance = db.instances.get(id);
+      const instance = here(id);
       if (!instance) return noInstance(id);
       if (!IDENTIFIER.test(snapshotId) || snapshotId.endsWith("-")) return fail(ctx, "InvalidParameterValue", operation, `Invalid snapshot identifier: ${snapshotId}. ${IDENTIFIER_RULE}`);
       if (db.snapshots.has(snapshotId)) return fail(ctx, "DBSnapshotAlreadyExists", operation, `Cannot create the snapshot because a snapshot with the identifier ${snapshotId} already exists.`);

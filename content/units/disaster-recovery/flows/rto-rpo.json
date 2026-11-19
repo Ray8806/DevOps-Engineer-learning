@@ -1,0 +1,69 @@
+{
+  "id": "rto-rpo",
+  "title": "RPO 和 RTO 量的是什麼",
+  "nodes": [
+    {
+      "id": "backup",
+      "label": "最後一個復原點",
+      "detail": "備份或複寫",
+      "col": 0,
+      "row": 0
+    },
+    {
+      "id": "disaster",
+      "label": "災難發生",
+      "col": 1,
+      "row": 0
+    },
+    {
+      "id": "restored",
+      "label": "服務恢復",
+      "col": 2,
+      "row": 0
+    },
+    {
+      "id": "lost",
+      "label": "遺失的資料",
+      "detail": "RPO 量這段",
+      "col": 0,
+      "row": 1
+    },
+    {
+      "id": "down",
+      "label": "停機時間",
+      "detail": "RTO 量這段",
+      "col": 2,
+      "row": 1
+    }
+  ],
+  "steps": [
+    {
+      "from": "backup",
+      "text": "系統最後一次備份（或最後一筆複寫到備援地點的資料）在這個時間點。"
+    },
+    {
+      "from": "backup",
+      "to": "disaster",
+      "text": "之後持續有新的訂單寫入，然後災難發生了。"
+    },
+    {
+      "from": "lost",
+      "text": "從最後一個復原點到災難發生之間的資料救不回來。可以接受遺失多少，就是 RPO（復原點目標）。",
+      "status": "fail"
+    },
+    {
+      "from": "disaster",
+      "to": "restored",
+      "text": "團隊啟動災難復原，把服務在備援地點恢復。"
+    },
+    {
+      "from": "down",
+      "text": "從服務中斷到恢復之間無法使用。可以接受停機多久，就是 RTO（復原時間目標）。",
+      "status": "fail"
+    },
+    {
+      "from": "restored",
+      "text": "RTO 和 RPO 越小，需要的準備越多、成本越高，要依業務的影響來決定。"
+    }
+  ]
+}

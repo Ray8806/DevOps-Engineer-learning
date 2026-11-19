@@ -1,0 +1,107 @@
+{
+  "id": "aws-dr-drill",
+  "title": "把資料庫切換到另一個 Region 的演練",
+  "description": "正式環境的資料庫在 us-east-1，已經是 Multi-AZ，但整個 Region 故障時還是會停擺。建立 us-west-2 的跨區域唯讀複本（pilot light），演練升格、把 DNS 切過去，最後在原本的 Region 建立新的複本，恢復保護。",
+  "provider": "aws",
+  "estimatedMinutes": 25,
+  "initialState": {
+    "files": {
+      "~/cutover.json": "{\n  \"Changes\": [\n    {\n      \"Action\": \"UPSERT\",\n      \"ResourceRecordSet\": {\n        \"Name\": \"db.shop.example.com\",\n        \"Type\": \"CNAME\",\n        \"TTL\": 60,\n        \"ResourceRecords\": [\n          {\n            \"Value\": \"shop-db-dr.c0example1abc.us-west-2.rds.amazonaws.com\"\n          }\n        ]\n      }\n    }\n  ]\n}\n"
+    },
+    "cloud": {
+      "aws": {
+        "vpcs": {
+          "vpc-0f3c2a1b9d8e7c6b5": {
+            "cidr": "10.0.0.0/16",
+            "subnets": {
+              "subnet-0a1b2c3d4e5f60718": {
+                "cidr": "10.0.11.0/24",
+                "availabilityZone": "us-east-1a"
+              },
+              "subnet-0b2c3d4e5f6071829": {
+                "cidr": "10.0.12.0/24",
+                "availabilityZone": "us-east-1b"
+              }
+            }
+          }
+        }
+      }
+    },
+    "setup": [
+      "aws rds create-db-subnet-group --db-subnet-group-name shop-db-subnets --db-subnet-group-description \"Shop database\" --subnet-ids subnet-0a1b2c3d4e5f60718 subnet-0b2c3d4e5f6071829",
+      "aws rds create-db-instance --db-instance-identifier shop-db --engine mysql --db-instance-class db.t3.micro --allocated-storage 20 --master-username admin --manage-master-user-password --db-subnet-group-name shop-db-subnets --no-publicly-accessible --multi-az --backup-retention-period 7",
+      "aws route53 create-hosted-zone --name shop.example.com --caller-reference dr-lab",
+      "aws route53 change-resource-record-sets --hosted-zone-id Z0MWEVDAGJEZ7YT6A1O9L --change-batch '{\"Changes\":[{\"Action\":\"CREATE\",\"ResourceRecordSet\":{\"Name\":\"db.shop.example.com\",\"Type\":\"CNAME\",\"TTL\":60,\"ResourceRecords\":[{\"Value\":\"shop-db.c0example1abc.us-east-1.rds.amazonaws.com\"}]}}]}'"
+    ]
+  },
+  "steps": [
+    {
+      "instruction": "先看現況：shop-db 在哪個 Region？已經是 Multi-AZ 了，為什麼還不夠？在 us-west-2 建立它的跨區域唯讀複本 shop-db-dr（pilot light：資料一直複製過去）。注意：跨區域時，來源要用 ARN 指定。",
+      "hint": "aws rds describe-db-instances，aws rds create-db-instance-read-replica --db-instance-identifier shop-db-dr --source-db-instance-identifier arn:aws:rds:us-east-1:123456789012:db:shop-db --region us-west-2",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "rds",
+          "instances",
+          "shop-db-dr",
+          "readReplicaSource"
+        ],
+        "equals": "shop-db"
+      }
+    },
+    {
+      "instruction": "演練：假設 us-east-1 整個故障了。把 shop-db-dr 升格成可以寫入的獨立執行個體，並設定 7 天的自動備份。為什麼不加 --region 會找不到它？",
+      "hint": "aws rds describe-db-instances --region us-west-2，aws rds promote-read-replica --db-instance-identifier shop-db-dr --region us-west-2 --backup-retention-period 7",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "rds",
+          "instances",
+          "shop-db-dr",
+          "readReplicaSource"
+        ],
+        "equals": null
+      }
+    },
+    {
+      "instruction": "應用程式用 db.shop.example.com 連資料庫。看看目前的紀錄指到哪裡，再用 ~/cutover.json 把它改指到 shop-db-dr 的端點。TTL 只有 60 秒，用意是什麼？",
+      "hint": "aws route53 list-resource-record-sets --hosted-zone-id Z0MWEVDAGJEZ7YT6A1O9L，cat cutover.json，aws route53 change-resource-record-sets --hosted-zone-id Z0MWEVDAGJEZ7YT6A1O9L --change-batch file://cutover.json",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "route53",
+          "zones",
+          "shop.example.com.",
+          "records",
+          "db.shop.example.com./CNAME",
+          "values"
+        ],
+        "equals": [
+          "shop-db-dr.c0example1abc.us-west-2.rds.amazonaws.com"
+        ]
+      }
+    },
+    {
+      "instruction": "現在新的主要資料庫在 us-west-2，卻沒有任何備援。照文件的建議，以它為來源，在 us-east-1 建立新的跨區域唯讀複本 shop-db-east，恢復保護。",
+      "hint": "aws rds create-db-instance-read-replica --db-instance-identifier shop-db-east --source-db-instance-identifier arn:aws:rds:us-west-2:123456789012:db:shop-db-dr --region us-east-1",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "aws",
+          "rds",
+          "instances",
+          "shop-db-east",
+          "readReplicaSource"
+        ],
+        "equals": "shop-db-dr"
+      }
+    }
+  ]
+}

@@ -1,0 +1,153 @@
+## 情境
+
+在「高可用網站」那個案例，購物網站已經跨可用區部署：一台機器、甚至一個可用區故障都不影響營運。但老闆又問：
+
+- 如果**整個區域**都出問題（大範圍的天災、停電、網路中斷），網站會怎樣？
+- 如果工程師**誤刪了資料庫的資料**，或資料被勒索軟體加密，能救回來嗎？
+- 要花多少錢準備？
+
+高可用處理的是元件、可用區層級的故障；**災難復原**（disaster recovery，DR）處理的是更大範圍的事件，以及資料被破壞的情況。災難復原計畫應該是公司**營運持續計畫**的一部分，而不是單獨存在的文件。
+
+## 先定目標：RTO 與 RPO
+
+<Flow id="rto-rpo" />
+
+- **RTO**（Recovery Time Objective，復原時間目標）：從服務中斷到恢復，**最多可以接受多久**。
+- **RPO**（Recovery Point Objective，復原點目標）：距離最後一個復原點，**最多可以接受遺失多久的資料**。
+
+這兩個數字由業務決定，不是工程師自己定。先做**營運影響分析**：停機一小時、遺失一小時的訂單，對公司的影響是多少？再比較災難復原的成本。如果準備的成本比故障造成的損失還高，除非法規要求，否則不值得做。RTO、RPO 越小，需要的準備越多、成本越高。
+
+## 四種策略
+
+AWS 把災難復原策略分成四類，由便宜、慢到昂貴、快：
+
+| 策略 | 平常在備援區域準備什麼 | 復原時要做什麼 | 成本 | 復原速度 |
+|---|---|---|---|---|
+| **備份還原** | 只有複製過去的備份 | 用 IaC 建立整個環境，再從備份還原資料 | 最低 | 最慢 |
+| **pilot light** | 資料持續複寫到備援區域，核心的基礎架構已經準備好；應用程式伺服器關閉 | 升格資料庫、啟動並擴大應用程式伺服器、切換流量 | 低 | 較快 |
+| **warm standby** | 一套縮小但**完整可運作**的環境，平常就能處理少量流量 | 擴大規模、切換流量 | 中 | 更快 |
+| **多站點 active/active** | 多個區域同時服務使用者 | 把流量從故障的區域移開，沒有真正的容錯移轉 | 最高 | 最快，RPO 可以接近零 |
+
+pilot light 和 warm standby 的差別：pilot light 的備援環境要先做一些動作（例如啟動伺服器）才能處理請求；warm standby 可以**立刻**處理請求，只是容量比較小。
+
+Google Cloud 用一個比喻說明類似的分類：
+
+- **cold**：車上沒有備胎，爆胎時要等人送輪胎來，行程停擺。
+- **warm**：車上有備胎和工具，要停下來自己換。
+- **hot**：防爆胎，可以放慢速度繼續開。
+
+<Callout title="跨可用區不等於災難復原">
+如果你要防範的「災難」只是一個資料中心（一個可用區）的故障，已經跨可用區部署的系統，搭配備份還原通常就夠了。只有當災難的定義擴大到**整個區域**，或法規要求時，才需要在另一個區域準備 pilot light 以上的環境。
+</Callout>
+
+## 資料：複寫與備份都要有
+
+- **非同步的跨區域複寫**讓 RPO 很小。但它會把錯誤也一起複寫過去：誤刪的資料、被加密的資料，會很快出現在備援區域。
+- 所以除了複寫，還需要**時間點復原**或有版本的備份，才能回到「出事之前」。
+- 跨區域複寫是**非同步**的，備援區域可能落後幾秒到更久，所以容錯移轉時 RPO 通常不是零。
+
+## 切換流量
+
+- **DNS**：把網域改指到備援區域（Route 53、Cloud DNS 都有搭配健康檢查的容錯移轉路由）。TTL 設短一點，切換後用戶端才能較快拿到新的位址。
+- **全域負載平衡**：AWS Global Accelerator、Google Cloud 的全域負載平衡器，用同一個 IP 把流量送到健康的區域。
+- 依健康檢查或警示**自動**觸發容錯移轉要謹慎使用，誤判會造成不必要的切換。常見的做法是由人確認災難後，再執行事先寫好、演練過的步驟。
+
+## 在兩個平台上怎麼做
+
+<ProviderTabs>
+<Provider name="aws">
+
+### AWS 的災難復原
+
+**備份還原**
+
+- RDS、EBS、DynamoDB、EFS 等都有可以還原到某個時間點的快照或備份。
+- **AWS Backup** 集中設定、排程、監控備份，並可以把備份**複製到其他 Region**。
+- S3 用**跨區域複寫**（非同步）把物件持續複製到備援 Region，並開啟**版本控制**，誤刪、誤改時可以找回舊版本。
+- 環境本身用 **CloudFormation** 寫成範本，才能在另一個 Region 快速重建；**StackSets** 可以一次部署到多個帳戶和 Region。
+
+**pilot light 與 warm standby**
+
+- 資料持續複寫：S3 複寫、**RDS 跨區域唯讀複本**、Aurora global database、DynamoDB global tables 等。
+- 建立 RDS 跨區域唯讀複本時，`--region` 是**目的地**的 Region，來源要用 **ARN** 指定。複寫是非同步的，跨 Region 的延遲比同一個 Region 高。
+- 容錯移轉時把唯讀複本**升格**（`promote-read-replica`）成獨立的執行個體：RDS 會重新開機，需要幾分鐘。完成後把流量導過去，並以它為來源建立新的唯讀複本。
+- 流量切換：**Route 53** 的健康檢查可以做 active-passive 容錯移轉；**Global Accelerator** 用 anycast IP 把流量送到健康的端點；CloudFront 的 origin failover 則是每個請求個別切換。
+
+```bash
+# 在 us-west-2 建立 us-east-1 資料庫的跨區域唯讀複本
+aws rds create-db-instance-read-replica --db-instance-identifier shop-db-dr \
+  --source-db-instance-identifier arn:aws:rds:us-east-1:123456789012:db:shop-db \
+  --region us-west-2
+# 容錯移轉：升格成獨立的執行個體
+aws rds promote-read-replica --db-instance-identifier shop-db-dr --region us-west-2
+```
+
+**多站點 active/active**
+
+- 多個 Region 同時服務，沒有切換的動作；要測試的是「失去一個 Region 時，流量會不會被移開、其他 Region 撐不撐得住」。
+- 寫入的策略：所有寫入送到同一個 Region（write global，例如 Aurora global database）、寫到最近的 Region（write local，例如 DynamoDB global tables，衝突時以最後寫入為準），或依使用者等鍵值分配。
+
+</Provider>
+<Provider name="gcp">
+
+### Google Cloud 的災難復原
+
+**資料**
+
+- **Cloud SQL 跨區域唯讀複本**：在另一個區域建立複本，以**非同步**的方式同步，所以容錯移轉時 RPO 可能不是零。
+- **Cloud Storage**：選擇**雙區域**（一組特定的兩個區域，例如東京和大阪）或**多區域**位置，資料會存放在不同的地理位置；雙區域可以開啟 **turbo replication**，在 15 分鐘內完成複寫。
+- 環境用 **Terraform** 或 Infrastructure Manager 寫成程式碼，才能在另一個區域重建。
+
+**Cloud SQL 的災難復原流程**
+
+1. 主要區域無法使用。
+2. 營運團隊確認災難，決定是否要容錯移轉。
+3. 把另一個區域的跨區域唯讀複本**升格**成新的主要執行個體（`gcloud sql instances promote-replica`）。
+4. 重新設定用戶端連線，連到新的主要執行個體。
+5. **完整的流程**還要讓新的主要執行個體也有高可用（備用執行個體）和自己的跨區域唯讀複本，並準備好回到原本區域的方法。
+
+```bash
+gcloud sql instances create shop-db-dr --master-instance-name=shop-db --region=asia-northeast1
+# 容錯移轉
+gcloud sql instances promote-replica shop-db-dr
+gcloud sql instances patch shop-db-dr --backup --availability-type=REGIONAL
+```
+
+**流量**：全域外部負載平衡器本來就能把流量送到健康的區域；Cloud DNS 的路由政策支援**容錯移轉**，可以搭配健康檢查。
+
+</Provider>
+</ProviderTabs>
+
+<Flow id="pilot-light-failover" />
+
+## 兩個平台的差異
+
+<Compare />
+
+## 演練：只有測試過的復原步驟才可靠
+
+AWS 的建議是：**只有經常測試的復原路徑才會成功**。災難復原計畫寫好之後，要定期演練：
+
+- 真的在備援區域還原備份、升格資料庫，量測實際花了多久（是否符合 RTO）、遺失了多少資料（是否符合 RPO）。
+- 檢查備援區域的設定有沒有跟上（映像檔、服務配額、IaC 範本），避免平常沒人用而「偏移」。
+- 演練後更新步驟文件，讓任何一位值班的工程師都能照著做。
+
+## 面試時怎麼回答
+
+被問到「怎麼設計災難復原」時：
+
+1. **先問 RTO 與 RPO**，以及停機、遺失資料對業務的影響，和可接受的成本。
+2. **選策略**：依 RTO／RPO 與預算，從備份還原、pilot light、warm standby、active/active 中挑選；不同的系統可以用不同的策略。
+3. **資料**：跨區域複寫（降低 RPO）加上時間點備份（防誤刪、資料損毀）。
+4. **環境**：用 IaC 在備援區域重建或預先部署。
+5. **切換**：DNS、全域負載平衡；誰決定切換、步驟是什麼。
+6. **演練**：定期測試，量測實際的 RTO／RPO。
+
+## 重點整理
+
+- 高可用處理可用區層級的故障；災難復原處理整個區域的災難和資料被破壞。
+- RTO 是可以接受的停機時間，RPO 是可以接受的資料遺失量；由業務影響和成本決定。
+- 四種策略：備份還原 → pilot light → warm standby → 多站點 active/active，越後面越快、越貴。
+- 跨區域複寫是非同步的，RPO 通常不是零；複寫也會把錯誤複寫過去，所以還需要時間點備份。
+- 容錯移轉：升格複本、把流量切過去，接著替新的主要資料庫建立新的備援。
+- 定期演練，只有測試過的復原步驟才可靠。

@@ -177,3 +177,80 @@ describe("data pipeline labs can be completed", () => {
     ).toEqual([1, 2, 3]);
   });
 });
+
+describe("cross-region replicas and promotion", () => {
+  const run = (state: LabState, ...lines: string[]) => {
+    let text = "";
+    let error = "";
+    for (const line of lines) {
+      const r = execute(state, line);
+      state = r.state;
+      text = r.lines.filter((l) => !l.error).map((l) => l.text).join("\n");
+      error = r.lines.filter((l) => l.error).map((l) => l.text).join("\n");
+    }
+    return { state, text, error };
+  };
+
+  it("RDS: replicas in another Region need an ARN source, live in that Region and can be promoted", () => {
+    const lab = labs.get("aws-dr-drill")!;
+    let r = run(startLab(lab.initialState), "aws rds create-db-instance-read-replica --db-instance-identifier shop-db-dr --source-db-instance-identifier shop-db --region us-west-2");
+    expect(r.error).toMatch(/來源要用 ARN 指定：arn:aws:rds:us-east-1:123456789012:db:shop-db/);
+    r = run(r.state, "aws rds create-db-instance-read-replica --db-instance-identifier shop-db-dr --source-db-instance-identifier arn:aws:rds:us-east-1:123456789012:db:shop-db --region us-west-2");
+    expect(view(r.state).cloud.aws.rds.instances["shop-db-dr"]).toMatchObject({ region: "us-west-2", readReplicaSource: "shop-db", subnetGroup: "default" });
+    // Region-scoped like the CLI.
+    expect(JSON.parse(run(r.state, "aws rds describe-db-instances").text).DBInstances.map((i: any) => i.DBInstanceIdentifier)).toEqual(["shop-db"]);
+    expect(JSON.parse(run(r.state, "aws rds describe-db-instances --region us-west-2").text).DBInstances[0].Endpoint.Address).toBe("shop-db-dr.c0example1abc.us-west-2.rds.amazonaws.com");
+    expect(run(r.state, "aws rds promote-read-replica --db-instance-identifier shop-db-dr").error).toMatch(/請加上 --region us-west-2/);
+    expect(run(r.state, "aws rds promote-read-replica --db-instance-identifier shop-db --region us-east-1").error).toMatch(/is not a read replica/);
+    r = run(r.state, "aws rds promote-read-replica --db-instance-identifier shop-db-dr --region us-west-2");
+    expect(JSON.parse(r.text).DBInstance).toMatchObject({ DBInstanceStatus: "modifying", ReadReplicaSourceDBInstanceIdentifier: "shop-db" });
+    expect(view(r.state).cloud.aws.rds.instances["shop-db-dr"]).toMatchObject({ readReplicaSource: null, backupRetentionPeriod: 1 });
+  });
+
+  it("Cloud SQL: promote-replica makes a standalone primary that needs backups before HA", () => {
+    const lab = labs.get("gcp-dr-drill")!;
+    let r = run(startLab(lab.initialState), "gcloud sql instances promote-replica shop-db");
+    expect(r.error).toMatch(/is not a read replica/);
+    r = run(r.state, "gcloud sql instances create shop-db-dr --master-instance-name=shop-db --region=asia-northeast1", "gcloud sql instances promote-replica shop-db-dr");
+    expect(view(r.state).cloud.gcp.sql.instances["shop-db-dr"]).toMatchObject({ region: "asia-northeast1", masterInstanceName: null, backupsEnabled: false });
+    expect(run(r.state, "gcloud sql instances patch shop-db-dr --availability-type=REGIONAL").error).toMatch(/自動備份/);
+  });
+});
+
+describe("disaster recovery labs can be completed", () => {
+  function play(labId: string, groups: string[][]): number[] {
+    const lab = labs.get(labId)!;
+    let state = startLab(lab.initialState);
+    let done = advance(0, state, lab.steps);
+    return groups.map((commands) => {
+      for (const c of commands) {
+        state = execute(state, c).state;
+        done = advance(done, state, lab.steps);
+      }
+      return done;
+    });
+  }
+  const ZONE = "Z0MWEVDAGJEZ7YT6A1O9L";
+
+  it("aws-dr-drill", () => {
+    expect(
+      play("aws-dr-drill", [
+        ["aws rds describe-db-instances", "aws rds create-db-instance-read-replica --db-instance-identifier shop-db-dr --source-db-instance-identifier arn:aws:rds:us-east-1:123456789012:db:shop-db --region us-west-2"],
+        ["aws rds describe-db-instances --region us-west-2", "aws rds promote-read-replica --db-instance-identifier shop-db-dr --region us-west-2 --backup-retention-period 7"],
+        [`aws route53 list-resource-record-sets --hosted-zone-id ${ZONE}`, "cat cutover.json", `aws route53 change-resource-record-sets --hosted-zone-id ${ZONE} --change-batch file://cutover.json`],
+        ["aws rds create-db-instance-read-replica --db-instance-identifier shop-db-east --source-db-instance-identifier arn:aws:rds:us-west-2:123456789012:db:shop-db-dr --region us-east-1"],
+      ]),
+    ).toEqual([1, 2, 3, 4]);
+  });
+
+  it("gcp-dr-drill", () => {
+    expect(
+      play("gcp-dr-drill", [
+        ["gcloud sql instances describe shop-db", "gcloud sql instances create shop-db-dr --master-instance-name=shop-db --region=asia-northeast1"],
+        ["gcloud sql instances promote-replica shop-db-dr", "gcloud sql instances describe shop-db-dr"],
+        ["gcloud sql instances patch shop-db-dr --availability-type=REGIONAL", "gcloud sql instances patch shop-db-dr --backup --availability-type=REGIONAL"],
+        ["gcloud sql instances create shop-db-tw --master-instance-name=shop-db-dr --region=asia-east1"],
+      ]),
+    ).toEqual([1, 2, 3, 4]);
+  });
+});
