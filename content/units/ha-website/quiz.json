@@ -1,0 +1,482 @@
+{
+  "questions": [
+    {
+      "id": "ha-website-001",
+      "type": "single",
+      "provider": "general",
+      "unitId": "ha-website",
+      "difficulty": 1,
+      "question": "一個網站只有一台網頁伺服器和一台資料庫，都在同一個可用區。下列哪一個不是它的單點故障？",
+      "options": [
+        {
+          "id": "a",
+          "text": "使用者的瀏覽器",
+          "explanation": "正確。瀏覽器在使用者那邊，不是網站架構的一部分。"
+        },
+        {
+          "id": "b",
+          "text": "唯一的網頁伺服器",
+          "explanation": "它壞掉，網站就無法連線。"
+        },
+        {
+          "id": "c",
+          "text": "唯一的資料庫",
+          "explanation": "它壞掉，就無法下單。"
+        },
+        {
+          "id": "d",
+          "text": "唯一的可用區",
+          "explanation": "可用區故障，上面所有元件一起停。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "ha-website-002",
+      "type": "single",
+      "provider": "general",
+      "unitId": "ha-website",
+      "difficulty": 2,
+      "question": "網站改成多台網頁伺服器放在負載平衡器後面，使用者卻常常被登出。最可能的原因和解法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "登入狀態存在各台伺服器自己的記憶體；改成存放在共用的快取或資料庫，讓伺服器無狀態",
+          "explanation": "正確。請求被送到另一台時，那台沒有登入狀態。"
+        },
+        {
+          "id": "b",
+          "text": "負載平衡器壞了，要換一台",
+          "explanation": "負載平衡器分流是正常的行為。"
+        },
+        {
+          "id": "c",
+          "text": "要把網頁伺服器減回一台",
+          "explanation": "這會回到單點故障。"
+        },
+        {
+          "id": "d",
+          "text": "資料庫要開高可用",
+          "explanation": "和登入狀態存在哪裡無關。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "ha-website-003",
+      "type": "single",
+      "provider": "general",
+      "unitId": "ha-website",
+      "difficulty": 2,
+      "question": "關於資料庫的「高可用備用執行個體」和「唯讀複本」，哪個敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "備用執行個體在故障時自動接手，唯讀複本用來分擔讀取",
+          "explanation": "正確。兩者的用途不同，可以一起使用。"
+        },
+        {
+          "id": "b",
+          "text": "兩者完全一樣，選一個就好",
+          "explanation": "用途不同。"
+        },
+        {
+          "id": "c",
+          "text": "唯讀複本在故障時會自動接手",
+          "explanation": "唯讀複本通常要手動升格。"
+        },
+        {
+          "id": "d",
+          "text": "有了高可用就不需要備份",
+          "explanation": "高可用防的是故障，防不了誤刪資料。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "ha-website-004",
+      "type": "single",
+      "provider": "general",
+      "unitId": "ha-website",
+      "difficulty": 2,
+      "question": "購物網站下單後要寄確認信、產生發票，促銷時常常因為這些工作太慢而讓下單逾時。最適合的改法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把這些工作放進訊息佇列，由背景的工作者處理",
+          "explanation": "正確。下單立即完成，尖峰時工作先堆在佇列裡慢慢處理。"
+        },
+        {
+          "id": "b",
+          "text": "把網頁伺服器換成更大的機型",
+          "explanation": "還是同步等待，而且有上限。"
+        },
+        {
+          "id": "c",
+          "text": "取消寄確認信",
+          "explanation": "這是功能需求，不能拿掉。"
+        },
+        {
+          "id": "d",
+          "text": "把資料庫改成唯讀複本",
+          "explanation": "和耗時的工作無關。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "ha-website-005",
+      "type": "single",
+      "provider": "general",
+      "unitId": "ha-website",
+      "difficulty": 3,
+      "question": "面試題：「設計一個高可用的網站」。最適合的第一步是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "先確認需求：使用者規模與位置、可接受的停機時間與資料遺失、預算",
+          "explanation": "正確。需求決定架構要做到什麼程度，例如要不要跨區域。"
+        },
+        {
+          "id": "b",
+          "text": "直接畫出跨三個區域的架構",
+          "explanation": "沒有需求就做跨區域，成本和複雜度可能都不必要。"
+        },
+        {
+          "id": "c",
+          "text": "先選程式語言",
+          "explanation": "和架構的可用性無關。"
+        },
+        {
+          "id": "d",
+          "text": "先決定資料庫的機型",
+          "explanation": "還不知道負載有多大。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "ha-website-006",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 2
+        }
+      ],
+      "unitId": "ha-website",
+      "difficulty": 2,
+      "question": "一個 Auto Scaling 群組只設定了 us-east-1a 的子網路。要讓網站撐過 us-east-1a 的故障，應該怎麼做？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把另一個可用區的子網路也加進群組，並把最少台數設成 2",
+          "explanation": "正確。群組會把執行個體分散到兩個可用區。"
+        },
+        {
+          "id": "b",
+          "text": "把執行個體換成更大的機型",
+          "explanation": "還是只在一個可用區。"
+        },
+        {
+          "id": "c",
+          "text": "把最大台數設成 10",
+          "explanation": "台數再多，也都在同一個可用區。"
+        },
+        {
+          "id": "d",
+          "text": "建立 EBS 快照",
+          "explanation": "快照用來還原資料，不會讓服務繼續運作。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "ha-website-007",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 2
+        }
+      ],
+      "unitId": "ha-website",
+      "difficulty": 2,
+      "question": "要讓 RDS 資料庫在可用區故障時自動切換到另一個可用區，同時不必修改應用程式的連線設定，應該使用？",
+      "options": [
+        {
+          "id": "a",
+          "text": "RDS Multi-AZ 部署",
+          "explanation": "正確。備用執行個體在另一個可用區同步複寫，故障時自動容錯移轉，連線位址不變。"
+        },
+        {
+          "id": "b",
+          "text": "唯讀複本",
+          "explanation": "唯讀複本用來分擔讀取，故障時要手動升格。"
+        },
+        {
+          "id": "c",
+          "text": "每天的自動備份",
+          "explanation": "從備份還原需要時間，資料也會遺失最後一次備份之後的部分。"
+        },
+        {
+          "id": "d",
+          "text": "把資料庫放在公有子網路",
+          "explanation": "這只會降低安全性。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "ha-website-008",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 2
+        }
+      ],
+      "unitId": "ha-website",
+      "difficulty": 2,
+      "question": "網頁伺服器要變成無狀態，工作階段資料應該放在哪裡？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amazon ElastiCache 或 DynamoDB 這類共用的服務",
+          "explanation": "正確。任何一台伺服器都能讀到同一份工作階段資料。"
+        },
+        {
+          "id": "b",
+          "text": "每台 EC2 的執行個體儲存區",
+          "explanation": "執行個體被替換時資料就不見了，其他機器也讀不到。"
+        },
+        {
+          "id": "c",
+          "text": "負載平衡器的設定",
+          "explanation": "負載平衡器不保存應用程式的資料。"
+        },
+        {
+          "id": "d",
+          "text": "每台 EC2 的 EBS 磁碟區",
+          "explanation": "其他機器讀不到，也無法隨意替換機器。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "ha-website-009",
+      "type": "single",
+      "provider": "aws",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 2
+        }
+      ],
+      "unitId": "ha-website",
+      "difficulty": 3,
+      "question": "一家公司只服務單一國家的使用者，需求是撐過單一資料中心的故障，預算有限。哪個設計最合適？",
+      "options": [
+        {
+          "id": "a",
+          "text": "在同一個區域的兩個以上可用區部署",
+          "explanation": "正確。Well-Architected 指出，跨可用區就滿足需求時還做跨區域，是常見的錯誤。"
+        },
+        {
+          "id": "b",
+          "text": "在三個區域各部署一套完整的環境",
+          "explanation": "成本和複雜度都高很多，超出需求。"
+        },
+        {
+          "id": "c",
+          "text": "只用一台大型的 EC2",
+          "explanation": "這是單點故障。"
+        },
+        {
+          "id": "d",
+          "text": "把所有東西放在一個可用區，但每天備份",
+          "explanation": "可用區故障時服務會停擺。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "ha-website-010",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "unitId": "ha-website",
+      "difficulty": 2,
+      "question": "在 Google Cloud 上，要讓網頁伺服器的 VM 自動分散在一個區域的多個可用區，並且自動修復，應該使用？",
+      "options": [
+        {
+          "id": "a",
+          "text": "regional 代管執行個體群組（MIG）",
+          "explanation": "正確。預設會把 VM 分散在區域內的三個可用區。"
+        },
+        {
+          "id": "b",
+          "text": "一台大型的 Compute Engine VM",
+          "explanation": "這是單點故障。"
+        },
+        {
+          "id": "c",
+          "text": "zonal persistent disk",
+          "explanation": "磁碟只在一個可用區。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud Storage bucket",
+          "explanation": "bucket 存放物件，不執行網頁伺服器。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "ha-website-011",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "unitId": "ha-website",
+      "difficulty": 2,
+      "question": "要讓 Cloud SQL 執行個體在可用區故障時自動容錯移轉，應該怎麼設定？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把可用性類型設成 REGIONAL（高可用）",
+          "explanation": "正確。主要和備用執行個體在同一個區域的兩個可用區。"
+        },
+        {
+          "id": "b",
+          "text": "建立唯讀複本就好",
+          "explanation": "唯讀複本不會自動接手。"
+        },
+        {
+          "id": "c",
+          "text": "把 tier 調大",
+          "explanation": "機器再大，也只在一個可用區。"
+        },
+        {
+          "id": "d",
+          "text": "關閉自動備份",
+          "explanation": "高可用需要啟用自動備份與時間點復原。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "ha-website-012",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "unitId": "ha-website",
+      "difficulty": 3,
+      "question": "外部 Application Load Balancer 的後端 VM 都正常運作，健康檢查卻全部失敗。最可能的原因是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "防火牆沒有允許 Google 健康檢查的來源 IP 範圍（例如 35.191.0.0/16）",
+          "explanation": "正確。VPC 預設拒絕所有輸入連線。"
+        },
+        {
+          "id": "b",
+          "text": "沒有開啟 Cloud CDN",
+          "explanation": "CDN 和健康檢查無關。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud SQL 沒有設成 REGIONAL",
+          "explanation": "資料庫的設定不會影響負載平衡器的健康檢查。"
+        },
+        {
+          "id": "d",
+          "text": "MIG 的 VM 數量太多",
+          "explanation": "數量不影響健康檢查能否連線。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "ha-website-013",
+      "type": "multiple",
+      "provider": "general",
+      "certs": [
+        {
+          "id": "saa-c03",
+          "domain": 3
+        }
+      ],
+      "unitId": "ha-website",
+      "difficulty": 3,
+      "question": "要讓購物網站在促銷尖峰時撐得住，哪些做法有幫助？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "設定自動擴展政策，依 CPU 或請求數增減機器",
+          "explanation": "正確。"
+        },
+        {
+          "id": "b",
+          "text": "把圖片和 CSS 放到物件儲存並透過 CDN 提供",
+          "explanation": "正確。靜態檔案不再佔用網頁伺服器。"
+        },
+        {
+          "id": "c",
+          "text": "把資料庫改成單一可用區以節省成本",
+          "explanation": "和尖峰負載無關，還降低了可用性。"
+        },
+        {
+          "id": "d",
+          "text": "把所有網頁伺服器放在同一個可用區",
+          "explanation": "增加了單點故障的風險。"
+        }
+      ],
+      "answer": [
+        "a",
+        "b"
+      ]
+    }
+  ]
+}

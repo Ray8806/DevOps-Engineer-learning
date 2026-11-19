@@ -555,6 +555,15 @@ export function autoscaling(ctx: Ctx, args: string[]): number {
       // Like the real service, changing only min or max pulls desired into range.
       const desired = desiredOpt ?? Math.min(Math.max(g.desired, nextMin), nextMax);
       if (!sizesOk(nextMin, nextMax, desired)) return 254;
+      const zoneIds = opt("vpc-zone-identifier");
+      if (zoneIds !== undefined) {
+        const subnets = zoneIds.split(",").map((s) => s.trim()).filter(Boolean);
+        const badSubnet = subnets.find((s) => !aws.vpc.subnets.has(s));
+        if (badSubnet) return validation(`The subnet ID '${badSubnet}' does not exist`);
+        if (!subnets.length) return validation("--vpc-zone-identifier 至少要有一個子網路。");
+        // Existing instances stay where they are; new ones go to the least-used zone.
+        g.subnets = subnets;
+      }
       g.min = nextMin;
       g.max = nextMax;
       g.desired = desired;

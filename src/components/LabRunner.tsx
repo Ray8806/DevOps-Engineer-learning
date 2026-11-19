@@ -4,8 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import type { Lab } from "@/lib/content/schema";
 import { advance } from "@/lib/lab-engine/check";
-import { complete, execute, prompt } from "@/lib/lab-engine/engine";
-import { createLabState } from "@/lib/lab-engine/state";
+import { complete, execute, prompt, startLab } from "@/lib/lab-engine/engine";
 import { isLabDone, recordLabDone } from "@/lib/progress/progress";
 import { useProgress } from "@/lib/progress/use-progress";
 
@@ -28,7 +27,7 @@ const lineClass: Record<Line["kind"], string> = {
 
 export function LabRunner({ unitId, unitTitle, lab }: { unitId: string; unitTitle: string; lab: RunnableLab }) {
   const [progress, update] = useProgress();
-  const [state, setState] = useState(() => createLabState(lab.initialState));
+  const [state, setState] = useState(() => startLab(lab.initialState));
   const [done, setDone] = useState(0);
   const [lines, setLines] = useState<Line[]>(WELCOME);
   const [input, setInput] = useState("");
@@ -70,7 +69,7 @@ export function LabRunner({ unitId, unitTitle, lab }: { unitId: string; unitTitl
   }
 
   function reset() {
-    setState(createLabState(lab.initialState));
+    setState(startLab(lab.initialState));
     setDone(0);
     setLines(WELCOME);
     setInput("");

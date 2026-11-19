@@ -1,0 +1,75 @@
+{
+  "id": "zone-failure",
+  "title": "一個可用區故障時發生什麼事",
+  "nodes": [
+    {
+      "id": "lb",
+      "label": "負載平衡器",
+      "col": 0,
+      "row": 1
+    },
+    {
+      "id": "web-a",
+      "label": "網頁伺服器 A",
+      "detail": "可用區 A",
+      "col": 1,
+      "row": 0
+    },
+    {
+      "id": "web-b",
+      "label": "網頁伺服器 B",
+      "detail": "可用區 B",
+      "col": 1,
+      "row": 2
+    },
+    {
+      "id": "db-a",
+      "label": "資料庫主要",
+      "detail": "可用區 A",
+      "col": 2,
+      "row": 0
+    },
+    {
+      "id": "db-b",
+      "label": "資料庫備用",
+      "detail": "可用區 B",
+      "col": 2,
+      "row": 2
+    },
+    {
+      "id": "asg",
+      "label": "自動擴展",
+      "detail": "群組／MIG",
+      "col": 0,
+      "row": 2
+    }
+  ],
+  "steps": [
+    {
+      "from": "web-a",
+      "text": "可用區 A 斷電，網頁伺服器 A 和資料庫主要執行個體都停了。",
+      "status": "fail"
+    },
+    {
+      "from": "lb",
+      "to": "web-a",
+      "text": "負載平衡器的健康檢查連續失敗，把 A 標記為不健康。",
+      "status": "fail"
+    },
+    {
+      "from": "lb",
+      "to": "web-b",
+      "text": "之後的請求只送給可用區 B 的網頁伺服器，網站繼續運作。"
+    },
+    {
+      "from": "db-a",
+      "to": "db-b",
+      "text": "資料庫自動容錯移轉：備用執行個體接手成為主要，應用程式用同一個連線位址。"
+    },
+    {
+      "from": "asg",
+      "to": "web-b",
+      "text": "自動擴展發現機器少了，在健康的可用區補上新的機器，維持設定的數量。"
+    }
+  ]
+}

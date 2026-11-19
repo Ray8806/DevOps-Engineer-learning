@@ -274,7 +274,7 @@ Lab 引擎維護一份虛擬狀態（檔案系統加雲端資源），指令會�
 | `["cloud", "aws", "ec2", "launchTemplates", 名稱, "imageId" \| "instanceType"]` | 啟動範本 |
 | `["cloud", "aws", "elbv2", "targetGroups", 名稱, "protocol" \| "port" \| "healthCheckPath" \| "healthyTargets"]`、`[…, "targets", 執行個體 ID]` | 目標群組；目標的狀態是 `"healthy"`、`"unhealthy"` 或 `"unused"`（還沒有接聽程式轉送到這個群組） |
 | `["cloud", "aws", "elbv2", "loadBalancers", 名稱, "scheme" \| "availabilityZones" \| "listeners"]` | ALB；`listeners` 像 `{ "HTTP:80": "web-tg" }` |
-| `["cloud", "aws", "autoscaling", "groups", 名稱, "min" \| "max" \| "desired" \| "inService" \| "healthCheckType" \| "replacedInstances"]`、`[…, "policies", 政策名稱]` | Auto Scaling 群組；政策的值像 `{ "metric": "ASGAverageCPUUtilization", "target": 50 }` |
+| `["cloud", "aws", "autoscaling", "groups", 名稱, "min" \| "max" \| "desired" \| "inService" \| "healthCheckType" \| "replacedInstances"]`、`[…, "policies", 政策名稱]`、`[…, "availabilityZones" \| "instanceZones", 可用區]` | Auto Scaling 群組；政策的值像 `{ "metric": "ASGAverageCPUUtilization", "target": 50 }`；`availabilityZones` 是子網路涵蓋的可用區，`instanceZones` 是執行中的執行個體所在的可用區 |
 | `["cloud", "gcp", "instanceTemplates", 名稱, "machineType" \| "tags"]`、`["cloud", "gcp", "migs", 名稱, "targetSize" \| "size" \| "namedPorts" \| "autoscaler" \| "recreated"]` | 執行個體範本與 MIG；`autoscaler` 像 `{ "min": 2, "max": 5, "cpu": 0.6 }` |
 | `["cloud", "gcp", "backendServices", 名稱, "portName" \| "healthCheck" \| "scheme" \| "backends" \| "healthyInstances"]` | 後端服務；健康的條件是 VM 在執行中，而且有防火牆規則允許 `35.191.0.0/16` 連到健康檢查的連接埠 |
 | `["cloud", "gcp", "forwardingRules", 名稱, "ipAddress" \| "port" \| "backendService" \| "serving"]` | 轉送規則；`serving` 代表 proxy、URL 對應、後端服務都接好了，有健康的後端，而且 MIG 有後端服務要的具名連接埠 |
@@ -334,6 +334,8 @@ Lab 引擎維護一份虛擬狀態（檔案系統加雲端資源），指令會�
 
 `initialState.files` 的路徑要以 `~/` 或 `/` 開頭。`initialState.cloud` 可以預先放 bucket，形狀與上表相同；也可以用 `cloud.gcp` 預設專案 ID 和既有的 IAM 授權（`{ "project": "…", "bindings": { 角色: [成員] } }`），用 `cloud.aws.vpcs` 預先建立 VPC 與子網路（`{ VPC ID: { "cidr": "…", "subnets": { 子網路 ID: { "cidr": "…", "availabilityZone": "…" } } } }`，每個 VPC 會自動有只含本地路由的主路由表）。`cloud.aws.logs`（`{ 記錄群組: [{ "stream", "message" }] }`）、`cloud.aws.cloudtrail`（`[{ "eventName", "username", "eventSource", "resourceName", "eventTime" }]`）與 `cloud.gcp.logs`（`[{ "severity", "resourceType", "logName", "text", "timestamp" }]`）預先放記錄；`cloud.aws.kms`（`{ "alias/名稱": { "description" } }`）預先放已有別名的 KMS 金鑰；`cloud.aws.costs`（`[{ "month": "2026-10", "service", "amount", "tags" }]`）預先放費用資料；`cloud.aws.ec2`（`{ "instances": { ID: { instanceType, state } }, "volumes": { ID: { size, type, attachedTo } } }`）預先放執行個體和 EBS 磁碟區；`cloud.gcp.instances`、`cloud.gcp.disks`（`users` 是使用中的 VM）、`cloud.gcp.billingAccount`（`{ id, name }`）預先放 GCP 資源。模擬環境的「今天」是 2026-11-16。
 
+`initialState.setup` 是 Lab 開始前要執行的指令（例如先建好一個有單點故障的環境，讓學員盤點、修正）。每一條都必須成功，否則 Lab 無法開始；測試（`architecture.test.ts`）會逐一執行每個 Lab 的 setup，並確認 Lab 不會在學員動手前就已經完成。
+
 模擬環境的起始狀態：AWS 帳戶裡沒有預設 VPC，執行個體預設啟動在 `us-east-1a`；Google Cloud 專案裡有 auto 模式的 `default` 網路（不另外列出它在各區域的子網路），沒有指定網路的執行個體和防火牆規則都放在 `default`。
 
 ### Lab 引擎
@@ -344,7 +346,7 @@ Lab 引擎維護一份虛擬狀態（檔案系統加雲端資源），指令會�
 - **支援的語法**：引號、反斜線跳脫、註解、`>` 與 `>>`、`|`（`cat`、`base64`、`docker login --password-stdin` 會讀取管線的輸入）、`&&` 與 `;`。不支援變數與萬用字元，會明確告知。
 - **新增指令**：在 `engine.ts` 的 `commands` 註冊一個 `Command`（收到可修改的草稿狀態與輸出函式，回傳結束碼），並補上測試。
 - **輸出訊息是近似值**：格式盡量貼近真實 CLI，但不保證逐字相同。
-- 每個 Lab 都必須在測試裡（`engine.test.ts`、`cloud.test.ts`、`network-db.test.ts`、`serverless-storage.test.ts`、`nosql.test.ts`、`lb.test.ts`、`monitoring.test.ts`、`dns-cdn.test.ts`、`security.test.ts`、`cost.test.ts`、`containers.test.ts`、`kubernetes.test.ts`、`iac.test.ts`、`cicd.test.ts` 或 `messaging.test.ts`）有一條能從頭做到完成的指令腳本。
+- 每個 Lab 都必須在測試裡（`engine.test.ts`、`cloud.test.ts`、`network-db.test.ts`、`serverless-storage.test.ts`、`nosql.test.ts`、`lb.test.ts`、`monitoring.test.ts`、`dns-cdn.test.ts`、`security.test.ts`、`cost.test.ts`、`containers.test.ts`、`kubernetes.test.ts`、`iac.test.ts`、`cicd.test.ts`、`messaging.test.ts` 或 `architecture.test.ts`）有一條能從頭做到完成的指令腳本。
 
 所有格式的權威定義在 `src/lib/content/schema.ts`，本節與它不一致時以程式為準。
 
@@ -394,7 +396,8 @@ interface Progress {
 | 1 雲端核心 | 全部 8 個單元 | 完成 |
 | 2 維運 | 全部 5 個單元 | 完成 |
 | 3 自動化 | 全部 5 個單元 | 完成 |
-| 4 實戰 | 架構設計案例、面試題 | 待寫 |
+| 4 實戰 | 案例：高可用網站 | 完成 |
+| 4 實戰 | 案例：資料管線、災難復原；面試題 | 待寫 |
 
 雲端服務單元的內容要對照官方文件再寫（環境已開放 `docs.aws.amazon.com` 和 `docs.cloud.google.com`）。用 `curl` 下載後閱讀，不要憑記憶寫限制、預設值和用語。
 
