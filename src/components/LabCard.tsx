@@ -20,7 +20,7 @@ export function LabCard({
   return (
     <Link
       href={`/units/${unitId}/labs/${lab.id}`}
-      className={`block h-full rounded-xl border bg-surface p-4 transition-colors hover:border-accent ${
+      className={`card-link block h-full rounded-xl border bg-surface p-4 hover:border-accent ${
         done ? "border-accent" : "border-border"
       }`}
     >

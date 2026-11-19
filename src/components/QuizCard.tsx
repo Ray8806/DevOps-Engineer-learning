@@ -12,7 +12,7 @@ export function QuizCard({ unitId, questionCount }: { unitId: string; questionCo
   return (
     <Link
       href={`/units/${unitId}/quiz`}
-      className={`block h-full rounded-xl border bg-surface p-4 transition-colors hover:border-accent ${
+      className={`card-link block h-full rounded-xl border bg-surface p-4 hover:border-accent ${
         passed ? "border-accent" : "border-border"
       }`}
     >

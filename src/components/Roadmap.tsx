@@ -222,7 +222,7 @@ export function Roadmap({ stages }: { stages: RoadmapStage[] }) {
                         <Link
                           href={`/units/${unit.id}`}
                           data-status={status}
-                          className={`flex h-full gap-3 rounded-xl border bg-surface p-4 transition-colors hover:border-accent ${
+                          className={`card-link flex h-full gap-3 rounded-xl border bg-surface p-4 hover:border-accent ${
                             status === "done" ? "border-accent" : "border-border"
                           } ${status === "locked" ? "opacity-70" : ""}`}
                         >

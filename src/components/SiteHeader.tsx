@@ -9,10 +9,13 @@ const NAV = [
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-10 border-b border-border bg-surface/90 backdrop-blur">
+    <header className="sticky top-0 z-10 border-b border-border bg-bg/75 backdrop-blur-md">
       <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2 font-bold">
-          <span aria-hidden className="grid h-7 w-7 place-items-center rounded-md bg-accent text-sm text-surface">
+          <span
+            aria-hidden
+            className="grid h-7 w-7 place-items-center rounded-md bg-gradient-to-br from-accent to-accent-2 text-sm text-bg shadow-[0_0_16px_-2px_rgb(34_211_238_/_0.6)]"
+          >
             雲
           </span>
           <span className="max-sm:sr-only">雲端工程師學院</span>
@@ -30,6 +33,7 @@ export function SiteHeader() {
           <AccountLink />
         </nav>
       </div>
+      <div aria-hidden className="h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent" />
     </header>
   );
 }
