@@ -126,7 +126,8 @@ src/
   components/          # Roadmap, ProviderTabs, Quiz, Terminal, ExamRunner
   lib/
     content/           # 載入與 Zod schema
-    progress/          # 進度儲存（介面化，之後可換成 Supabase）
+    progress/          # 進度儲存、合併與同步
+    auth/              # Supabase 登入與帳號狀態
     lab-engine/        # 指令解析、虛擬狀態、驗證
     exam/              # 抽題、計分
 ```
@@ -356,7 +357,7 @@ interface Progress {
 }
 ```
 
-`preferredProvider` 預設為 `both`。透過 `ProgressStore` 介面存取（`src/lib/progress/store.ts`），第一版實作為 localStorage，第二版加上 Supabase 實作並在登入時合併。進度的讀取與判斷都是 `src/lib/progress/progress.ts` 裡的純函式。
+`preferredProvider` 預設為 `both`。透過 `ProgressStore` 介面存取（`src/lib/progress/store.ts`），實作為 localStorage。登入後由 `src/lib/progress/sync.ts` 把同一個 store 和 Supabase 的 `progress` 資料表（每人一列）同步：和上次同步的內容做三方合併（`merge.ts`），只有一邊改過的用那一邊，兩邊都改了就保留進度較多的。設定方式見 `docs/SUPABASE.md`；沒有設定 `NEXT_PUBLIC_SUPABASE_URL`／`NEXT_PUBLIC_SUPABASE_ANON_KEY` 時不顯示登入。進度的讀取與判斷都是 `src/lib/progress/progress.ts` 裡的純函式。
 
 - **單元完成的定義**：課文標記為已讀完、單元測驗通過（答對 80% 以上，`QUIZ_PASS_SCORE`），且必做的 Lab 都完成。必做的 Lab 是不分平台的 Lab 加上主要平台的 Lab；主要平台選「兩者」時全部都要做。
 - **測驗成績**：`quizScore` 是 0 到 1 的最高分，重考分數較低不會蓋掉。每題的作答次數與最近一次對錯記在 `questions`。
@@ -375,7 +376,7 @@ interface Progress {
 | 4 ✅ | Lab 引擎 | 終端機、虛擬檔案系統、基本 Linux 指令、`aws s3` 與 `gcloud storage` 子集、3 個範例 Lab | Lab 可從頭做到完成；引擎有單元測試 |
 | 5 ✅ | 證照練習 | 證照頁、依 domain 抽題練習、服務對照表 | 四張證照頁都可進入並練習 |
 | 6 | 內容擴充 | 依第 3 節補齊所有單元、測驗、Lab 與每張證照題庫 | 每單元至少 5 題、每張證照至少 150 題 |
-| 7 | 會員 | Supabase 登入、進度同步與合併 | 兩個裝置登入後進度一致 |
+| 7 | 會員 | Supabase 登入（Email 登入連結、Google、GitHub）、進度同步與合併 | 兩個裝置登入後進度一致（程式完成，待設定 Supabase 專案後在正式站驗收） |
 | 8 | 模擬考 | 計時考試、依比重抽題、成績報告、錯題本、弱點分析 | 可完成一場完整模擬考並看到各 domain 得分 |
 | 9 | 進階功能 | 架構圖練習、AI 助教 | — |
 
