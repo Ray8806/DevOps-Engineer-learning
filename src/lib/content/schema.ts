@@ -297,3 +297,93 @@ export const CertSchema = z
     message: "questionCountMin must not exceed questionCountMax",
   });
 export type Cert = z.infer<typeof CertSchema>;
+
+// -------------------------------------------------- challenges/<id>.json
+
+/** Blanks are written as {{id}} in files and commands. */
+export const BLANK_PATTERN = /\{\{([a-z][a-z0-9-]*)\}\}/g;
+
+export const CHALLENGE_TRACKS = ["basics", "aws", "gcp"] as const;
+export const ChallengeTrackSchema = z.enum(CHALLENGE_TRACKS);
+export type ChallengeTrack = z.infer<typeof ChallengeTrackSchema>;
+
+/**
+ * A goal the finished environment must meet: a state check (same format as
+ * lab steps), or a command whose output must (not) contain some text.
+ */
+const ChallengeGoalSchema = z.union([
+  z.strictObject({ description: z.string().min(1), check: StateCheckSchema }),
+  z.strictObject({
+    description: z.string().min(1),
+    run: z.string().min(1),
+    contains: z.string().min(1).optional(),
+    notContains: z.string().min(1).optional(),
+  }),
+]);
+
+/**
+ * A fill-in-the-blanks level: the learner picks a value for each blank, the
+ * commands run in the lab engine, and the level is cleared when every
+ * command succeeds and every goal holds. Each wrong choice must make the run
+ * fail, which the tests check.
+ */
+export const ChallengeSchema = z
+  .strictObject({
+    id: slug,
+    title: z.string().min(1),
+    track: ChallengeTrackSchema,
+    /** Position in the track, starting at 1; a level unlocks after the previous one. */
+    level: z.number().int().positive(),
+    provider: ContentProviderSchema,
+    /** The unit that teaches this, linked from the level page. */
+    unitId: slug,
+    /** The situation, told to the learner. */
+    story: z.string().min(1),
+    objective: z.string().min(1),
+    initialState: z
+      .strictObject({
+        files: z.record(labPath, z.string()).default({}),
+        setup: z.array(z.string().min(1)).default([]),
+      })
+      .default({ files: {}, setup: [] }),
+    /** Commands run in order after the blanks are filled; the run stops at the first failure. */
+    commands: z.array(z.string().min(1)).min(1),
+    blanks: z
+      .array(
+        z.strictObject({
+          id: z.string().regex(/^[a-z][a-z0-9-]*$/),
+          choices: z.array(z.string().min(1)).min(2).max(5),
+          answer: z.string().min(1),
+          /** Why the answer is right, shown after the level is cleared. */
+          explain: z.string().min(1),
+        }),
+      )
+      .min(1),
+    goals: z.array(ChallengeGoalSchema).min(1),
+    /** Shown after a failed run when the learner asks for a hint. */
+    hint: z.string().min(1),
+  })
+  .superRefine((c, ctx) => {
+    const used = new Set<string>();
+    for (const text of [...Object.values(c.initialState.files), ...c.commands]) {
+      for (const m of text.matchAll(BLANK_PATTERN)) used.add(m[1]);
+    }
+    const ids = new Set<string>();
+    c.blanks.forEach((b, i) => {
+      if (ids.has(b.id)) ctx.addIssue({ code: "custom", path: ["blanks", i, "id"], message: `duplicate blank "${b.id}"` });
+      ids.add(b.id);
+      if (!used.has(b.id)) ctx.addIssue({ code: "custom", path: ["blanks", i, "id"], message: `blank "${b.id}" is not used in files or commands` });
+      if (!b.choices.includes(b.answer)) ctx.addIssue({ code: "custom", path: ["blanks", i, "answer"], message: "answer must be one of the choices" });
+      if (new Set(b.choices).size !== b.choices.length) ctx.addIssue({ code: "custom", path: ["blanks", i, "choices"], message: "choices must be unique" });
+    });
+    for (const id of used) {
+      if (!ids.has(id)) ctx.addIssue({ code: "custom", path: ["blanks"], message: `{{${id}}} has no blank definition` });
+    }
+    c.goals.forEach((g, i) => {
+      if ("run" in g && !g.contains && !g.notContains) {
+        ctx.addIssue({ code: "custom", path: ["goals", i], message: "set contains or notContains" });
+      }
+    });
+  });
+export type Challenge = z.infer<typeof ChallengeSchema>;
+export type ChallengeGoal = z.infer<typeof ChallengeGoalSchema>;

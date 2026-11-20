@@ -3,6 +3,7 @@ import path from "node:path";
 import { z } from "zod";
 import {
   CertSchema,
+  ChallengeSchema,
   FlowSchema,
   LabSchema,
   QuizFileSchema,
@@ -10,6 +11,7 @@ import {
   UnitMetaSchema,
   PROVIDERS,
   type Cert,
+  type Challenge,
   type Flow,
   type Lab,
   type Question,
@@ -38,6 +40,8 @@ export interface Content {
    * question tagged with that cert.
    */
   certQuestions: Map<string, Question[]>;
+  /** Fill-in-the-blank levels, sorted by track then level. */
+  challenges: Challenge[];
 }
 
 /** Thrown with every problem found, so one build shows all content errors. */
@@ -294,8 +298,31 @@ export function loadContent(contentDir: string = CONTENT_DIR): Content {
     }
   }
 
+  // --- challenges/*.json
+  const challenges: Challenge[] = [];
+  const challengeDir = path.join(contentDir, "challenges");
+  const challengeFiles = fs.existsSync(challengeDir)
+    ? fs.readdirSync(challengeDir).filter((f) => f.endsWith(".json")).sort()
+    : [];
+  for (const f of challengeFiles) {
+    const file = path.join(challengeDir, f);
+    const challenge = readJson(file, ChallengeSchema);
+    if (!challenge) continue;
+    if (`${challenge.id}.json` !== f) problems.push(`${rel(file)}: id "${challenge.id}" must match the file name`);
+    if (!units.has(challenge.unitId)) problems.push(`${rel(file)}: unknown unit "${challenge.unitId}"`);
+    challenges.push(challenge);
+  }
+  const trackOrder = ["basics", "aws", "gcp"];
+  challenges.sort((a, b) => trackOrder.indexOf(a.track) - trackOrder.indexOf(b.track) || a.level - b.level);
+  for (const track of trackOrder) {
+    const levels = challenges.filter((c) => c.track === track).map((c) => c.level);
+    if (levels.some((level, i) => level !== i + 1)) {
+      problems.push(`challenges: track "${track}" levels must be 1, 2, 3… without gaps (found ${levels.join(", ")})`);
+    }
+  }
+
   if (problems.length) throw new ContentError(problems);
-  return { stages, units, certs, certQuestions };
+  return { stages, units, certs, certQuestions, challenges };
 }
 
 let cached: Content | undefined;

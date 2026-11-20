@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/SiteHeader";
 import "./globals.css";
@@ -13,7 +14,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col">
         <SiteHeader />
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6 sm:py-12">{children}</main>
-        <footer className="border-t border-border py-6 text-center text-sm text-muted">
+        <footer className="border-t border-border px-4 py-6 text-center text-sm text-muted">
+          <nav aria-label="頁尾導覽" className="mb-2 flex flex-wrap justify-center gap-x-4 gap-y-1">
+            <Link href="/roadmap" className="hover:text-text">學習路線</Link>
+            <Link href="/challenges" className="hover:text-text">闖關</Link>
+            <Link href="/certs" className="hover:text-text">證照備考</Link>
+            <Link href="/services" className="hover:text-text">服務對照</Link>
+          </nav>
           雲端工程師學院 · 課程內容為原創教材，與 AWS、Google Cloud 官方無關
         </footer>
       </body>

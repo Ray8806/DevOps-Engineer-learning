@@ -1,0 +1,36 @@
+{
+  "id": "aws-sqs-visibility",
+  "title": "訂單被處理了兩次",
+  "track": "aws",
+  "level": 2,
+  "provider": "aws",
+  "unitId": "message-queues",
+  "story": "客服接到抱怨：有顧客被扣了兩次款。查了一下，處理訂單的程式每筆要花 60 秒，但同一筆訂單會被另一台機器又拿去處理一次。問題出在佇列的設定。",
+  "objective": "建立 orders 佇列，讓處理中的訂單在 60 秒內不會被其他消費者再次收到。",
+  "commands": [
+    "aws sqs create-queue --queue-name orders --attributes VisibilityTimeout={{timeout}}",
+    "aws sqs send-message --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/orders --message-body order-1001",
+    "aws sqs receive-message --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/orders",
+    "sleep 60"
+  ],
+  "blanks": [
+    {
+      "id": "timeout",
+      "choices": [
+        "120",
+        "30",
+        "0"
+      ],
+      "answer": "120",
+      "explain": "可見性逾時是訊息被收走後，對其他消費者隱藏的時間。它要比處理一筆訊息需要的時間長；處理要 60 秒卻只隱藏 30 秒，訊息就會在處理完之前再次出現，被重複處理。"
+    }
+  ],
+  "goals": [
+    {
+      "description": "處理到第 60 秒時，其他消費者收不到 order-1001",
+      "run": "aws sqs receive-message --queue-url https://sqs.us-east-1.amazonaws.com/123456789012/orders",
+      "notContains": "order-1001"
+    }
+  ],
+  "hint": "sleep 60 模擬「處理一筆訂單要 60 秒」。訊息被收走之後，要隱藏多久才夠？"
+}

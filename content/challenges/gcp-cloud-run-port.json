@@ -1,0 +1,54 @@
+{
+  "id": "gcp-cloud-run-port",
+  "title": "Cloud Run 部署失敗了",
+  "track": "gcp",
+  "level": 2,
+  "provider": "gcp",
+  "unitId": "containers",
+  "story": "你要把公司的網站容器部署到 Cloud Run。映像檔已經寫好 Dockerfile，你建立了 Artifact Registry 存放區 web-repo，但第一次部署就看到「container failed to start and listen on the port」。",
+  "objective": "把映像檔推送到 web-repo，並成功部署 Cloud Run 服務 shop-web。",
+  "initialState": {
+    "files": {
+      "~/app/Dockerfile": "FROM nginx:alpine\nCOPY index.html /usr/share/nginx/html/index.html\nEXPOSE 80\n",
+      "~/app/index.html": "<h1>雲端商店</h1>\n"
+    }
+  },
+  "commands": [
+    "gcloud artifacts repositories create web-repo --repository-format=docker --location=asia-east1",
+    "gcloud auth configure-docker asia-east1-docker.pkg.dev",
+    "cd ~/app",
+    "docker build -t asia-east1-docker.pkg.dev/my-project/{{repo}}/shop-web:v1 .",
+    "docker push asia-east1-docker.pkg.dev/my-project/{{repo}}/shop-web:v1",
+    "gcloud run deploy shop-web --image=asia-east1-docker.pkg.dev/my-project/{{repo}}/shop-web:v1 --region=asia-east1 --allow-unauthenticated --port={{port}}"
+  ],
+  "blanks": [
+    {
+      "id": "repo",
+      "choices": [
+        "web-repo",
+        "my-repo",
+        "shop-web"
+      ],
+      "answer": "web-repo",
+      "explain": "Artifact Registry 的映像檔路徑是「區域-docker.pkg.dev/專案/存放區/映像檔:標籤」，存放區要用剛剛建立的 web-repo。"
+    },
+    {
+      "id": "port",
+      "choices": [
+        "80",
+        "8080",
+        "443"
+      ],
+      "answer": "80",
+      "explain": "Cloud Run 預設把請求送到容器的 8080 連接埠；這個映像檔的程式聽的是 80（Dockerfile 寫 EXPOSE 80），所以要用 --port=80 告訴 Cloud Run。"
+    }
+  ],
+  "goals": [
+    {
+      "description": "shop-web 服務已部署並使用 v1 映像檔",
+      "run": "gcloud run services describe shop-web --region=asia-east1",
+      "contains": "web-repo/shop-web:v1"
+    }
+  ],
+  "hint": "映像檔路徑中的存放區名稱，要和第一行建立的一樣；再看 Dockerfile 的 EXPOSE。"
+}

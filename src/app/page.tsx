@@ -84,6 +84,12 @@ export default function HomePage() {
               查看學習路線
             </Link>
             <Link
+              href="/challenges"
+              className="rounded-lg border border-accent bg-surface px-5 py-2.5 font-semibold text-accent hover:bg-accent-soft"
+            >
+              開始闖關
+            </Link>
+            <Link
               href="/certs"
               className="rounded-lg border border-border bg-surface px-5 py-2.5 font-semibold hover:border-accent"
             >

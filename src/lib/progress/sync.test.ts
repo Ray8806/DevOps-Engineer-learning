@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { canonical, mergeProgress, sameProgress } from "./merge";
-import { EMPTY_PROGRESS, recordLabDone, recordQuizAttempt, setPreferredProvider, setUnitRead, type Progress } from "./progress";
+import { EMPTY_PROGRESS, recordChallengeRun, recordLabDone, recordQuizAttempt, setPreferredProvider, setUnitRead, type Progress } from "./progress";
 import { createLocalProgressStore } from "./store";
 import { baseKey, createProgressSync, type RemoteProgress } from "./sync";
 
@@ -33,6 +33,14 @@ describe("mergeProgress", () => {
     const m = mergeProgress(base, local, remote);
     expect(m.units.u1.quizScore).toBe(1);
     expect(m.questions.q1).toEqual({ attempts: 3, lastCorrect: false });
+  });
+
+  it("keeps the most challenge runs and the earliest clear", () => {
+    const local = recordChallengeRun(recordChallengeRun(E, "c1", false), "c1", true);
+    const remote = recordChallengeRun(recordChallengeRun(recordChallengeRun(E, "c1", false), "c1", false), "c1", false);
+    const m = mergeProgress(E, local, remote);
+    expect(m.challenges.c1).toEqual({ runs: 3, clearedOnRun: 2 });
+    expect(mergeProgress(E, E, local).challenges.c1).toEqual({ runs: 2, clearedOnRun: 2 });
   });
 
   it("prefers a chosen platform over the default", () => {
