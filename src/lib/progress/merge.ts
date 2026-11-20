@@ -1,4 +1,4 @@
-import { EMPTY_PROGRESS, type Progress, type UnitProgress } from "./progress";
+import { EMPTY_PROGRESS, MAX_ACTIVE_DAYS, type Progress, type UnitProgress } from "./progress";
 
 /** JSON with object keys sorted, so equal data always gives the same text. */
 export function canonical(value: unknown): string {
@@ -76,6 +76,9 @@ export function mergeProgress(base: Progress, local: Progress, remote: Progress)
     challenges[id] = cleared.length ? { runs, clearedOnRun: Math.min(...cleared) } : { runs };
   }
 
+  // Active days are only ever added.
+  const activeDays = [...new Set([...local.activeDays, ...remote.activeDays])].sort().slice(-MAX_ACTIVE_DAYS);
+
   // Exam results are only ever added.
   const exams = [...local.exams];
   for (const e of remote.exams) if (!exams.some((x) => same(x, e))) exams.push(e);
@@ -89,6 +92,7 @@ export function mergeProgress(base: Progress, local: Progress, remote: Progress)
     units,
     questions,
     challenges,
+    activeDays,
     exams,
   };
 }

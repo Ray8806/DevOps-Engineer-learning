@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { EMPTY_PROGRESS, type Progress } from "./progress";
+import { EMPTY_PROGRESS, isLearningChange, localDay, recordActiveDay, type Progress } from "./progress";
 import { createLocalProgressStore, STORAGE_KEY } from "./store";
 
 /** The one progress store of this browser tab; account sync writes through it too. */
@@ -26,5 +26,13 @@ function subscribe(listener: () => void) {
  */
 export function useProgress(): [Progress, (change: (current: Progress) => Progress) => void] {
   const progress = useSyncExternalStore(subscribe, progressStore.get, () => EMPTY_PROGRESS);
-  return [progress, progressStore.update];
+  return [progress, updateAndMarkActive];
+}
+
+/** Applies a change; a learning change (not just a setting) also marks today as an active day for the streak. */
+function updateAndMarkActive(change: (current: Progress) => Progress) {
+  progressStore.update((current) => {
+    const next = change(current);
+    return isLearningChange(current, next) ? recordActiveDay(next, localDay(new Date())) : next;
+  });
 }

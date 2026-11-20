@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { AchievementToast } from "@/components/Achievements";
 import { SiteHeader } from "@/components/SiteHeader";
+import { getContent } from "@/lib/content/loader";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -9,6 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
+  const challenges = getContent().challenges.map(({ id, track }) => ({ id, track }));
   return (
     <html lang="zh-Hant" className="h-full antialiased">
       <body className="flex min-h-full flex-col">
@@ -19,10 +22,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Link href="/roadmap" className="hover:text-text">學習路線</Link>
             <Link href="/challenges" className="hover:text-text">闖關</Link>
             <Link href="/certs" className="hover:text-text">證照備考</Link>
+            <Link href="/achievements" className="hover:text-text">成就</Link>
             <Link href="/services" className="hover:text-text">服務對照</Link>
           </nav>
           雲端工程師學院 · 課程內容為原創教材，與 AWS、Google Cloud 官方無關
         </footer>
+        <AchievementToast challenges={challenges} />
       </body>
     </html>
   );

@@ -25,6 +25,8 @@ export const ProgressSchema = z.object({
   challenges: z
     .record(z.string(), z.object({ runs: z.number().int().min(0), clearedOnRun: z.number().int().positive().optional() }))
     .default({}),
+  /** Days with learning activity (YYYY-MM-DD, the learner's local date), oldest first. Used for the streak. */
+  activeDays: z.array(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)).default([]),
   exams: z
     .array(
       z.object({
@@ -236,4 +238,34 @@ export function isChallengeUnlocked(progress: Progress, challenge: ChallengeRef,
   if (challenge.level <= 1) return true;
   const previous = all.find((c) => c.track === challenge.track && c.level === challenge.level - 1);
   return previous === undefined || isChallengeCleared(progress, previous.id);
+}
+
+// ---------------------------------------------------------------- activity
+
+/** How many active days are kept; enough for any streak worth showing. */
+export const MAX_ACTIVE_DAYS = 400;
+
+/** The learner's local calendar day, e.g. "2026-11-20". */
+export function localDay(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+/** Adds `day` to the active days (kept sorted, unique and bounded). */
+export function recordActiveDay(progress: Progress, day: string): Progress {
+  if (progress.activeDays.includes(day)) return progress;
+  const activeDays = [...progress.activeDays, day].sort().slice(-MAX_ACTIVE_DAYS);
+  return { ...progress, activeDays };
+}
+
+/** True when `next` holds learning progress `previous` did not (not just a settings change). */
+export function isLearningChange(previous: Progress, next: Progress): boolean {
+  return (
+    previous.units !== next.units ||
+    previous.questions !== next.questions ||
+    previous.challenges !== next.challenges ||
+    previous.exams !== next.exams
+  );
 }
