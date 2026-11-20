@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BLANK_PATTERN } from "@/lib/challenges/blanks";
 
 /** Slug used for unit, question and lab ids (also directory / file names). */
 const slug = z
@@ -300,8 +301,7 @@ export type Cert = z.infer<typeof CertSchema>;
 
 // -------------------------------------------------- challenges/<id>.json
 
-/** Blanks are written as {{id}} in files and commands. */
-export const BLANK_PATTERN = /\{\{([a-z][a-z0-9-]*)\}\}/g;
+export { BLANK_PATTERN } from "@/lib/challenges/blanks";
 
 export const CHALLENGE_TRACKS = ["basics", "aws", "gcp"] as const;
 export const ChallengeTrackSchema = z.enum(CHALLENGE_TRACKS);

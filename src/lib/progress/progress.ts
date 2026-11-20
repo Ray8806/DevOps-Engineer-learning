@@ -1,4 +1,5 @@
-import { z } from "zod";
+// zod/mini: progress is parsed in the browser on every page, so keep the validator small.
+import * as z from "zod/mini";
 import type { ContentProvider, Provider } from "@/lib/content/schema";
 
 /**
@@ -8,35 +9,37 @@ import type { ContentProvider, Provider } from "@/lib/content/schema";
 export const PreferredProviderSchema = z.enum(["aws", "gcp", "both"]);
 export type PreferredProvider = z.infer<typeof PreferredProviderSchema>;
 
+const count = () => z.int().check(z.minimum(0));
+
 const UnitProgressSchema = z.object({
-  read: z.boolean().default(false),
-  quizScore: z.number().min(0).max(1).optional(),
-  labsDone: z.array(z.string()).default([]),
+  read: z._default(z.boolean(), false),
+  quizScore: z.optional(z.number().check(z.minimum(0), z.maximum(1))),
+  labsDone: z._default(z.array(z.string()), []),
 });
 export type UnitProgress = z.infer<typeof UnitProgressSchema>;
 
 export const ProgressSchema = z.object({
-  preferredProvider: PreferredProviderSchema.default("both"),
-  units: z.record(z.string(), UnitProgressSchema).default({}),
-  questions: z
-    .record(z.string(), z.object({ attempts: z.number().int().min(0), lastCorrect: z.boolean() }))
-    .default({}),
+  preferredProvider: z._default(PreferredProviderSchema, "both"),
+  units: z._default(z.record(z.string(), UnitProgressSchema), {}),
+  questions: z._default(z.record(z.string(), z.object({ attempts: count(), lastCorrect: z.boolean() })), {}),
   /** Fill-in-the-blank levels: how many times each was run, and the run that first cleared it. */
-  challenges: z
-    .record(z.string(), z.object({ runs: z.number().int().min(0), clearedOnRun: z.number().int().positive().optional() }))
-    .default({}),
+  challenges: z._default(
+    z.record(z.string(), z.object({ runs: count(), clearedOnRun: z.optional(z.int().check(z.positive())) })),
+    {},
+  ),
   /** Days with learning activity (YYYY-MM-DD, the learner's local date), oldest first. Used for the streak. */
-  activeDays: z.array(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)).default([]),
-  exams: z
-    .array(
+  activeDays: z._default(z.array(z.string().check(z.regex(/^\d{4}-\d{2}-\d{2}$/))), []),
+  exams: z._default(
+    z.array(
       z.object({
         certId: z.string(),
         date: z.string(),
         score: z.number(),
         byDomain: z.record(z.string(), z.number()),
       }),
-    )
-    .default([]),
+    ),
+    [],
+  ),
 });
 export type Progress = z.infer<typeof ProgressSchema>;
 
