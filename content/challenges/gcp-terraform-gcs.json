@@ -1,0 +1,72 @@
+{
+  "id": "gcp-terraform-gcs",
+  "title": "用 Terraform 建立報表 bucket",
+  "track": "gcp",
+  "level": 3,
+  "provider": "gcp",
+  "unitId": "infrastructure-as-code",
+  "story": "資料團隊每個月會讀一次報表檔案。他們請你用 Terraform 建立一個 bucket，並選擇適合「每月讀一次」的儲存級別，以後所有變更都改程式碼再 apply。",
+  "objective": "補完 main.tf，用 Terraform 建立 my-project-reports，儲存級別適合每月讀一次。",
+  "initialState": {
+    "files": {
+      "~/infra/main.tf": "provider \"google\" {\n  project = \"my-project\"\n  region  = \"asia-east1\"\n}\n\nresource \"{{type}}\" \"reports\" {\n  name          = \"my-project-reports\"\n  location      = \"asia-east1\"\n  storage_class = \"{{class}}\"\n}\n"
+    }
+  },
+  "commands": [
+    "cd ~/infra",
+    "terraform init",
+    "terraform apply -auto-approve"
+  ],
+  "blanks": [
+    {
+      "id": "type",
+      "choices": [
+        "google_storage_bucket",
+        "google_bucket",
+        "gcs_bucket"
+      ],
+      "answer": "google_storage_bucket",
+      "explain": "Google provider 的 Cloud Storage bucket 資源類型是 google_storage_bucket。"
+    },
+    {
+      "id": "class",
+      "choices": [
+        "NEARLINE",
+        "STANDARD",
+        "ARCHIVE"
+      ],
+      "answer": "NEARLINE",
+      "explain": "Nearline 適合平均每月最多讀取一次的資料；Standard 適合經常存取，Archive 適合一年都不一定讀一次的封存資料。"
+    }
+  ],
+  "goals": [
+    {
+      "description": "Terraform 管理 google_storage_bucket.reports",
+      "check": {
+        "type": "state",
+        "path": [
+          "terraform",
+          "~/infra",
+          "resources",
+          "google_storage_bucket.reports"
+        ],
+        "equals": true
+      }
+    },
+    {
+      "description": "儲存級別是 NEARLINE（每月讀一次）",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcs",
+          "buckets",
+          "my-project-reports",
+          "storageClass"
+        ],
+        "equals": "NEARLINE"
+      }
+    }
+  ],
+  "hint": "資源類型由 provider 名稱 google_ 開頭；再想想每個儲存級別適合多久讀一次。"
+}

@@ -1,0 +1,49 @@
+{
+  "id": "gcp-gke-image",
+  "title": "Pod 一直起不來",
+  "track": "gcp",
+  "level": 4,
+  "provider": "gcp",
+  "unitId": "kubernetes",
+  "story": "你在 GKE Autopilot 叢集部署了 3 個副本，kubectl get pods 卻全部顯示 ImagePullBackOff。同事說「映像檔路徑好像抄錯了」，而且你好像也還沒連上叢集。",
+  "objective": "連上 hello-cluster，部署 hello，讓 3 個 Pod 全部就緒。",
+  "initialState": {
+    "files": {
+      "~/k8s/deploy.yaml": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: hello\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: hello\n  template:\n    metadata:\n      labels:\n        app: hello\n    spec:\n      containers:\n      - name: hello\n        image: {{image}}\n        ports:\n        - containerPort: 8080\n"
+    }
+  },
+  "commands": [
+    "gcloud container clusters create-auto hello-cluster --location=us-east4",
+    "gcloud container clusters get-credentials {{cluster}} --location us-east4",
+    "kubectl apply -f ~/k8s/deploy.yaml"
+  ],
+  "blanks": [
+    {
+      "id": "cluster",
+      "choices": [
+        "hello-cluster",
+        "hello",
+        "us-east4"
+      ],
+      "answer": "hello-cluster",
+      "explain": "get-credentials 要指定叢集名稱和位置，取得的連線資訊會寫進 kubeconfig，之後 kubectl 才知道要連哪個叢集。"
+    },
+    {
+      "id": "image",
+      "choices": [
+        "us-docker.pkg.dev/google-samples/containers/gke/hello-app:1.0",
+        "asia-east1-docker.pkg.dev/my-project/web-repo/hello-app:1.0"
+      ],
+      "answer": "us-docker.pkg.dev/google-samples/containers/gke/hello-app:1.0",
+      "explain": "ImagePullBackOff 代表節點拉不到映像檔。web-repo 裡從來沒有推送過 hello-app，Google 提供的範例映像檔才拉得到。"
+    }
+  ],
+  "goals": [
+    {
+      "description": "hello 的 3 個 Pod 都就緒",
+      "run": "kubectl get deployment hello",
+      "contains": "3/3"
+    }
+  ],
+  "hint": "叢集名稱要和第一行建立的一樣；映像檔要是真的存在、拉得到的位置。"
+}

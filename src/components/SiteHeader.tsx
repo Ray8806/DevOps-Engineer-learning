@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { AccountLink } from "./AccountLink";
 
+/** `wide` links are hidden on phones, where the header has room for only three links and the account. */
 const NAV = [
   { href: "/roadmap", label: "學習路線" },
+  { href: "/challenges", label: "闖關" },
   { href: "/certs", label: "證照備考" },
-  { href: "/services", label: "服務對照" },
+  { href: "/services", label: "服務對照", wide: true },
 ];
 
 export function SiteHeader() {
@@ -25,7 +27,7 @@ export function SiteHeader() {
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-md px-2.5 py-1.5 text-muted hover:bg-surface-2 hover:text-text sm:px-3"
+              className={`rounded-md px-2.5 py-1.5 text-muted hover:bg-surface-2 hover:text-text sm:px-3 ${item.wide ? "max-sm:hidden" : ""}`}
             >
               {item.label}
             </Link>

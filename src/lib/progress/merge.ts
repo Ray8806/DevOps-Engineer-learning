@@ -66,6 +66,16 @@ export function mergeProgress(base: Progress, local: Progress, remote: Progress)
     if (merged) questions[id] = merged;
   }
 
+  // Runs only grow; the earliest clearing run wins.
+  const challenges: Progress["challenges"] = {};
+  for (const id of new Set([...Object.keys(local.challenges), ...Object.keys(remote.challenges)])) {
+    const l = local.challenges[id];
+    const r = remote.challenges[id];
+    const runs = Math.max(l?.runs ?? 0, r?.runs ?? 0);
+    const cleared = [l?.clearedOnRun, r?.clearedOnRun].filter((n): n is number => n !== undefined);
+    challenges[id] = cleared.length ? { runs, clearedOnRun: Math.min(...cleared) } : { runs };
+  }
+
   // Exam results are only ever added.
   const exams = [...local.exams];
   for (const e of remote.exams) if (!exams.some((x) => same(x, e))) exams.push(e);
@@ -78,6 +88,7 @@ export function mergeProgress(base: Progress, local: Progress, remote: Progress)
     ),
     units,
     questions,
+    challenges,
     exams,
   };
 }

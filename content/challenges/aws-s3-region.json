@@ -1,0 +1,52 @@
+{
+  "id": "aws-s3-region",
+  "title": "把商品圖片放到東京",
+  "track": "aws",
+  "level": 1,
+  "provider": "aws",
+  "unitId": "object-storage",
+  "story": "公司的網路商店要進軍日本，大部分顧客都在日本。老闆要你建一個 S3 bucket 放商品圖片，名稱用 shop-assets-jp，而且資料要放在離日本顧客最近的 Region。",
+  "objective": "在東京 Region 建立名為 shop-assets-jp 的 S3 bucket。",
+  "commands": [
+    "aws s3 mb s3://{{bucket}} --region {{region}}"
+  ],
+  "blanks": [
+    {
+      "id": "bucket",
+      "choices": [
+        "shop-assets-jp",
+        "Shop_Assets_JP",
+        "shop-assets-jp."
+      ],
+      "answer": "shop-assets-jp",
+      "explain": "S3 bucket 名稱只能用小寫英文、數字、句點和連字號，而且開頭和結尾必須是英文或數字。"
+    },
+    {
+      "id": "region",
+      "choices": [
+        "ap-northeast-1",
+        "ap-southeast-1",
+        "us-east-1"
+      ],
+      "answer": "ap-northeast-1",
+      "explain": "ap-northeast-1 是亞太（東京）Region；ap-southeast-1 是新加坡，us-east-1 是美國維吉尼亞北部。把資料放在靠近使用者的 Region 可以降低延遲。"
+    }
+  ],
+  "goals": [
+    {
+      "description": "shop-assets-jp 位於 ap-northeast-1",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "s3",
+          "buckets",
+          "shop-assets-jp",
+          "region"
+        ],
+        "equals": "ap-northeast-1"
+      }
+    }
+  ],
+  "hint": "bucket 名稱有嚴格的命名規則；Region 代碼裡 northeast 和 southeast 差很多。"
+}

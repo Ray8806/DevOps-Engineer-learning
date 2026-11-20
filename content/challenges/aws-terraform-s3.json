@@ -1,0 +1,58 @@
+{
+  "id": "aws-terraform-s3",
+  "title": "用程式碼建立 bucket",
+  "track": "aws",
+  "level": 3,
+  "provider": "aws",
+  "unitId": "infrastructure-as-code",
+  "story": "團隊決定所有雲端資源都要用 Terraform 管理，不再手動點主控台。學長留了一份寫到一半的 main.tf，要建立放日誌的 S3 bucket，但他說「有兩個地方我不確定怎麼寫」。",
+  "objective": "補完 main.tf，用 Terraform 建立名為 shop-logs-jp 的 S3 bucket。",
+  "initialState": {
+    "files": {
+      "~/infra/main.tf": "provider \"aws\" {\n  region = \"ap-northeast-1\"\n}\n\nresource \"{{type}}\" \"logs\" {\n  {{arg}} = \"shop-logs-jp\"\n}\n"
+    }
+  },
+  "commands": [
+    "cd ~/infra",
+    "terraform init",
+    "terraform apply -auto-approve"
+  ],
+  "blanks": [
+    {
+      "id": "type",
+      "choices": [
+        "aws_s3_bucket",
+        "aws_bucket",
+        "s3_bucket"
+      ],
+      "answer": "aws_s3_bucket",
+      "explain": "Terraform 的資源類型由 provider 名稱開頭，AWS 的 S3 bucket 是 aws_s3_bucket；寫錯類型時，Terraform 會回報 provider 不支援這個資源類型。"
+    },
+    {
+      "id": "arg",
+      "choices": [
+        "bucket",
+        "name",
+        "bucket_name"
+      ],
+      "answer": "bucket",
+      "explain": "aws_s3_bucket 用 bucket 引數指定 bucket 名稱；name、bucket_name 都不是這個資源的引數。"
+    }
+  ],
+  "goals": [
+    {
+      "description": "Terraform 管理 aws_s3_bucket.logs，而且 bucket 已建立",
+      "check": {
+        "type": "state",
+        "path": [
+          "terraform",
+          "~/infra",
+          "resources",
+          "aws_s3_bucket.logs"
+        ],
+        "equals": true
+      }
+    }
+  ],
+  "hint": "資源類型的格式是「provider_服務_資源」；引數名稱可以對照 terraform 的錯誤訊息。"
+}

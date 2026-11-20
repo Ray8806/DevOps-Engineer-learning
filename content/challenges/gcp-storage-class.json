@@ -1,0 +1,66 @@
+{
+  "id": "gcp-storage-class",
+  "title": "備份放在台灣、又要省錢",
+  "track": "gcp",
+  "level": 1,
+  "provider": "gcp",
+  "unitId": "object-storage",
+  "story": "公司要把資料庫備份放到 Cloud Storage。法務要求資料必須留在台灣的區域；財務說這些備份大概每一季才會讀一次，要用最划算的儲存級別。",
+  "objective": "建立 bucket gs://shop-backup-tw，位置在台灣，儲存級別符合「每季讀一次」。",
+  "commands": [
+    "gcloud storage buckets create gs://shop-backup-tw --location={{location}} --default-storage-class={{class}}"
+  ],
+  "blanks": [
+    {
+      "id": "location",
+      "choices": [
+        "asia-east1",
+        "asia-northeast1",
+        "us-central1"
+      ],
+      "answer": "asia-east1",
+      "explain": "asia-east1 位於台灣；asia-northeast1 是東京，us-central1 在美國。"
+    },
+    {
+      "id": "class",
+      "choices": [
+        "COLDLINE",
+        "NEARLINE",
+        "COLD"
+      ],
+      "answer": "COLDLINE",
+      "explain": "Coldline 適合每季最多讀取一次的資料（最短儲存 90 天）；Nearline 適合每月最多一次。儲存級別的名稱是 COLDLINE，沒有 COLD。"
+    }
+  ],
+  "goals": [
+    {
+      "description": "bucket 位於 asia-east1（台灣）",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcs",
+          "buckets",
+          "shop-backup-tw",
+          "location"
+        ],
+        "equals": "asia-east1"
+      }
+    },
+    {
+      "description": "儲存級別是 COLDLINE（每季讀一次）",
+      "check": {
+        "type": "state",
+        "path": [
+          "cloud",
+          "gcs",
+          "buckets",
+          "shop-backup-tw",
+          "storageClass"
+        ],
+        "equals": "COLDLINE"
+      }
+    }
+  ],
+  "hint": "區域代碼裡 east1 和 northeast1 是不同的地方；儲存級別的名稱要寫完整。"
+}

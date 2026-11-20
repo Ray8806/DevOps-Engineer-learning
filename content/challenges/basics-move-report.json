@@ -1,0 +1,66 @@
+{
+  "id": "basics-move-report",
+  "title": "把報告歸檔",
+  "track": "basics",
+  "level": 1,
+  "provider": "general",
+  "unitId": "linux-basics",
+  "story": "星期一早上，主管傳訊息：「第四季的銷售報告還躺在下載資料夾，幫我歸檔到家目錄的 reports 資料夾，檔名改成 2026-q4.txt，等一下開會要用。」",
+  "objective": "建立 ~/reports 資料夾，把 ~/downloads/report.txt 搬進去並改名成 2026-q4.txt。",
+  "initialState": {
+    "files": {
+      "~/downloads/report.txt": "第四季銷售：比上一季成長 12%\n"
+    }
+  },
+  "commands": [
+    "mkdir {{dir}}",
+    "mv ~/downloads/report.txt {{dest}}"
+  ],
+  "blanks": [
+    {
+      "id": "dir",
+      "choices": [
+        "~/reports",
+        "~/Reports",
+        "/reports"
+      ],
+      "answer": "~/reports",
+      "explain": "~ 代表家目錄；Linux 的檔名區分大小寫，~/Reports 和 ~/reports 是兩個不同的資料夾，/reports 則是在根目錄。"
+    },
+    {
+      "id": "dest",
+      "choices": [
+        "~/reports/2026-q4.txt",
+        "~/reports",
+        "~/2026-q4.txt"
+      ],
+      "answer": "~/reports/2026-q4.txt",
+      "explain": "mv 的目的地如果是一個已存在的資料夾，檔案會搬進去但保留原檔名；寫出完整路徑加新檔名，才能一次搬移並改名。"
+    }
+  ],
+  "goals": [
+    {
+      "description": "~/reports/2026-q4.txt 存在",
+      "check": {
+        "type": "state",
+        "path": [
+          "files",
+          "~/reports/2026-q4.txt"
+        ],
+        "exists": true
+      }
+    },
+    {
+      "description": "下載資料夾裡不再有 report.txt",
+      "check": {
+        "type": "state",
+        "path": [
+          "files",
+          "~/downloads/report.txt"
+        ],
+        "exists": false
+      }
+    }
+  ],
+  "hint": "先決定資料夾要建在哪裡（家目錄是 ~），再想清楚 mv 的第二個參數要不要包含新的檔名。"
+}

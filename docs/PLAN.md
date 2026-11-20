@@ -234,6 +234,15 @@ src/
 
 `type` 為 `single` 或 `multiple`；`provider` 為 `aws`、`gcp` 或 `general`。每個選項都要有解析，說明為什麼對或錯。
 
+### challenges/<id>.json（闖關）
+
+每一關是一個情境：檔案與指令裡用 `{{空格 id}}` 標出要填的地方，`blanks` 列出每個空格的選項、答案與解說。學員選好後按「執行」，網站用 Lab 引擎依序執行指令（遇到失敗就停），再檢查 `goals`：`check` 用和 Lab 步驟相同的狀態路徑，`run` 則執行一個指令並檢查輸出包含（`contains`）或不包含（`notContains`）某段文字。
+
+- `track` 是 `basics`、`aws` 或 `gcp`，`level` 從 1 開始連續編號；`unitId` 是教這個主題的單元。
+- **錯誤選項必須真的會失敗**：`src/lib/challenges/run.test.ts` 會用正確答案跑每一關、再把每個錯誤選項逐一換進去跑，確認都不會過關。只有引擎能正確模擬失敗的選項才能當干擾項。
+- 解說（`explain`、`hint`）和單元內容一樣要對照官方文件；不要描述引擎與真實工具不同的錯誤訊息。
+- 執行邏輯是 `src/lib/challenges/run.ts` 的純函式；頁面在 `src/app/challenges/`。
+
 ### lab.json
 
 ```json
@@ -358,6 +367,7 @@ interface Progress {
   preferredProvider: "aws" | "gcp" | "both";
   units: Record<string, { read: boolean; quizScore?: number; labsDone: string[] }>;
   questions: Record<string, { attempts: number; lastCorrect: boolean }>;
+  challenges: Record<string, { runs: number; clearedOnRun?: number }>;
   exams: { certId: string; date: string; score: number; byDomain: Record<string, number> }[];
 }
 ```
@@ -369,6 +379,7 @@ interface Progress {
 - **測驗題目依主要平台篩選**：選了 AWS 或 GCP 時略過另一個平台的題目，分數以實際作答的題數計算。
 - **計分規則**：選項必須與答案完全一致才算對，複選題少選或多選都算錯（`src/lib/quiz/quiz.ts`）。
 - **解鎖是建議性的**：先修單元未完成時，路線圖顯示鎖頭與「建議先完成」，但仍可點進去讀，不硬性擋住。
+- **闖關**：`challenges` 記每一關執行了幾次，以及第一次過關是第幾次執行。星數由此算出：第 1 次就過關 3 顆、第 3 次以內 2 顆、之後 1 顆。同一條路線的上一關過關後，下一關才解鎖（和單元的建議性解鎖不同，這裡會擋住）。合併時取較多的執行次數、較早的過關次數。
 - **主要平台**：在路線圖頁設定，決定路線圖顯示哪些單元。選了 AWS 或 GCP 時，單元頁只顯示那個平台：頁首只列它的服務、課文只有它的分頁（旁邊有「也看看另一個平台怎麼做」可以切換）、另一個平台的 Lab 收在「其他平台的 Lab（選修）」。不分平台的單元在任何篩選下都顯示。
 
 ## 8. 開發階段
@@ -382,6 +393,7 @@ interface Progress {
 | 5 ✅ | 證照練習 | 證照頁、依 domain 抽題練習、服務對照表 | 四張證照頁都可進入並練習 |
 | 6 | 內容擴充 | 依第 3 節補齊所有單元、測驗、Lab 與每張證照題庫 | 每單元至少 5 題、每張證照至少 150 題 |
 | 7 | 會員 | Supabase 登入（Email 登入連結、Google、GitHub）、進度同步與合併 | 兩個裝置登入後進度一致（正式站已用 Email、GitHub、Google 登入並同步成功） |
+| 7.5 | 闖關 | 填空闖關：選出設定與指令缺的值，在 Lab 引擎真的執行，依結果過關；關卡地圖、星數、解鎖 | 每一關用正確答案能過關、任何一個錯誤選項都會失敗（測試涵蓋）；成就與等級在下一批 |
 | 8 | 模擬考 | 計時考試、依比重抽題、成績報告、錯題本、弱點分析 | 可完成一場完整模擬考並看到各 domain 得分 |
 | 9 | 進階功能 | 架構圖練習、AI 助教 | — |
 

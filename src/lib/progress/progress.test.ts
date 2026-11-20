@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   EMPTY_PROGRESS,
+  challengeStars,
+  isChallengeCleared,
+  isChallengeUnlocked,
+  recordChallengeRun,
   countDone,
   defaultProvider,
   visibleProviders,
@@ -326,5 +330,40 @@ describe("local progress store", () => {
       store.update((p) => setUnitRead(p, "iam", true));
       expect(store.get().units.iam.read).toBe(true);
     }
+  });
+});
+
+describe("challenges", () => {
+  const levels = [
+    { id: "a1", track: "aws", level: 1 },
+    { id: "a2", track: "aws", level: 2 },
+    { id: "g1", track: "gcp", level: 1 },
+  ];
+
+  it("counts runs and keeps the first clearing run", () => {
+    let p = recordChallengeRun(EMPTY_PROGRESS, "a1", false);
+    p = recordChallengeRun(p, "a1", true);
+    p = recordChallengeRun(p, "a1", false);
+    expect(p.challenges.a1).toEqual({ runs: 3, clearedOnRun: 2 });
+    expect(isChallengeCleared(p, "a1")).toBe(true);
+    expect(challengeStars(p, "a1")).toBe(2);
+  });
+
+  it("gives stars by the clearing run", () => {
+    const clearOn = (n: number) => {
+      let p = EMPTY_PROGRESS;
+      for (let i = 1; i <= n; i++) p = recordChallengeRun(p, "x", i === n);
+      return challengeStars(p, "x");
+    };
+    expect([clearOn(1), clearOn(3), clearOn(4)]).toEqual([3, 2, 1]);
+    expect(challengeStars(EMPTY_PROGRESS, "x")).toBe(0);
+  });
+
+  it("unlocks a level after the previous level in the same track", () => {
+    expect(isChallengeUnlocked(EMPTY_PROGRESS, levels[0], levels)).toBe(true);
+    expect(isChallengeUnlocked(EMPTY_PROGRESS, levels[1], levels)).toBe(false);
+    expect(isChallengeUnlocked(EMPTY_PROGRESS, levels[2], levels)).toBe(true);
+    const p = recordChallengeRun(EMPTY_PROGRESS, "a1", true);
+    expect(isChallengeUnlocked(p, levels[1], levels)).toBe(true);
   });
 });

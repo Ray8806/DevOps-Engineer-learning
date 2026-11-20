@@ -1,0 +1,51 @@
+{
+  "id": "basics-container-port",
+  "title": "容器跑起來了，網頁卻打不開",
+  "track": "basics",
+  "level": 2,
+  "provider": "general",
+  "unitId": "containers",
+  "story": "同事把網站包成容器，說「在我電腦上好好的」。你照著執行，容器明明在跑，瀏覽器打開 http://localhost:8080 卻一直連不上。看一下 Dockerfile，找出問題。",
+  "objective": "建置映像檔並執行容器，讓 http://localhost:8080 能看到首頁。",
+  "initialState": {
+    "files": {
+      "~/app/Dockerfile": "FROM nginx:alpine\nCOPY index.html /usr/share/nginx/html/index.html\nEXPOSE 80\n",
+      "~/app/index.html": "<h1>歡迎光臨雲端商店</h1>\n"
+    }
+  },
+  "commands": [
+    "cd ~/app",
+    "docker build -t shop-web:1.0 .",
+    "docker run -d --name shop -p 8080:{{port}} {{image}}"
+  ],
+  "blanks": [
+    {
+      "id": "port",
+      "choices": [
+        "80",
+        "8080",
+        "443"
+      ],
+      "answer": "80",
+      "explain": "-p 主機連接埠:容器連接埠。冒號左邊是你在電腦上連的 8080，右邊要填容器裡程式真正在聽的連接埠；Dockerfile 的 EXPOSE 80 告訴你是 80。"
+    },
+    {
+      "id": "image",
+      "choices": [
+        "shop-web:1.0",
+        "shop-web",
+        "shop-web:latest"
+      ],
+      "answer": "shop-web:1.0",
+      "explain": "映像檔名稱包含標籤。建置時用的是 shop-web:1.0；只寫 shop-web 等於 shop-web:latest，這個標籤並不存在。"
+    }
+  ],
+  "goals": [
+    {
+      "description": "http://localhost:8080 回應首頁",
+      "run": "curl http://localhost:8080",
+      "contains": "歡迎光臨雲端商店"
+    }
+  ],
+  "hint": "打開 Dockerfile 看 EXPOSE 那一行；再對照 docker build -t 用的名稱和標籤。"
+}

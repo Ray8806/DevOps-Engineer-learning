@@ -21,6 +21,10 @@ export const ProgressSchema = z.object({
   questions: z
     .record(z.string(), z.object({ attempts: z.number().int().min(0), lastCorrect: z.boolean() }))
     .default({}),
+  /** Fill-in-the-blank levels: how many times each was run, and the run that first cleared it. */
+  challenges: z
+    .record(z.string(), z.object({ runs: z.number().int().min(0), clearedOnRun: z.number().int().positive().optional() }))
+    .default({}),
   exams: z
     .array(
       z.object({
@@ -88,6 +92,15 @@ export function recordLabDone(progress: Progress, unitId: string, labId: string)
     ...progress,
     units: { ...progress.units, [unitId]: { ...current, labsDone: [...current.labsDone, labId] } },
   };
+}
+
+/** Records one run of a challenge; the first clearing run is kept for its stars. */
+export function recordChallengeRun(progress: Progress, challengeId: string, cleared: boolean): Progress {
+  const current = progress.challenges[challengeId] ?? { runs: 0 };
+  const runs = current.runs + 1;
+  const clearedOnRun = current.clearedOnRun ?? (cleared ? runs : undefined);
+  const next = clearedOnRun === undefined ? { runs } : { runs, clearedOnRun };
+  return { ...progress, challenges: { ...progress.challenges, [challengeId]: next } };
 }
 
 export function setUnitRead(progress: Progress, unitId: string, read: boolean): Progress {
@@ -197,4 +210,30 @@ export function visibleProviders(preferred: PreferredProvider, available: Provid
 /** Which provider tab a lesson opens on. */
 export function defaultProvider(preferred: PreferredProvider, available: Provider[]): Provider | undefined {
   return preferred !== "both" && available.includes(preferred) ? preferred : available[0];
+}
+
+// --------------------------------------------------------------- challenges
+
+export function isChallengeCleared(progress: Progress, challengeId: string): boolean {
+  return progress.challenges[challengeId]?.clearedOnRun !== undefined;
+}
+
+/** Stars earned: 3 for clearing on the first run, 2 within three runs, else 1. */
+export function challengeStars(progress: Progress, challengeId: string): 0 | 1 | 2 | 3 {
+  const run = progress.challenges[challengeId]?.clearedOnRun;
+  if (run === undefined) return 0;
+  return run <= 1 ? 3 : run <= 3 ? 2 : 1;
+}
+
+export interface ChallengeRef {
+  id: string;
+  track: string;
+  level: number;
+}
+
+/** Level 1 of each track is open; later levels open once the previous level is cleared. */
+export function isChallengeUnlocked(progress: Progress, challenge: ChallengeRef, all: readonly ChallengeRef[]): boolean {
+  if (challenge.level <= 1) return true;
+  const previous = all.find((c) => c.track === challenge.track && c.level === challenge.level - 1);
+  return previous === undefined || isChallengeCleared(progress, previous.id);
 }
