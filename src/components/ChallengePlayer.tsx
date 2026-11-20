@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useState, useSyncExternalStore } from "react";
 import { allFilled, runChallenge, type Answers, type ChallengeRun } from "@/lib/challenges/run";
-import { BLANK_PATTERN, type Challenge } from "@/lib/content/schema";
+import { BLANK_PATTERN } from "@/lib/challenges/blanks";
+import type { Challenge } from "@/lib/content/schema";
 import { challengeStars, isChallengeUnlocked, recordChallengeRun, type ChallengeRef } from "@/lib/progress/progress";
 import { XP } from "@/lib/progress/achievements";
 import { useProgress } from "@/lib/progress/use-progress";
@@ -26,14 +27,23 @@ function prefersReducedMotion(): boolean {
   return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+const noSubscribe = () => () => {};
+
+/** False in the server HTML and until React has taken over the page. */
+function useHydrated(): boolean {
+  return useSyncExternalStore(noSubscribe, () => true, () => false);
+}
+
 interface BlankProps {
   challenge: Challenge;
   answers: Answers;
   onPick: (id: string, value: string) => void;
+  /** Picks made before the page is interactive would be lost, so the dropdowns wait. */
+  disabled: boolean;
 }
 
 /** Text with each {{id}} replaced by a dropdown for that blank. */
-function WithBlanks({ text, challenge, answers, onPick }: BlankProps & { text: string }) {
+function WithBlanks({ text, challenge, answers, onPick, disabled }: BlankProps & { text: string }) {
   const parts: React.ReactNode[] = [];
   let last = 0;
   let n = 0;
@@ -48,6 +58,7 @@ function WithBlanks({ text, challenge, answers, onPick }: BlankProps & { text: s
           key={`${blank.id}-${n++}`}
           aria-label={`空格 ${challenge.blanks.indexOf(blank) + 1}`}
           value={value}
+          disabled={disabled}
           onChange={(e) => onPick(blank.id, e.target.value)}
           className={`mx-0.5 max-w-full rounded-md border px-1.5 py-0.5 align-baseline font-mono text-[13px] font-semibold focus:outline-2 focus:outline-accent ${
             value ? "border-accent bg-accent-soft text-accent" : "border-dashed border-accent-2 bg-[color-mix(in_oklab,var(--accent-2)_15%,transparent)] text-accent-2"
@@ -82,6 +93,7 @@ export function ChallengePlayer({
   unitTitle: string;
 }) {
   const [progress, update] = useProgress();
+  const hydrated = useHydrated();
   const [answers, setAnswers] = useState<Answers>({});
   const [run, setRun] = useState<ChallengeRun | null>(null);
   /** How many commands of the current run are on screen (they appear one by one). */
@@ -128,7 +140,7 @@ export function ChallengePlayer({
   }
 
   const files = Object.entries(challenge.initialState.files);
-  const blankProps = { challenge, answers, onPick: pick };
+  const blankProps = { challenge, answers, onPick: pick, disabled: !hydrated };
 
   return (
     <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,4fr)]">

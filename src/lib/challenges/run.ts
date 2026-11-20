@@ -1,5 +1,5 @@
 import type { Challenge, ChallengeGoal } from "@/lib/content/schema";
-import { BLANK_PATTERN } from "@/lib/content/schema";
+import { BLANK_PATTERN } from "./blanks";
 import { passes } from "@/lib/lab-engine/check";
 import { execute, startLab, type OutputLine } from "@/lib/lab-engine/engine";
 import type { LabState } from "@/lib/lab-engine/state";

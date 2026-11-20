@@ -1,5 +1,6 @@
 "use client";
 
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { useSyncExternalStore } from "react";
 import { EMPTY_PROGRESS } from "@/lib/progress/progress";
 import { baseKey, createProgressSync, type ProgressSync, type SyncStatus } from "@/lib/progress/sync";
@@ -22,6 +23,8 @@ const SERVER_STATE: AccountState = { ready: false, user: null, sync: { state: "i
 let state: AccountState = SERVER_STATE;
 let started = false;
 let sync: ProgressSync | null = null;
+/** Set once the Supabase library has loaded (see start). */
+let loadedClient: SupabaseClient | null = null;
 let stopSyncStatus: (() => void) | null = null;
 const listeners = new Set<() => void>();
 
@@ -46,7 +49,7 @@ function switchUser(user: AccountState["user"]) {
   window.removeEventListener("focus", onFocus);
   document.removeEventListener("visibilitychange", onFocus);
   set({ ready: true, user, sync: { state: "idle" } });
-  const client = supabase();
+  const client = loadedClient;
   if (!user || !client) return;
   sync = createProgressSync({ store: progressStore, remote: supabaseRemote(client, user.id), accountId: user.id, storage: localStorageOrUndefined });
   const current = sync;
@@ -59,15 +62,17 @@ function switchUser(user: AccountState["user"]) {
 function start() {
   if (started) return;
   started = true;
-  const client = supabase();
-  if (!client) {
-    set({ ready: true });
-    return;
-  }
-  client.auth.onAuthStateChange((_event, session) => {
-    const user = session?.user ? toAccountUser(session.user) : null;
-    // Supabase calls this inside its own lock; other auth calls must wait until it returns.
-    setTimeout(() => switchUser(user), 0);
+  void supabase().then((client) => {
+    if (!client) {
+      set({ ready: true });
+      return;
+    }
+    loadedClient = client;
+    client.auth.onAuthStateChange((_event, session) => {
+      const user = session?.user ? toAccountUser(session.user) : null;
+      // Supabase calls this inside its own lock; other auth calls must wait until it returns.
+      setTimeout(() => switchUser(user), 0);
+    });
   });
 }
 
@@ -88,14 +93,14 @@ export { authConfigured };
 const returnUrl = () => `${window.location.origin}/account`;
 
 export async function signInWithEmail(email: string): Promise<void> {
-  const client = supabase();
+  const client = await supabase();
   if (!client) throw new Error("not configured");
   const { error } = await client.auth.signInWithOtp({ email, options: { emailRedirectTo: returnUrl() } });
   if (error) throw new Error(error.message);
 }
 
 export async function signInWithProvider(provider: OAuthProvider): Promise<void> {
-  const client = supabase();
+  const client = await supabase();
   if (!client) throw new Error("not configured");
   const { error } = await client.auth.signInWithOAuth({ provider, options: { redirectTo: returnUrl() } });
   if (error) throw new Error(error.message);
@@ -110,7 +115,7 @@ export function syncNow(): Promise<void> {
  * (for shared computers); the account keeps its copy either way.
  */
 export async function signOut(clearDevice: boolean): Promise<void> {
-  const client = supabase();
+  const client = await supabase();
   const userId = state.user?.id;
   await sync?.sync();
   switchUser(null);

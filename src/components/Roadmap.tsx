@@ -224,7 +224,7 @@ export function Roadmap({ stages }: { stages: RoadmapStage[] }) {
                           data-status={status}
                           className={`card-link flex h-full gap-3 rounded-xl border bg-surface p-4 hover:border-accent ${
                             status === "done" ? "border-accent" : "border-border"
-                          } ${status === "locked" ? "opacity-70" : ""}`}
+                          } ${status === "locked" ? "opacity-80" : ""}`}
                         >
                           <StatusIcon status={status} />
                           <div className="min-w-0">
