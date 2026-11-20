@@ -1,0 +1,4611 @@
+{
+  "questions": [
+    {
+      "id": "gcp-cdl-d1-101",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 1
+        }
+      ],
+      "difficulty": 1,
+      "question": "依照 Google Cloud 的說明，「雲端運算」是指什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把所有伺服器搬到公司自己的機房",
+          "explanation": "這是內部部署。"
+        },
+        {
+          "id": "b",
+          "text": "只用來存放備份檔案的服務",
+          "explanation": "雲端運算涵蓋運算、儲存、資料庫、AI 等多種服務。"
+        },
+        {
+          "id": "c",
+          "text": "一定要簽三年合約才能使用的服務",
+          "explanation": "雲端可以隨選使用、依用量付費。"
+        },
+        {
+          "id": "d",
+          "text": "透過網際網路隨選取得運算資源（例如儲存與基礎設施）的服務",
+          "explanation": "正確。企業不必自己管理實體資源，並且只為使用的部分付費。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d1-102",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 1
+        }
+      ],
+      "difficulty": 1,
+      "question": "依照 Google Cloud 的定義，「數位轉型」最貼切的描述是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "組織運用新技術，重新設計並重新定義與顧客、員工和合作夥伴的關係",
+          "explanation": "正確。數位轉型涵蓋應用程式現代化、建立新的商業模式等。"
+        },
+        {
+          "id": "b",
+          "text": "把紙本文件掃描成 PDF",
+          "explanation": "這只是數位化的一小部分，不是完整的數位轉型。"
+        },
+        {
+          "id": "c",
+          "text": "購買更多的實體伺服器",
+          "explanation": "這與數位轉型的定義無關。"
+        },
+        {
+          "id": "d",
+          "text": "只更換公司的電子郵件系統",
+          "explanation": "這只是單一工具的更換。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d1-103",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "一家零售商在節慶期間流量暴增十倍，平常流量很低。改用雲端最主要的好處是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "雲端會自動幫公司寫好應用程式",
+          "explanation": "應用程式仍由公司開發。"
+        },
+        {
+          "id": "b",
+          "text": "可以依需求擴展與縮減資源，只為實際使用的部分付費",
+          "explanation": "正確。可擴展性與成本效益是雲端支援數位轉型的主要好處。"
+        },
+        {
+          "id": "c",
+          "text": "必須依尖峰流量預先購買所有硬體",
+          "explanation": "這是傳統內部部署的做法。"
+        },
+        {
+          "id": "d",
+          "text": "雲端的資源永遠不會故障",
+          "explanation": "雲端仍需依最佳實務設計高可用的架構。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d1-104",
+      "type": "multiple",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "下列哪些是雲端技術帶給企業數位轉型的好處？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "完全不需要再考慮資訊安全",
+          "explanation": "雲端提供更強的安全工具，但組織仍有自己的安全責任。"
+        },
+        {
+          "id": "b",
+          "text": "保證所有專案的成本都會降低",
+          "explanation": "雲端提供成本效益的機會，但仍需要良好的成本管理。"
+        },
+        {
+          "id": "c",
+          "text": "敏捷與速度：更快取得資源、更快推出新產品",
+          "explanation": "正確。"
+        },
+        {
+          "id": "d",
+          "text": "全球觸及與高可用性：在世界各地提供服務",
+          "explanation": "正確。"
+        }
+      ],
+      "answer": [
+        "c",
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d1-105",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "一家公司遲遲不採用雲端。依照考試指南的說法，不採用雲端可能帶來什麼影響？",
+      "options": [
+        {
+          "id": "a",
+          "text": "一定可以完全避免資訊安全事件",
+          "explanation": "內部部署一樣會面臨資安威脅。"
+        },
+        {
+          "id": "b",
+          "text": "硬體成本會自動降到零",
+          "explanation": "內部部署仍需購買與維護硬體。"
+        },
+        {
+          "id": "c",
+          "text": "員工會自動學會雲端技能",
+          "explanation": "這與不採用雲端無關。"
+        },
+        {
+          "id": "d",
+          "text": "可能在創新速度與競爭力上落後，難以快速回應市場變化",
+          "explanation": "正確。考試指南把「不採用雲端的影響與風險」列為數位轉型的考量。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d1-106",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 1
+        }
+      ],
+      "difficulty": 1,
+      "question": "「開放原始碼」（open source）軟體的特點是什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "原始碼公開，任何人都可以查看、使用與修改（依授權條款）",
+          "explanation": "正確。開放原始碼與開放標準有助於避免被單一供應商綁定。"
+        },
+        {
+          "id": "b",
+          "text": "只能由一家公司使用",
+          "explanation": "這是專有軟體。"
+        },
+        {
+          "id": "c",
+          "text": "一定完全免費且沒有任何授權條款",
+          "explanation": "開放原始碼仍有授權條款需要遵守。"
+        },
+        {
+          "id": "d",
+          "text": "只能在 Google Cloud 上執行",
+          "explanation": "開放原始碼軟體可以在許多環境執行。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d1-107",
+      "type": "multiple",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "考試指南列出 Google Cloud 的哪些差異化優勢？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "不支援任何混合雲或多雲環境",
+          "explanation": "Google Cloud 有支援混合雲與多雲的產品。"
+        },
+        {
+          "id": "b",
+          "text": "領先全球的 AI 能力，以及 AI Hypercomputer",
+          "explanation": "正確。"
+        },
+        {
+          "id": "c",
+          "text": "對開放性與互通性的深度承諾，以及全球網路",
+          "explanation": "正確。"
+        },
+        {
+          "id": "d",
+          "text": "只支援 Google 自家的程式語言",
+          "explanation": "Google Cloud 支援多種常見的程式語言與開源框架。"
+        }
+      ],
+      "answer": [
+        "b",
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d1-108",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "一家銀行因為法規，部分系統必須留在自己的資料中心，其他系統則放在公有雲，兩者互相連接。這屬於哪一種雲端架構？",
+      "options": [
+        {
+          "id": "a",
+          "text": "單一公有雲",
+          "explanation": "題目中還有自己的資料中心。"
+        },
+        {
+          "id": "b",
+          "text": "SaaS",
+          "explanation": "SaaS 是服務模型，不是部署架構。"
+        },
+        {
+          "id": "c",
+          "text": "混合雲（hybrid cloud）",
+          "explanation": "正確。混合雲結合公有雲、私有雲與傳統的內部部署資料中心等不同環境。"
+        },
+        {
+          "id": "d",
+          "text": "多雲（multicloud）",
+          "explanation": "多雲是指使用至少兩家雲端供應商的服務。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d1-109",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "一家公司同時使用 Google Cloud 與另一家公有雲供應商的服務，以避免被單一供應商綁定。這屬於哪一種雲端架構？",
+      "options": [
+        {
+          "id": "a",
+          "text": "私有雲",
+          "explanation": "私有雲是專屬於單一組織的雲端環境。"
+        },
+        {
+          "id": "b",
+          "text": "只有內部部署",
+          "explanation": "題目使用的是公有雲。"
+        },
+        {
+          "id": "c",
+          "text": "邊緣運算",
+          "explanation": "邊緣運算是把運算放在接近資料來源的位置。"
+        },
+        {
+          "id": "d",
+          "text": "多雲（multicloud）",
+          "explanation": "正確。多雲是指使用來自至少兩家雲端供應商的雲端服務。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d1-110",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 1
+        }
+      ],
+      "difficulty": 3,
+      "question": "關於混合雲與多雲的關係，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "混合雲一定就是多雲",
+          "explanation": "混合雲不一定是多雲；如果只有一家公有雲加上私有雲，就只是混合雲。"
+        },
+        {
+          "id": "b",
+          "text": "混合雲如果包含私有雲，以及至少兩家公有雲供應商的資源，也可以視為多雲",
+          "explanation": "正確。"
+        },
+        {
+          "id": "c",
+          "text": "多雲一定不包含私有雲",
+          "explanation": "多雲環境可以是私有、公有或兩者的組合。"
+        },
+        {
+          "id": "d",
+          "text": "兩者是完全相同的名詞",
+          "explanation": "兩者著重的面向不同。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d1-111",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想直接使用一套線上的電子郵件與文件協作服務，不必管理伺服器、作業系統或應用程式本身。這屬於哪一種雲端服務模型？",
+      "options": [
+        {
+          "id": "a",
+          "text": "內部部署",
+          "explanation": "內部部署需要自己管理所有東西。"
+        },
+        {
+          "id": "b",
+          "text": "軟體即服務（SaaS）",
+          "explanation": "正確。SaaS 直接提供完整的應用程式給使用者。"
+        },
+        {
+          "id": "c",
+          "text": "基礎設施即服務（IaaS）",
+          "explanation": "IaaS 提供運算、儲存等基礎設施，仍要自己管理作業系統與應用程式。"
+        },
+        {
+          "id": "d",
+          "text": "平台即服務（PaaS）",
+          "explanation": "PaaS 提供開發與執行應用程式的平台，應用程式仍由你開發。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d1-112",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "開發團隊想專注在撰寫與部署應用程式，不想管理伺服器、作業系統與中介軟體的更新。哪一種服務模型最適合？",
+      "options": [
+        {
+          "id": "a",
+          "text": "內部部署",
+          "explanation": "內部部署要自己管理所有層。"
+        },
+        {
+          "id": "b",
+          "text": "混合雲",
+          "explanation": "混合雲是部署架構，不是服務模型。"
+        },
+        {
+          "id": "c",
+          "text": "平台即服務（PaaS）",
+          "explanation": "正確。PaaS 提供開發、執行與管理應用程式所需的完整環境，包含伺服器、作業系統、網路、儲存與中介軟體。"
+        },
+        {
+          "id": "d",
+          "text": "基礎設施即服務（IaaS）",
+          "explanation": "IaaS 仍需要自己管理作業系統與中介軟體。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d1-113",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司希望對作業系統與軟體有最大的控制權，但不想自己採購與管理實體硬體。哪一種服務模型最適合？",
+      "options": [
+        {
+          "id": "a",
+          "text": "軟體即服務（SaaS）",
+          "explanation": "SaaS 提供的是完整的應用程式，控制權最少。"
+        },
+        {
+          "id": "b",
+          "text": "平台即服務（PaaS）",
+          "explanation": "PaaS 由供應商管理作業系統，控制權較少。"
+        },
+        {
+          "id": "c",
+          "text": "以上皆非，只能內部部署",
+          "explanation": "IaaS 正是符合需求的選項。"
+        },
+        {
+          "id": "d",
+          "text": "基礎設施即服務（IaaS）",
+          "explanation": "正確。IaaS 隨選提供可擴展的運算資源，企業不必採購、設定或管理基礎設施，只為使用的部分付費。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d1-114",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 1
+        }
+      ],
+      "difficulty": 3,
+      "question": "比較 IaaS、PaaS、SaaS，客戶需要自己管理的範圍由多到少的順序是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "IaaS > PaaS > SaaS",
+          "explanation": "正確。IaaS 控制權與管理責任最多，SaaS 最少。"
+        },
+        {
+          "id": "b",
+          "text": "SaaS > PaaS > IaaS",
+          "explanation": "順序相反。"
+        },
+        {
+          "id": "c",
+          "text": "PaaS > IaaS > SaaS",
+          "explanation": "IaaS 需要管理的比 PaaS 更多。"
+        },
+        {
+          "id": "d",
+          "text": "三者完全相同",
+          "explanation": "三種模型的分工不同。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d1-115",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 1
+        }
+      ],
+      "difficulty": 1,
+      "question": "在網路中，DNS（網域名稱系統）的用途是什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "儲存使用者的密碼",
+          "explanation": "DNS 不儲存密碼。"
+        },
+        {
+          "id": "b",
+          "text": "把好記的網域名稱轉換成 IP 位址",
+          "explanation": "正確。"
+        },
+        {
+          "id": "c",
+          "text": "加密網路上的所有資料",
+          "explanation": "加密是由 TLS 等技術處理。"
+        },
+        {
+          "id": "d",
+          "text": "增加網路頻寬",
+          "explanation": "DNS 不會增加頻寬。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d1-116",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 1
+        }
+      ],
+      "difficulty": 1,
+      "question": "關於網路的延遲（latency）與頻寬（bandwidth），哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "頻寬是指 IP 位址的數量",
+          "explanation": "頻寬是傳輸量，不是位址數量。"
+        },
+        {
+          "id": "b",
+          "text": "兩者是同一件事",
+          "explanation": "兩者衡量的是不同的面向。"
+        },
+        {
+          "id": "c",
+          "text": "延遲是資料從一端傳到另一端所需的時間；頻寬是單位時間內可以傳輸的資料量",
+          "explanation": "正確。把服務部署在接近使用者的位置，有助於降低延遲。"
+        },
+        {
+          "id": "d",
+          "text": "延遲越高代表網路越快",
+          "explanation": "延遲越低越快。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d1-117",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於 Google Cloud 的區域（region）與可用區（zone），哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "一個可用區包含多個區域",
+          "explanation": "相反，一個區域包含多個可用區。"
+        },
+        {
+          "id": "b",
+          "text": "所有區域共用同一個可用區",
+          "explanation": "每個區域有自己的可用區。"
+        },
+        {
+          "id": "c",
+          "text": "區域只影響價格，與可用性無關",
+          "explanation": "把資源分散到多個可用區或區域可以提高可用性。"
+        },
+        {
+          "id": "d",
+          "text": "區域是獨立的地理區域，由可用區組成；一個區域包含三個以上、位於三個以上實體資料中心的可用區",
+          "explanation": "正確。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d2-101",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "difficulty": 1,
+      "question": "下列哪一項最能說明資料對組織的價值？",
+      "options": [
+        {
+          "id": "a",
+          "text": "資料只是儲存成本，沒有其他用途",
+          "explanation": "資料可以帶來商業價值。"
+        },
+        {
+          "id": "b",
+          "text": "資料越多越好，品質不重要",
+          "explanation": "資料品質對 AI 與分析非常重要。"
+        },
+        {
+          "id": "c",
+          "text": "資料只對 IT 部門有用",
+          "explanation": "資料能支援整個組織的決策。"
+        },
+        {
+          "id": "d",
+          "text": "資料可以產生即時的商業洞察、找出趨勢、支援策略決策，並為 AI 提供燃料",
+          "explanation": "正確。這些都是考試指南列出的資料價值。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d2-102",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想把各種格式的原始資料（結構化、半結構化、非結構化）以原生格式集中存放，之後再處理與分析。這最符合哪一種概念？",
+      "options": [
+        {
+          "id": "a",
+          "text": "資料湖（data lake）",
+          "explanation": "正確。資料湖是集中、可擴展的存放庫，以原生格式存放與分析大量的結構化、半結構化與非結構化資料。"
+        },
+        {
+          "id": "b",
+          "text": "資料倉儲（data warehouse）",
+          "explanation": "資料倉儲主要用於分析結構化與半結構化資料，通常需要先整理。"
+        },
+        {
+          "id": "c",
+          "text": "交易型資料庫",
+          "explanation": "交易型資料庫用於日常的讀寫交易。"
+        },
+        {
+          "id": "d",
+          "text": "DNS",
+          "explanation": "DNS 是網域名稱系統。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d2-103",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想把銷售點交易、行銷與 CRM 系統的結構化資料整合在一起，用於報表與臨時分析。這最符合哪一種概念？",
+      "options": [
+        {
+          "id": "a",
+          "text": "記憶體內快取",
+          "explanation": "快取用於加快應用程式的讀取。"
+        },
+        {
+          "id": "b",
+          "text": "資料倉儲（data warehouse）",
+          "explanation": "正確。資料倉儲是用來分析與報告多個來源的結構化與半結構化資料的企業系統。"
+        },
+        {
+          "id": "c",
+          "text": "資料湖",
+          "explanation": "資料湖以原生格式存放各種原始資料，不一定經過整理。"
+        },
+        {
+          "id": "d",
+          "text": "物件儲存的封存級別",
+          "explanation": "封存級別適合很少存取的資料。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d2-104",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "difficulty": 1,
+      "question": "下列哪一項屬於非結構化資料？",
+      "options": [
+        {
+          "id": "a",
+          "text": "固定欄位的試算表",
+          "explanation": "這是結構化資料。"
+        },
+        {
+          "id": "b",
+          "text": "銀行帳戶餘額欄位",
+          "explanation": "這是結構化資料。"
+        },
+        {
+          "id": "c",
+          "text": "影片、圖片與電子郵件內文",
+          "explanation": "正確。這些資料沒有固定的欄位結構。"
+        },
+        {
+          "id": "d",
+          "text": "關聯式資料庫中的訂單資料表",
+          "explanation": "這是結構化資料。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d2-105",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司從自己的網站與 App 收集到的顧客行為資料，屬於哪一種資料？",
+      "options": [
+        {
+          "id": "a",
+          "text": "第二方資料",
+          "explanation": "第二方資料是另一個組織的第一方資料，透過合作取得。"
+        },
+        {
+          "id": "b",
+          "text": "第三方資料",
+          "explanation": "第三方資料是從與顧客沒有直接關係的外部來源取得。"
+        },
+        {
+          "id": "c",
+          "text": "合成資料",
+          "explanation": "題目描述的是實際收集的資料。"
+        },
+        {
+          "id": "d",
+          "text": "第一方資料（first-party data）",
+          "explanation": "正確。組織直接從自己的顧客與管道收集的資料。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d2-106",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "考試指南把組織的資料供應鏈分成多個階段。下列哪一個順序最合理？",
+      "options": [
+        {
+          "id": "a",
+          "text": "產生 → 收集 → 處理 → 儲存 → 分析 → 啟用（activation）",
+          "explanation": "正確。這是考試指南列出的資料供應鏈階段。"
+        },
+        {
+          "id": "b",
+          "text": "分析 → 產生 → 刪除 → 收集",
+          "explanation": "這個順序不合理。"
+        },
+        {
+          "id": "c",
+          "text": "儲存 → 產生 → 啟用 → 收集",
+          "explanation": "資料必須先產生與收集。"
+        },
+        {
+          "id": "d",
+          "text": "啟用 → 分析 → 產生",
+          "explanation": "這個順序不合理。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d2-107",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "為什麼資料治理（data governance）很重要？",
+      "options": [
+        {
+          "id": "a",
+          "text": "因為治理只和硬體採購有關",
+          "explanation": "治理與資料的管理和使用有關。"
+        },
+        {
+          "id": "b",
+          "text": "確保資料的品質、安全與合規，讓組織能放心地使用與分享資料",
+          "explanation": "正確。"
+        },
+        {
+          "id": "c",
+          "text": "因為治理可以讓資料自動變多",
+          "explanation": "治理不會增加資料量。"
+        },
+        {
+          "id": "d",
+          "text": "因為有了治理就不需要任何資安措施",
+          "explanation": "治理與資安互補。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d2-108",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "為什麼開放性與互通性對資料管理平台很重要？",
+      "options": [
+        {
+          "id": "a",
+          "text": "可以讓資料不需要任何保護",
+          "explanation": "開放性不代表不需要保護。"
+        },
+        {
+          "id": "b",
+          "text": "可以避免所有費用",
+          "explanation": "開放性與費用無關。"
+        },
+        {
+          "id": "c",
+          "text": "可以打破資料孤島，並避免被單一供應商綁定",
+          "explanation": "正確。這是考試指南強調的重點。"
+        },
+        {
+          "id": "d",
+          "text": "可以讓資料只能在一個系統中使用",
+          "explanation": "這反而會形成資料孤島。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d2-109",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個全球的金融交易系統需要關聯式資料庫，具備強一致性，並且能在全球水平擴展讀寫。最適合哪一項產品？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud Storage",
+          "explanation": "Cloud Storage 是物件儲存。"
+        },
+        {
+          "id": "b",
+          "text": "Bigtable",
+          "explanation": "Bigtable 是 NoSQL 寬欄資料庫。"
+        },
+        {
+          "id": "c",
+          "text": "Looker",
+          "explanation": "Looker 是商業智慧工具。"
+        },
+        {
+          "id": "d",
+          "text": "Spanner",
+          "explanation": "正確。Spanner 是全球分散式資料庫，提供強一致性與水平的讀寫擴展。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d2-110",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想把現有的 MySQL 應用程式搬到全代管的關聯式資料庫，盡量不修改程式。最適合哪一項產品？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud SQL",
+          "explanation": "正確。Cloud SQL 是代管的 MySQL、PostgreSQL 與 SQL Server 服務。"
+        },
+        {
+          "id": "b",
+          "text": "Bigtable",
+          "explanation": "Bigtable 是 NoSQL，需要大幅修改程式。"
+        },
+        {
+          "id": "c",
+          "text": "Firestore",
+          "explanation": "Firestore 是文件資料庫。"
+        },
+        {
+          "id": "d",
+          "text": "Pub/Sub",
+          "explanation": "Pub/Sub 是訊息服務。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d2-111",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個 IoT 平台每秒寫入大量感測器的時間序列資料，資料量達 PB 等級，需要低延遲的單一鍵值存取。最適合哪一項產品？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud Storage Archive",
+          "explanation": "Archive 適合封存的資料。"
+        },
+        {
+          "id": "b",
+          "text": "Bigtable",
+          "explanation": "正確。Bigtable 可以擴展到數十億列，適合以單一鍵值、低延遲存取大量資料，例如時間序列。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud SQL",
+          "explanation": "Cloud SQL 不適合 PB 等級的鍵值資料。"
+        },
+        {
+          "id": "d",
+          "text": "Looker",
+          "explanation": "Looker 是商業智慧工具。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d2-112",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "分析團隊想用 SQL 分析 PB 等級的資料，而且不想管理任何基礎設施。最適合哪一項產品？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Firestore",
+          "explanation": "Firestore 是文件資料庫。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud VPN",
+          "explanation": "Cloud VPN 是網路連線。"
+        },
+        {
+          "id": "c",
+          "text": "BigQuery",
+          "explanation": "正確。BigQuery 是全代管的資料平台，無伺服器架構讓你用 SQL 與 Python 分析資料，不需要管理基礎設施。"
+        },
+        {
+          "id": "d",
+          "text": "Memorystore",
+          "explanation": "Memorystore 是記憶體內快取。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d2-113",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於關聯式與非關聯式（NoSQL）資料庫，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "NoSQL 資料庫一定不能擴展",
+          "explanation": "Bigtable 等 NoSQL 資料庫可以大幅擴展。"
+        },
+        {
+          "id": "b",
+          "text": "關聯式資料庫不能使用 SQL",
+          "explanation": "SQL 正是關聯式資料庫的查詢語言。"
+        },
+        {
+          "id": "c",
+          "text": "兩者沒有任何差別",
+          "explanation": "資料結構與使用情境不同。"
+        },
+        {
+          "id": "d",
+          "text": "關聯式資料庫以資料表、欄位與 SQL 組織資料；NoSQL 資料庫使用文件、鍵值、寬欄等更有彈性的結構",
+          "explanation": "正確。例如 Cloud SQL、Spanner、AlloyDB 是關聯式；Firestore、Bigtable 是 NoSQL。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d2-114",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司有一批資料的存取模式無法預測，希望 Cloud Storage 自動依每個物件的存取情形，把資料移到合適的儲存級別以降低成本。應該使用什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Autoclass",
+          "explanation": "正確。Autoclass 依每個物件的存取模式，自動把資料移到合適的儲存級別。"
+        },
+        {
+          "id": "b",
+          "text": "一律使用 Archive",
+          "explanation": "Archive 適合很少存取的資料，經常存取時會產生擷取費用。"
+        },
+        {
+          "id": "c",
+          "text": "Memorystore",
+          "explanation": "Memorystore 是記憶體內快取。"
+        },
+        {
+          "id": "d",
+          "text": "Pub/Sub",
+          "explanation": "Pub/Sub 是訊息服務。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d2-115",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司要長期保存只為了法規而留存的資料，預計一年都不一定會讀取一次。哪一個 Cloud Storage 儲存級別通常最省成本？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Coldline",
+          "explanation": "Coldline 適合每季最多存取一次的資料；只為封存的資料用 Archive 更划算。"
+        },
+        {
+          "id": "b",
+          "text": "Archive",
+          "explanation": "正確。Archive 的最短儲存期間是 365 天，適合純粹備份與封存的資料。"
+        },
+        {
+          "id": "c",
+          "text": "Standard",
+          "explanation": "Standard 適合經常存取的資料。"
+        },
+        {
+          "id": "d",
+          "text": "Nearline",
+          "explanation": "Nearline 適合平均每月最多存取一次的資料。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d2-116",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想把內部部署的 PostgreSQL 資料庫搬到 Cloud SQL 或 AlloyDB，希望服務協助處理網路、初始快照與持續複寫。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud Armor",
+          "explanation": "Cloud Armor 防禦 DDoS 與應用程式攻擊。"
+        },
+        {
+          "id": "b",
+          "text": "Error Reporting",
+          "explanation": "Error Reporting 彙整應用程式錯誤。"
+        },
+        {
+          "id": "c",
+          "text": "Database Migration Service",
+          "explanation": "正確。它協助把資料遷移到 Cloud SQL 與 AlloyDB for PostgreSQL，並處理網路、初始快照與持續複寫。"
+        },
+        {
+          "id": "d",
+          "text": "Looker",
+          "explanation": "Looker 是商業智慧工具。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d2-117",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司希望各部門的業務人員都能自己探索、分享與視覺化資料，做出更好的商業決策，而不必每次都請資料工程師幫忙。最適合哪一項產品？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud NAT",
+          "explanation": "Cloud NAT 提供網路位址轉譯。"
+        },
+        {
+          "id": "b",
+          "text": "Bigtable",
+          "explanation": "Bigtable 是資料庫。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud VPN",
+          "explanation": "Cloud VPN 是網路連線。"
+        },
+        {
+          "id": "d",
+          "text": "Looker",
+          "explanation": "正確。Looker 協助你探索、分享與視覺化公司的資料，讓更多人能使用資料。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d2-118",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司要把應用程式產生的事件，以非同步、可擴展的方式傳給多個處理服務，讓產生訊息與處理訊息的服務彼此解耦。最適合哪一項產品？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Pub/Sub",
+          "explanation": "正確。Pub/Sub 是非同步、可擴展的訊息服務，讓產生訊息的服務與處理訊息的服務解耦。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud SQL",
+          "explanation": "Cloud SQL 是關聯式資料庫。"
+        },
+        {
+          "id": "c",
+          "text": "Looker",
+          "explanation": "Looker 是商業智慧工具。"
+        },
+        {
+          "id": "d",
+          "text": "Certificate Manager",
+          "explanation": "這管理 TLS 憑證。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d2-119",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊需要一個服務，用同一套方式處理串流與批次資料，大規模地讀取、轉換並寫入目的地。最適合哪一項產品？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Assured Workloads",
+          "explanation": "這用於設定主權與合規的邊界。"
+        },
+        {
+          "id": "b",
+          "text": "Dataflow",
+          "explanation": "正確。Dataflow 提供大規模、統一的串流與批次資料處理。"
+        },
+        {
+          "id": "c",
+          "text": "Firestore",
+          "explanation": "Firestore 是文件資料庫。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud DNS",
+          "explanation": "Cloud DNS 是網域名稱服務。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d2-120",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊已經有大量 Apache Spark 程式，想在 Google Cloud 上以代管的方式執行批次處理與分析。最適合哪一項產品？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Memorystore",
+          "explanation": "Memorystore 是記憶體內快取。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud Armor",
+          "explanation": "Cloud Armor 是安全服務。"
+        },
+        {
+          "id": "c",
+          "text": "Managed Service for Apache Spark（原 Dataproc）",
+          "explanation": "正確。它讓你使用開源資料工具進行批次處理、查詢、串流與機器學習，並自動化叢集的建立與管理。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud Run functions",
+          "explanation": "函式不適合執行大型 Spark 工作。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d2-121",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "為什麼即時的串流分析對現代企業很重要？",
+      "options": [
+        {
+          "id": "a",
+          "text": "因為串流分析不需要任何資料",
+          "explanation": "串流分析需要持續流入的資料。"
+        },
+        {
+          "id": "b",
+          "text": "因為串流分析一定比批次便宜",
+          "explanation": "成本取決於使用情境。"
+        },
+        {
+          "id": "c",
+          "text": "因為批次處理已經完全不能使用",
+          "explanation": "批次處理仍有適合的情境。"
+        },
+        {
+          "id": "d",
+          "text": "可以在事件發生時就取得洞察並立即行動，例如即時偵測詐欺或調整庫存",
+          "explanation": "正確。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d3-101",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 3
+        }
+      ],
+      "difficulty": 1,
+      "question": "關於人工智慧（AI）與機器學習（ML）的關係，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AI 是 ML 的一個子集合",
+          "explanation": "相反，ML 是 AI 的一部分。"
+        },
+        {
+          "id": "b",
+          "text": "兩者完全無關",
+          "explanation": "ML 是實現 AI 的一種方式。"
+        },
+        {
+          "id": "c",
+          "text": "ML 只能處理結構化資料",
+          "explanation": "ML 也能處理圖片、文字等非結構化資料。"
+        },
+        {
+          "id": "d",
+          "text": "機器學習是人工智慧的一個子集合，讓系統從大量資料中學習，而不是被明確地寫好規則",
+          "explanation": "正確。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d3-102",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "下列哪一個商業問題，最適合用機器學習解決？",
+      "options": [
+        {
+          "id": "a",
+          "text": "從大量歷史交易中找出可能是詐欺的模式，規則太多又一直變化，難以用固定規則描述",
+          "explanation": "正確。ML 適合取代或簡化難以維護的規則系統，並從大型資料集中找出洞察。"
+        },
+        {
+          "id": "b",
+          "text": "計算兩個數字的總和",
+          "explanation": "固定的計算不需要 ML。"
+        },
+        {
+          "id": "c",
+          "text": "依固定的稅率計算稅額",
+          "explanation": "規則清楚明確，用一般程式即可。"
+        },
+        {
+          "id": "d",
+          "text": "把檔案從一個資料夾複製到另一個資料夾",
+          "explanation": "這不需要 ML。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d3-103",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "為什麼高品質、正確的資料對 AI 模型很重要？",
+      "options": [
+        {
+          "id": "a",
+          "text": "因為資料品質只影響儲存成本",
+          "explanation": "資料品質會直接影響模型的結果。"
+        },
+        {
+          "id": "b",
+          "text": "模型從資料中學習；資料不完整、重複或錯誤，模型的結果也會不可靠",
+          "explanation": "正確。考試指南列出的資料品質面向包含完整性、唯一性、即時性、有效性、正確性與一致性。"
+        },
+        {
+          "id": "c",
+          "text": "因為資料越少，模型越準確",
+          "explanation": "資料量與品質都很重要。"
+        },
+        {
+          "id": "d",
+          "text": "因為 AI 模型不需要資料",
+          "explanation": "模型需要資料才能訓練。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d3-104",
+      "type": "multiple",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "下列哪些是考試指南列出的資料品質面向？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "檔案大小越大越好",
+          "explanation": "這不是資料品質的面向。"
+        },
+        {
+          "id": "b",
+          "text": "資料必須是彩色的",
+          "explanation": "這不是資料品質的面向。"
+        },
+        {
+          "id": "c",
+          "text": "完整性（completeness）",
+          "explanation": "正確。"
+        },
+        {
+          "id": "d",
+          "text": "唯一性（uniqueness）",
+          "explanation": "正確。"
+        }
+      ],
+      "answer": [
+        "c",
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d3-105",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "為什麼可解釋與負責任的 AI 對企業很重要？",
+      "options": [
+        {
+          "id": "a",
+          "text": "因為負責任的 AI 會讓模型永遠不出錯",
+          "explanation": "沒有模型能永遠不出錯；重點是降低與管理風險。"
+        },
+        {
+          "id": "b",
+          "text": "因為可解釋性只和硬體有關",
+          "explanation": "可解釋性與模型的決策有關。"
+        },
+        {
+          "id": "c",
+          "text": "因為法規禁止使用 AI",
+          "explanation": "法規不是全面禁止 AI。"
+        },
+        {
+          "id": "d",
+          "text": "讓使用者與監管機關理解模型為什麼做出某個決定，並降低偏誤、不安全輸出等風險",
+          "explanation": "正確。Google Cloud 的生成式 AI API 依照 Google 的 AI 原則設計。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d3-106",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司要開發一個應用程式，從照片中辨識物體並擷取圖片中的文字，但團隊沒有機器學習專家。最快的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "使用預先訓練好的 Cloud Vision API",
+          "explanation": "正確。Vision API 提供例如光學字元辨識（OCR）等功能，不需要自己訓練模型。"
+        },
+        {
+          "id": "b",
+          "text": "從零開始收集資料並訓練自己的影像模型",
+          "explanation": "需要大量時間與專業。"
+        },
+        {
+          "id": "c",
+          "text": "使用 Cloud Translation API",
+          "explanation": "Translation API 用來翻譯文字。"
+        },
+        {
+          "id": "d",
+          "text": "使用 Cloud DNS",
+          "explanation": "與影像辨識無關。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d3-107",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "電商網站想把商品描述自動翻譯成多種語言。最適合哪一項預先訓練的 API？",
+      "options": [
+        {
+          "id": "a",
+          "text": "BigQuery ML",
+          "explanation": "BigQuery ML 用 SQL 建立自己的模型。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud Translation API",
+          "explanation": "正確。它讓網站與應用程式以程式方式使用翻譯模型翻譯文字。"
+        },
+        {
+          "id": "c",
+          "text": "Speech-to-Text API",
+          "explanation": "Speech-to-Text 把語音轉成文字。"
+        },
+        {
+          "id": "d",
+          "text": "Vision API",
+          "explanation": "Vision API 分析圖片。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d3-108",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "客服中心想把通話錄音自動轉成文字，以便分析。最適合哪一項 API？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Vision API",
+          "explanation": "Vision 分析圖片。"
+        },
+        {
+          "id": "b",
+          "text": "Pub/Sub",
+          "explanation": "Pub/Sub 是訊息服務。"
+        },
+        {
+          "id": "c",
+          "text": "Speech-to-Text API",
+          "explanation": "正確。它把語音轉成文字。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud Translation API",
+          "explanation": "Translation 翻譯文字。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d3-109",
+      "type": "multiple",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 3
+        }
+      ],
+      "difficulty": 3,
+      "question": "公司在選擇 Google Cloud 的 AI 解決方案時，下列哪些是考試指南列出的策略考量？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "能帶來多少商業差異化，以及需要多少技術專業",
+          "explanation": "正確。"
+        },
+        {
+          "id": "b",
+          "text": "選擇的 AI 方案一定要是最貴的",
+          "explanation": "價格高不代表最適合。"
+        },
+        {
+          "id": "c",
+          "text": "只看模型的名稱是否好記",
+          "explanation": "這不是策略考量。"
+        },
+        {
+          "id": "d",
+          "text": "導入速度與開發工作量",
+          "explanation": "正確。例如預先訓練的 API 導入快，自訂模型需要較多開發。"
+        }
+      ],
+      "answer": [
+        "a",
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d3-110",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想用自己的資料建立客製化的機器學習模型，但團隊程式能力有限，希望有一條快速取得高品質模型的途徑。依考試指南，可以考慮使用 Gemini Enterprise Agent Platform 上的哪一項功能？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AutoML",
+          "explanation": "正確。Agent Platform 提供 AutoML 作為快速取得高品質模型的途徑，也可以用自訂訓練建立模型。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud DNS",
+          "explanation": "與建立模型無關。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud NAT",
+          "explanation": "與建立模型無關。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud Armor",
+          "explanation": "Cloud Armor 是安全服務。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d3-111",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "資料分析師熟悉 SQL，但不會 Python。他想直接在 BigQuery 的資料上建立並執行機器學習模型。最適合哪一項功能？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud VPN",
+          "explanation": "Cloud VPN 是網路連線。"
+        },
+        {
+          "id": "b",
+          "text": "BigQuery ML",
+          "explanation": "正確。BigQuery ML 讓你用 GoogleSQL 查詢或主控台建立與執行 ML 模型，模型存放在 BigQuery 資料集中。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud Translation API",
+          "explanation": "Translation 翻譯文字。"
+        },
+        {
+          "id": "d",
+          "text": "Memorystore",
+          "explanation": "Memorystore 是記憶體內快取。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d3-112",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "Gemini Enterprise Agent Platform（原 Vertex AI）提供什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "只用來管理 DNS 記錄",
+          "explanation": "與 DNS 無關。"
+        },
+        {
+          "id": "b",
+          "text": "只用來寄送電子郵件",
+          "explanation": "與電子郵件無關。"
+        },
+        {
+          "id": "c",
+          "text": "一整套工具，協助大規模建立、訓練與管理機器學習模型，並提供生成式 AI 的模型與 API",
+          "explanation": "正確。考試指南也提到可以用 Agent Studio、AutoML 建立自訂模型。"
+        },
+        {
+          "id": "d",
+          "text": "只提供虛擬機的服務",
+          "explanation": "它是 AI 開發平台。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d3-113",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "AI Hypercomputer 是什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "一台放在辦公室的電腦",
+          "explanation": "它是雲端的基礎設施組合。"
+        },
+        {
+          "id": "b",
+          "text": "一種資料庫",
+          "explanation": "它是 AI 基礎設施。"
+        },
+        {
+          "id": "c",
+          "text": "一種防火牆",
+          "explanation": "它是 AI 基礎設施。"
+        },
+        {
+          "id": "d",
+          "text": "為 AI 與 ML 工作負載最佳化的整合式超級運算系統，結合 GPU、TPU 等硬體、開放軟體與彈性的使用模式",
+          "explanation": "正確。它是 Google Cloud AI 基礎設施的統一組合。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d3-114",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於 TPU，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "TPU 是為大型矩陣運算設計的硬體，具備晶片上的高頻寬記憶體，適合較大的模型與批次",
+          "explanation": "正確。TPU 也能組成 slices 擴展工作負載。"
+        },
+        {
+          "id": "b",
+          "text": "TPU 是一種儲存服務",
+          "explanation": "TPU 是 AI 加速器。"
+        },
+        {
+          "id": "c",
+          "text": "TPU 只能用來執行網站",
+          "explanation": "TPU 用於加速 ML 工作負載。"
+        },
+        {
+          "id": "d",
+          "text": "TPU 與 AI 無關",
+          "explanation": "TPU 是為 ML 設計的。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d3-115",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "下列哪一項最能描述生成式 AI（gen AI）？",
+      "options": [
+        {
+          "id": "a",
+          "text": "一種網路設備",
+          "explanation": "生成式 AI 是軟體與模型。"
+        },
+        {
+          "id": "b",
+          "text": "可以依提示產生新的內容，例如文字、圖片或程式碼的 AI",
+          "explanation": "正確。例如大型語言模型可以翻譯、摘要、撰寫內容與程式碼。"
+        },
+        {
+          "id": "c",
+          "text": "只能把資料分成兩類的程式",
+          "explanation": "這是分類模型的一種，不是生成式 AI 的特色。"
+        },
+        {
+          "id": "d",
+          "text": "只能計算加減乘除的程式",
+          "explanation": "這不是 AI。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d3-116",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 3
+        }
+      ],
+      "difficulty": 3,
+      "question": "考試指南提到代理式 AI（agentic AI）正在改變各產業的工作方式。下列哪一項最能描述代理式 AI 的應用？",
+      "options": [
+        {
+          "id": "a",
+          "text": "代理式 AI 是一種硬碟",
+          "explanation": "它是 AI 的應用方式。"
+        },
+        {
+          "id": "b",
+          "text": "代理式 AI 只能在內部部署的機房執行",
+          "explanation": "雲端提供建立與部署代理的平台。"
+        },
+        {
+          "id": "c",
+          "text": "AI 代理能代表使用者規劃並執行多步驟的工作，例如處理客服請求、協助銷售或營運流程",
+          "explanation": "正確。考試指南列出的影響領域包含員工生產力、客戶支援、銷售體驗、產品創新、營運與研究。"
+        },
+        {
+          "id": "d",
+          "text": "AI 只能回答單一問題，無法執行任何動作",
+          "explanation": "代理式 AI 的重點是能採取行動、完成工作。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d3-117",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊想保護生成式 AI 應用程式，在提示與回應中篩檢提示注入、敏感資料外洩等風險。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud DNS",
+          "explanation": "Cloud DNS 是網域名稱服務。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud Storage Nearline",
+          "explanation": "這是儲存級別。"
+        },
+        {
+          "id": "c",
+          "text": "Looker",
+          "explanation": "Looker 是商業智慧工具。"
+        },
+        {
+          "id": "d",
+          "text": "Model Armor",
+          "explanation": "正確。Model Armor 主動篩檢 LLM 的提示與回應，防範各種風險，增強 AI 應用程式的安全性。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d3-118",
+      "type": "multiple",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "下列 AI 相關名詞的配對，哪些正確？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "資料分析：檢視資料以找出趨勢與答案",
+          "explanation": "正確。"
+        },
+        {
+          "id": "b",
+          "text": "商業智慧（BI）：用報表與儀表板協助企業做決策",
+          "explanation": "正確。"
+        },
+        {
+          "id": "c",
+          "text": "機器學習：一定要由人寫好每一條規則",
+          "explanation": "機器學習是從資料中學習，而不是由人寫好所有規則。"
+        },
+        {
+          "id": "d",
+          "text": "生成式 AI：只能刪除資料",
+          "explanation": "生成式 AI 能產生新的內容。"
+        }
+      ],
+      "answer": [
+        "a",
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d4-101",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司要把一批應用程式搬到 Google Cloud，希望最快完成、只做讓它能在新環境執行的最少修改。這屬於哪一種遷移方式？",
+      "options": [
+        {
+          "id": "a",
+          "text": "重新託管（rehost，lift and shift）",
+          "explanation": "正確。重新託管只做最少的修改，是花費時間最少的遷移方式。"
+        },
+        {
+          "id": "b",
+          "text": "重構（refactor）",
+          "explanation": "重構要修改工作負載以利用雲端能力，需要較多時間。"
+        },
+        {
+          "id": "c",
+          "text": "重建（rebuild）",
+          "explanation": "重建要汰除原本的應用程式並完全重寫。"
+        },
+        {
+          "id": "d",
+          "text": "保留（retain）",
+          "explanation": "保留是暫時不遷移。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d4-102",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 4
+        }
+      ],
+      "difficulty": 3,
+      "question": "依照 Google Cloud 的遷移文件，「把現有工作負載搬過去，再針對新的雲端環境最佳化」屬於哪一種遷移方式？",
+      "options": [
+        {
+          "id": "a",
+          "text": "汰除（retire）",
+          "explanation": "汰除是不再使用。"
+        },
+        {
+          "id": "b",
+          "text": "平台重建（replatform）",
+          "explanation": "正確。文件說明 replatform 是先搬遷現有工作負載，再針對新的雲端環境最佳化。"
+        },
+        {
+          "id": "c",
+          "text": "重新託管（rehost）",
+          "explanation": "重新託管只做最少的修改。"
+        },
+        {
+          "id": "d",
+          "text": "重建（rebuild）",
+          "explanation": "重建是完全重新設計與重寫。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d4-103",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個老舊的應用程式已經無法滿足需求，公司決定汰除它，並以雲端最佳化的方式重新設計與重寫。這屬於哪一種遷移方式？",
+      "options": [
+        {
+          "id": "a",
+          "text": "保留（retain）",
+          "explanation": "保留是暫時不遷移。"
+        },
+        {
+          "id": "b",
+          "text": "平台重建（replatform）",
+          "explanation": "平台重建是搬遷後最佳化，不是完全重寫。"
+        },
+        {
+          "id": "c",
+          "text": "重建（rebuild）",
+          "explanation": "正確。重建會汰除既有的應用程式，完全重新設計與重寫成雲端最佳化的應用程式。"
+        },
+        {
+          "id": "d",
+          "text": "重新託管（rehost）",
+          "explanation": "重新託管不做大幅修改。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d4-104",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 4
+        }
+      ],
+      "difficulty": 1,
+      "question": "在雲端遷移中，「探索與評估」（discovery and assessment）階段主要做什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "直接關閉所有的伺服器",
+          "explanation": "評估階段還不會關閉系統。"
+        },
+        {
+          "id": "b",
+          "text": "立即刪除所有資料",
+          "explanation": "這不是評估。"
+        },
+        {
+          "id": "c",
+          "text": "只購買新的硬體",
+          "explanation": "遷移到雲端通常不需要購買新硬體。"
+        },
+        {
+          "id": "d",
+          "text": "盤點現有的工作負載與相依關係，評估哪些適合遷移以及怎麼遷移",
+          "explanation": "正確。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d4-105",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 4
+        }
+      ],
+      "difficulty": 1,
+      "question": "關於容器（container），哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "容器把應用程式與它需要的相依套件打包在一起，可以在不同環境一致地執行",
+          "explanation": "正確。"
+        },
+        {
+          "id": "b",
+          "text": "容器一定比虛擬機包含更多的作業系統",
+          "explanation": "容器通常比虛擬機輕量。"
+        },
+        {
+          "id": "c",
+          "text": "容器只能在個人電腦執行",
+          "explanation": "容器可以在許多環境執行。"
+        },
+        {
+          "id": "d",
+          "text": "容器就是一種資料庫",
+          "explanation": "容器是應用程式的封裝方式。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d4-106",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "微服務（microservices）架構的商業價值是什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "讓所有服務只能一起部署",
+          "explanation": "微服務的優點是可以獨立部署。"
+        },
+        {
+          "id": "b",
+          "text": "把應用程式拆成獨立的小服務，可以各自部署與擴展，加快交付速度並提升韌性",
+          "explanation": "正確。這是現代化應用程式開發的好處之一。"
+        },
+        {
+          "id": "c",
+          "text": "一定要把所有功能放在同一個大型程式中",
+          "explanation": "這是單體式架構。"
+        },
+        {
+          "id": "d",
+          "text": "讓應用程式完全不需要測試",
+          "explanation": "微服務仍需要測試。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d4-107",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想用 Google 的基礎設施建立與執行虛擬機，對作業系統有完整的控制。最適合哪一項產品？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Looker",
+          "explanation": "Looker 是商業智慧工具。"
+        },
+        {
+          "id": "b",
+          "text": "Apigee",
+          "explanation": "Apigee 是 API 管理平台。"
+        },
+        {
+          "id": "c",
+          "text": "Compute Engine",
+          "explanation": "正確。Compute Engine 讓你在 Google 的基礎設施上建立與執行虛擬機。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud Run",
+          "explanation": "Cloud Run 是全代管的應用程式平台，不需要管理虛擬機。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d4-108",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊想用 Kubernetes 部署與管理大量容器，但不想自己維護 Kubernetes。最適合哪一項產品？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud Storage",
+          "explanation": "Cloud Storage 是物件儲存。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud DNS",
+          "explanation": "Cloud DNS 是網域名稱服務。"
+        },
+        {
+          "id": "c",
+          "text": "BigQuery",
+          "explanation": "BigQuery 是資料平台。"
+        },
+        {
+          "id": "d",
+          "text": "Google Kubernetes Engine（GKE）",
+          "explanation": "正確。GKE 是 Kubernetes 開源容器協調平台的代管實作；Kubernetes 本身也是由 Google 開發的。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d4-109",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊想直接部署程式碼或容器，不管理伺服器，並在沒有流量時縮減到零以節省成本。最適合哪一項產品？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud Run",
+          "explanation": "正確。Cloud Run 是全代管的應用程式平台，可以執行程式碼、函式或容器，並支援縮減到零。"
+        },
+        {
+          "id": "b",
+          "text": "Compute Engine",
+          "explanation": "虛擬機在執行時都會計費，也需要自己管理。"
+        },
+        {
+          "id": "c",
+          "text": "Bigtable",
+          "explanation": "Bigtable 是資料庫。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud Interconnect",
+          "explanation": "這是網路連線。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d4-110",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "使用無伺服器運算（例如 Cloud Run、Cloud Run functions）的主要商業價值是什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "只能執行一種程式語言",
+          "explanation": "Cloud Run 可以執行任何能打包成容器的程式。"
+        },
+        {
+          "id": "b",
+          "text": "開發人員專注在程式碼，不必管理伺服器，資源依需求自動擴展",
+          "explanation": "正確。"
+        },
+        {
+          "id": "c",
+          "text": "必須自己修補作業系統",
+          "explanation": "無伺服器服務不需要管理伺服器。"
+        },
+        {
+          "id": "d",
+          "text": "一定要預先購買固定的容量",
+          "explanation": "無伺服器會依需求自動擴展。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d4-111",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個可以中斷的影像算圖工作，希望用比一般虛擬機低很多的價格執行。最適合使用什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud SQL",
+          "explanation": "這是資料庫。"
+        },
+        {
+          "id": "b",
+          "text": "Looker",
+          "explanation": "這是商業智慧工具。"
+        },
+        {
+          "id": "c",
+          "text": "Spot VM",
+          "explanation": "正確。Spot VM 使用多餘的容量，價格低很多，但可能隨時被搶占。"
+        },
+        {
+          "id": "d",
+          "text": "最大規格的一般虛擬機",
+          "explanation": "價格較高。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d4-112",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想在內部部署的環境中執行與 Google Cloud 的 AlloyDB 相同核心元件的 PostgreSQL 相容資料庫。應該使用什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "BigQuery Omni",
+          "explanation": "BigQuery Omni 是在其他雲端的資料上執行 BigQuery 分析。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud Storage",
+          "explanation": "Cloud Storage 是物件儲存。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud Armor",
+          "explanation": "Cloud Armor 是安全服務。"
+        },
+        {
+          "id": "d",
+          "text": "AlloyDB Omni",
+          "explanation": "正確。AlloyDB Omni 是可下載的軟體套件，讓你在自己管理的環境中部署精簡版的 AlloyDB for PostgreSQL。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d4-113",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司的資料存放在 Amazon S3 與 Azure Blob Storage，想在不搬移資料的情況下，用 BigQuery 分析這些資料。應該使用什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "BigQuery Omni",
+          "explanation": "正確。BigQuery Omni 是多雲分析解決方案，可以分析存放在 Amazon S3 或 Azure Blob Storage 的資料，打破資料孤島。"
+        },
+        {
+          "id": "b",
+          "text": "AlloyDB Omni",
+          "explanation": "AlloyDB Omni 是可在其他環境執行的資料庫。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud VPN",
+          "explanation": "Cloud VPN 是網路連線。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud DNS",
+          "explanation": "Cloud DNS 是網域名稱服務。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d4-114",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 4
+        }
+      ],
+      "difficulty": 1,
+      "question": "API（應用程式介面）是什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "一種作業系統",
+          "explanation": "API 不是作業系統。"
+        },
+        {
+          "id": "b",
+          "text": "讓不同的軟體系統彼此溝通、交換資料的介面",
+          "explanation": "正確。"
+        },
+        {
+          "id": "c",
+          "text": "一種實體網路線",
+          "explanation": "API 是軟體介面。"
+        },
+        {
+          "id": "d",
+          "text": "一種儲存裝置",
+          "explanation": "API 不是儲存裝置。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d4-115",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "一家物流公司想把貨運追蹤功能開放給合作夥伴使用並收取費用，同時需要安全控管、流量管理與分析。最適合哪一項產品？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Memorystore",
+          "explanation": "Memorystore 是記憶體內快取。"
+        },
+        {
+          "id": "b",
+          "text": "Error Reporting",
+          "explanation": "Error Reporting 彙整錯誤。"
+        },
+        {
+          "id": "c",
+          "text": "Apigee API Management",
+          "explanation": "正確。Apigee 是 Google Cloud 原生的 API 管理平台，提供 API 代理層，可以加入安全、流量管理等政策，協助對外開放 API 並創造新的商業機會。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud Storage",
+          "explanation": "Cloud Storage 是物件儲存。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d4-116",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "自動調度（autoscaling）與負載平衡（load balancing）一起使用，可以帶來什麼效益？",
+      "options": [
+        {
+          "id": "a",
+          "text": "讓應用程式永遠只使用一台伺服器",
+          "explanation": "這會造成單一故障點。"
+        },
+        {
+          "id": "b",
+          "text": "讓所有資料自動加密",
+          "explanation": "加密是另一項功能。"
+        },
+        {
+          "id": "c",
+          "text": "讓應用程式不需要網路",
+          "explanation": "應用程式仍需要網路。"
+        },
+        {
+          "id": "d",
+          "text": "依需求增減資源，並把流量分散到健康的執行個體，提升效能與可用性",
+          "explanation": "正確。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d5-101",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 5
+        }
+      ],
+      "difficulty": 1,
+      "question": "攻擊者用大量流量灌爆網站，讓正常使用者無法連線。這是哪一種攻擊？",
+      "options": [
+        {
+          "id": "a",
+          "text": "網路釣魚",
+          "explanation": "網路釣魚是騙取使用者的帳號或資料。"
+        },
+        {
+          "id": "b",
+          "text": "勒索軟體",
+          "explanation": "勒索軟體是加密資料並要求贖金。"
+        },
+        {
+          "id": "c",
+          "text": "加密貨幣挖礦",
+          "explanation": "這是未經授權使用運算資源挖礦。"
+        },
+        {
+          "id": "d",
+          "text": "分散式阻斷服務攻擊（DDoS）",
+          "explanation": "正確。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d5-102",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 5
+        }
+      ],
+      "difficulty": 1,
+      "question": "員工收到偽裝成公司 IT 部門的電子郵件，要求點連結輸入密碼。這是哪一種威脅？",
+      "options": [
+        {
+          "id": "a",
+          "text": "網路釣魚（phishing）",
+          "explanation": "正確。"
+        },
+        {
+          "id": "b",
+          "text": "DDoS",
+          "explanation": "DDoS 是用大量流量癱瘓服務。"
+        },
+        {
+          "id": "c",
+          "text": "實體損壞",
+          "explanation": "實體損壞是例如火災、水災造成的破壞。"
+        },
+        {
+          "id": "d",
+          "text": "錯誤設定",
+          "explanation": "錯誤設定是系統設定不當。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d5-103",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 5
+        }
+      ],
+      "difficulty": 2,
+      "question": "攻擊者入侵帳戶後，在公司的雲端資源上偷偷執行程式挖加密貨幣，造成高額費用。這是哪一種威脅？",
+      "options": [
+        {
+          "id": "a",
+          "text": "實體損壞",
+          "explanation": "與實體設施無關。"
+        },
+        {
+          "id": "b",
+          "text": "加密貨幣挖礦（cryptomining）",
+          "explanation": "正確。Security Command Center 的威脅偵測也涵蓋加密貨幣挖礦程式。"
+        },
+        {
+          "id": "c",
+          "text": "網路釣魚",
+          "explanation": "網路釣魚是騙取帳號或資料。"
+        },
+        {
+          "id": "d",
+          "text": "DDoS",
+          "explanation": "DDoS 是用大量流量癱瘓服務。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d5-104",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 5
+        }
+      ],
+      "difficulty": 2,
+      "question": "資訊安全的 CIA 三要素指的是什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "雲端、內部部署、混合",
+          "explanation": "這是部署方式。"
+        },
+        {
+          "id": "b",
+          "text": "IaaS、PaaS、SaaS",
+          "explanation": "這是服務模型。"
+        },
+        {
+          "id": "c",
+          "text": "機密性（confidentiality）、完整性（integrity）、可用性（availability）",
+          "explanation": "正確。考試指南也把控制與合規列為雲端安全模型的重要概念。"
+        },
+        {
+          "id": "d",
+          "text": "成本、速度、容量",
+          "explanation": "這不是資訊安全的三要素。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d5-105",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 5
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於驗證（authentication）、授權（authorization）與稽核（auditing），哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "驗證決定你可以存取哪些資源",
+          "explanation": "這是授權。"
+        },
+        {
+          "id": "b",
+          "text": "授權用來記錄所有操作",
+          "explanation": "這是稽核。"
+        },
+        {
+          "id": "c",
+          "text": "三者是同一件事",
+          "explanation": "三者的作用不同。"
+        },
+        {
+          "id": "d",
+          "text": "驗證確認「你是誰」；授權決定「你可以做什麼」；稽核記錄「誰做了什麼」",
+          "explanation": "正確。例如多重要素驗證屬於驗證，IAM 的權限屬於授權，稽核日誌屬於稽核。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d5-106",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 5
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司要求員工登入時除了密碼，還要輸入手機上的驗證碼。這屬於哪一種做法？",
+      "options": [
+        {
+          "id": "a",
+          "text": "多重要素驗證（MFA）／兩步驟驗證（2SV）",
+          "explanation": "正確。這是驗證的強化方式。"
+        },
+        {
+          "id": "b",
+          "text": "授權",
+          "explanation": "授權是決定可以做什麼。"
+        },
+        {
+          "id": "c",
+          "text": "稽核",
+          "explanation": "稽核是記錄操作。"
+        },
+        {
+          "id": "d",
+          "text": "加密",
+          "explanation": "加密是保護資料不被讀取。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d5-107",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 5
+        }
+      ],
+      "difficulty": 2,
+      "question": "零信任（zero trust）安全模型的核心概念是什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "只靠防火牆保護所有資源",
+          "explanation": "零信任不只依賴網路邊界。"
+        },
+        {
+          "id": "b",
+          "text": "不因為使用者或裝置在公司網路內就預設信任，每次存取都要嚴格驗證與授權",
+          "explanation": "正確。零信任移除隱含的信任。"
+        },
+        {
+          "id": "c",
+          "text": "只要在公司網路內，就可以存取所有資源",
+          "explanation": "這正是零信任要避免的。"
+        },
+        {
+          "id": "d",
+          "text": "完全不需要驗證使用者",
+          "explanation": "零信任強調嚴格的驗證。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d5-108",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 5
+        }
+      ],
+      "difficulty": 2,
+      "question": "依照最小權限原則（least privilege），應該如何授予權限？",
+      "options": [
+        {
+          "id": "a",
+          "text": "讓大家共用同一個帳號",
+          "explanation": "這無法追蹤個人行為。"
+        },
+        {
+          "id": "b",
+          "text": "不授予任何權限",
+          "explanation": "沒有權限就無法工作。"
+        },
+        {
+          "id": "c",
+          "text": "只授予完成工作所需的最少權限",
+          "explanation": "正確。"
+        },
+        {
+          "id": "d",
+          "text": "授予所有人管理員權限，方便工作",
+          "explanation": "這違反最小權限。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d5-109",
+      "type": "multiple",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 5
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於資料在不同狀態下的加密，哪些敘述正確？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "機密運算（Confidential Computing）讓資料在處理時，在記憶體中仍保持加密，保護使用中的資料",
+          "explanation": "正確。結合靜態與傳輸中的加密，可以在整個生命週期保護資料。"
+        },
+        {
+          "id": "b",
+          "text": "傳輸中的資料不需要任何保護",
+          "explanation": "傳輸中的資料也需要加密保護。"
+        },
+        {
+          "id": "c",
+          "text": "資料只要加密過一次，就不需要任何存取控制",
+          "explanation": "加密與存取控制互補。"
+        },
+        {
+          "id": "d",
+          "text": "Google 會在儲存層預設加密所有存放的客戶內容，不需要客戶採取任何行動",
+          "explanation": "正確。這是靜態加密。"
+        }
+      ],
+      "answer": [
+        "a",
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d5-110",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 5
+        }
+      ],
+      "difficulty": 2,
+      "question": "安全團隊想主動找出 Google Cloud 環境中的錯誤設定、公開暴露的資源與外洩的憑證，並偵測惡意軟體、加密貨幣挖礦等威脅。最適合哪一項產品？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Security Command Center",
+          "explanation": "正確。它是雲端的風險管理解決方案，協助預防、偵測與回應安全問題，也能監控對 NIST、PCI-DSS、CIS 等基準的合規。"
+        },
+        {
+          "id": "b",
+          "text": "Looker",
+          "explanation": "Looker 是商業智慧工具。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud Storage",
+          "explanation": "Cloud Storage 是物件儲存。"
+        },
+        {
+          "id": "d",
+          "text": "Pub/Sub",
+          "explanation": "Pub/Sub 是訊息服務。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d5-111",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 5
+        }
+      ],
+      "difficulty": 2,
+      "question": "企業想集中保留、分析與搜尋大量的安全與網路遙測資料，以加快威脅偵測與回應。最適合哪一項產品？",
+      "options": [
+        {
+          "id": "a",
+          "text": "BigQuery ML",
+          "explanation": "BigQuery ML 用於建立 ML 模型。"
+        },
+        {
+          "id": "b",
+          "text": "Google Security Operations（Google SecOps）",
+          "explanation": "正確。它是建構在 Google 基礎設施上的雲端服務，讓企業私密地保留、分析與搜尋大量的安全與網路遙測資料。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud DNS",
+          "explanation": "Cloud DNS 是網域名稱服務。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud Run",
+          "explanation": "Cloud Run 是應用程式平台。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d5-112",
+      "type": "multiple",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 5
+        }
+      ],
+      "difficulty": 2,
+      "question": "考試指南提到，Google Threat Intelligence 的分析來源有哪些？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "只依賴單一公司的防毒軟體",
+          "explanation": "Google Threat Intelligence 結合多種來源。"
+        },
+        {
+          "id": "b",
+          "text": "只來自使用者的問卷調查",
+          "explanation": "這不是它的主要來源。"
+        },
+        {
+          "id": "c",
+          "text": "Google 龐大的全球可見度，以及 Mandiant 第一線的事件回應經驗",
+          "explanation": "正確。"
+        },
+        {
+          "id": "d",
+          "text": "VirusTotal 的群眾外包威脅偵測",
+          "explanation": "正確。"
+        }
+      ],
+      "answer": [
+        "c",
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d5-113",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 5
+        }
+      ],
+      "difficulty": 2,
+      "question": "網站常遭到 DDoS、SQL 注入與跨網站指令碼攻擊。最適合用哪一項產品保護？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud Storage Archive",
+          "explanation": "這是儲存級別。"
+        },
+        {
+          "id": "b",
+          "text": "Looker",
+          "explanation": "這是商業智慧工具。"
+        },
+        {
+          "id": "c",
+          "text": "BigQuery Omni",
+          "explanation": "這是多雲分析。"
+        },
+        {
+          "id": "d",
+          "text": "Google Cloud Armor",
+          "explanation": "正確。Cloud Armor 協助防護 DDoS 攻擊，以及 XSS、SQL 注入等應用程式攻擊。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d5-114",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 5
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司要在大量資料中找出信用卡號、身分證字號等敏感資料，並進行分類與去識別化。最適合哪一項產品？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sensitive Data Protection",
+          "explanation": "正確。它協助在 Google Cloud 內外探索、分類與去識別化敏感資料，屬於資料遺失防護（DLP）的做法。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud NAT",
+          "explanation": "Cloud NAT 提供網路位址轉譯。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud Run",
+          "explanation": "Cloud Run 是應用程式平台。"
+        },
+        {
+          "id": "d",
+          "text": "Dataflow",
+          "explanation": "Dataflow 是資料處理服務。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d5-115",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 5
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想讓員工存取內部的網頁應用程式時，依照使用者身分在應用程式層級控制存取，而不是只依賴網路防火牆。最適合哪一項產品？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Pub/Sub",
+          "explanation": "Pub/Sub 是訊息服務。"
+        },
+        {
+          "id": "b",
+          "text": "Identity-Aware Proxy（IAP）",
+          "explanation": "正確。IAP 為透過 HTTPS 存取的應用程式建立集中的授權層，使用應用程式層級的存取控制模型。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud DNS",
+          "explanation": "Cloud DNS 是網域名稱服務。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud Storage",
+          "explanation": "Cloud Storage 是物件儲存。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d5-116",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 5
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想簡化在 Google Cloud 負載平衡器上取得、部署與管理 TLS 憑證的工作。最適合哪一項產品？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Looker",
+          "explanation": "Looker 是商業智慧工具。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud SQL",
+          "explanation": "Cloud SQL 是資料庫。"
+        },
+        {
+          "id": "c",
+          "text": "Certificate Manager",
+          "explanation": "正確。Certificate Manager 簡化 TLS 憑證的取得、部署與管理。"
+        },
+        {
+          "id": "d",
+          "text": "Security Command Center",
+          "explanation": "SCC 是風險管理解決方案。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d5-117",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 5
+        }
+      ],
+      "difficulty": 3,
+      "question": "政府機構要求敏感工作負載的資料必須存放在特定國家，並限制可以存取的人員。最適合哪一項產品？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud Run",
+          "explanation": "Cloud Run 是應用程式平台。"
+        },
+        {
+          "id": "b",
+          "text": "Looker",
+          "explanation": "Looker 是商業智慧工具。"
+        },
+        {
+          "id": "c",
+          "text": "Spot VM",
+          "explanation": "Spot VM 是低價的運算選項。"
+        },
+        {
+          "id": "d",
+          "text": "Assured Workloads",
+          "explanation": "正確。它讓公私部門的組織為敏感工作負載設定具備資料落地、存取與人員控制的主權資料與存取邊界。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d5-118",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 5
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想知道 Google 人員何時、為何存取了公司的客戶資料，以符合稽核要求。最適合哪一項功能？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Access Transparency",
+          "explanation": "正確。Access Transparency 日誌記錄 Google 人員存取客戶資料的動作，包含資源、時間與原因；搭配 Access Approval 還能核准存取請求。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud DNS",
+          "explanation": "Cloud DNS 是網域名稱服務。"
+        },
+        {
+          "id": "c",
+          "text": "Error Reporting",
+          "explanation": "Error Reporting 彙整應用程式錯誤。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud NAT",
+          "explanation": "Cloud NAT 提供網路位址轉譯。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d5-119",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 5
+        }
+      ],
+      "difficulty": 2,
+      "question": "依照 Google 的基礎設施安全設計說明，Google 如何確保資料中心硬體的安全？",
+      "options": [
+        {
+          "id": "a",
+          "text": "只依賴客戶自行保護硬體",
+          "explanation": "實體基礎設施由 Google 負責。"
+        },
+        {
+          "id": "b",
+          "text": "Google 自行設計伺服器主機板與網路設備，並謹慎審核元件供應商",
+          "explanation": "正確。這是 Google 安全設計（secure-by-design）基礎設施的一部分。"
+        },
+        {
+          "id": "c",
+          "text": "完全使用來路不明的硬體",
+          "explanation": "Google 會審核元件供應商。"
+        },
+        {
+          "id": "d",
+          "text": "把所有伺服器放在辦公室中",
+          "explanation": "Google 使用專屬的資料中心。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d5-120",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 5
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於雲端安全與內部部署安全，哪一項敘述最正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "內部部署不需要考慮實體安全",
+          "explanation": "內部部署要自己負責實體安全。"
+        },
+        {
+          "id": "b",
+          "text": "雲端完全無法設定存取權限",
+          "explanation": "雲端提供 IAM 等存取控制工具。"
+        },
+        {
+          "id": "c",
+          "text": "在雲端，雲端供應商負責底層基礎設施的安全，客戶仍要負責自己的資料、存取權限與設定",
+          "explanation": "正確。錯誤設定仍是雲端常見的風險之一。"
+        },
+        {
+          "id": "d",
+          "text": "在雲端，客戶完全不需要負責任何安全工作",
+          "explanation": "客戶仍有安全責任。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d6-101",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 6
+        }
+      ],
+      "difficulty": 2,
+      "question": "從內部部署轉移到雲端，對公司的支出結構有什麼影響？",
+      "options": [
+        {
+          "id": "a",
+          "text": "所有費用都會消失",
+          "explanation": "雲端仍會產生使用費用。"
+        },
+        {
+          "id": "b",
+          "text": "一定要一次付清十年的費用",
+          "explanation": "雲端可以依用量付費。"
+        },
+        {
+          "id": "c",
+          "text": "從前期大量投入的資本支出（CapEx），轉為依使用量支付的營運支出（OpEx）",
+          "explanation": "正確。雲端只為使用的部分付費，不必購買與維護自己的實體資料中心與伺服器。"
+        },
+        {
+          "id": "d",
+          "text": "從營運支出轉為資本支出",
+          "explanation": "方向相反。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d6-102",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 6
+        }
+      ],
+      "difficulty": 2,
+      "question": "考試指南提到，控制雲端成本需要哪三個面向一起配合？",
+      "options": [
+        {
+          "id": "a",
+          "text": "只靠購買最便宜的硬體",
+          "explanation": "雲端成本控制不只是硬體價格。"
+        },
+        {
+          "id": "b",
+          "text": "只靠關閉所有服務",
+          "explanation": "這會影響業務。"
+        },
+        {
+          "id": "c",
+          "text": "只靠增加預算",
+          "explanation": "增加預算不是控制成本。"
+        },
+        {
+          "id": "d",
+          "text": "人員、流程與技術",
+          "explanation": "正確。例如明確由誰管理雲端成本、建立流程，並使用成本管理工具。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d6-103",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 6
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於 Google Cloud 的資源階層，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "組織節點在最上層，底下可以有資料夾與專案，資源屬於專案；在上層設定的權限會被下層繼承",
+          "explanation": "正確。資源階層有助於存取控制、安全合規與可見度。"
+        },
+        {
+          "id": "b",
+          "text": "專案在最上層，組織在最下層",
+          "explanation": "順序相反。"
+        },
+        {
+          "id": "c",
+          "text": "每個資源都可以有多個上層",
+          "explanation": "每個資源只有一個上層。"
+        },
+        {
+          "id": "d",
+          "text": "上層設定的權限不會影響下層",
+          "explanation": "權限會往下繼承。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d6-104",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 6
+        }
+      ],
+      "difficulty": 2,
+      "question": "財務主管想在專案花費達到預算的 50%、90% 與 100% 時收到通知。應該設定什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Pub/Sub 主題",
+          "explanation": "Pub/Sub 可以接收預算的程式化通知，但門檻是在預算中設定。"
+        },
+        {
+          "id": "b",
+          "text": "預算與快訊門檻規則",
+          "explanation": "正確。實際或預測的費用超過設定的百分比時，會寄出快訊通知。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud DNS 記錄",
+          "explanation": "與成本無關。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud Armor 安全政策",
+          "explanation": "與成本無關。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d6-105",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 6
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊想在 Google Cloud 主控台中檢視費用的趨勢，並依專案、服務等條件篩選。最適合使用什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Identity-Aware Proxy",
+          "explanation": "與費用無關。"
+        },
+        {
+          "id": "b",
+          "text": "Model Armor",
+          "explanation": "與費用無關。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud Billing 報表",
+          "explanation": "正確。它讓你追蹤並了解 Google Cloud 的用量費用，可以設定篩選條件與報表功能。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud DNS",
+          "explanation": "與費用無關。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d6-106",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 6
+        }
+      ],
+      "difficulty": 3,
+      "question": "團隊需要短期使用 GPU 執行 AI 訓練，但不想管理長期預留，希望更容易取得 GPU 並享有折扣。可以考慮什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "購買三年期的實體伺服器",
+          "explanation": "這是內部部署的做法。"
+        },
+        {
+          "id": "b",
+          "text": "關閉所有專案",
+          "explanation": "這會影響業務。"
+        },
+        {
+          "id": "c",
+          "text": "使用 Cloud DNS",
+          "explanation": "與運算資源無關。"
+        },
+        {
+          "id": "d",
+          "text": "由 Dynamic Workload Scheduler 驅動的 flex-start 佈建模式",
+          "explanation": "正確。flex-start 可以依需要佈建 GPU、TPU 等資源最多七天，不必管理長期預留。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d6-107",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 6
+        }
+      ],
+      "difficulty": 2,
+      "question": "為了避免某個團隊一次建立過多資源而產生大量費用，管理員可以使用哪一種機制限制資源的使用量？",
+      "options": [
+        {
+          "id": "a",
+          "text": "資源配額（quota）政策",
+          "explanation": "正確。配額限制專案可以使用的資源量，是控制雲端用量的方式之一。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud Translation API",
+          "explanation": "與用量控制無關。"
+        },
+        {
+          "id": "c",
+          "text": "Looker",
+          "explanation": "Looker 是商業智慧工具。"
+        },
+        {
+          "id": "d",
+          "text": "Certificate Manager",
+          "explanation": "與用量控制無關。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d6-108",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 6
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊想把應用程式的錯誤依根本原因分組，以便找出、排序與處理問題。最適合哪一項工具？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud Storage",
+          "explanation": "這是物件儲存。"
+        },
+        {
+          "id": "b",
+          "text": "Error Reporting",
+          "explanation": "正確。Error Reporting 把應用程式的錯誤事件依根本原因彙整成錯誤群組。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud Billing 報表",
+          "explanation": "這是費用報表。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud Armor",
+          "explanation": "這是安全服務。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d6-109",
+      "type": "multiple",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 6
+        }
+      ],
+      "difficulty": 2,
+      "question": "Google Cloud Observability 中，下列工具與用途的配對，哪些正確？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud Profiler：管理 TLS 憑證",
+          "explanation": "Cloud Profiler 持續分析應用程式的 CPU 與記憶體使用。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud Logging：翻譯文字",
+          "explanation": "Cloud Logging 收集與管理日誌。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud Monitoring：收集指標並建立快訊",
+          "explanation": "正確。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud Trace：追蹤請求在各服務之間的延遲",
+          "explanation": "正確。"
+        }
+      ],
+      "answer": [
+        "c",
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d6-110",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 6
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於 SLI、SLO 與 SLA，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "SLA 一定比內部的 SLO 嚴格",
+          "explanation": "SLA 的可用性目標通常比內部 SLO 寬鬆。"
+        },
+        {
+          "id": "b",
+          "text": "SLI 是與客戶簽訂的合約",
+          "explanation": "那是 SLA。"
+        },
+        {
+          "id": "c",
+          "text": "三者完全相同",
+          "explanation": "三者用途不同。"
+        },
+        {
+          "id": "d",
+          "text": "SLI 是對服務行為的直接量測；SLO 是服務可靠度的目標值；SLA 是對使用者的承諾，未達成時會有相應的後果",
+          "explanation": "正確。SLA 中的目標通常比內部的 SLO 寬鬆。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d6-111",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 6
+        }
+      ],
+      "difficulty": 3,
+      "question": "依照 Google 的 SRE 觀念，設定可用性 SLO 時應該注意什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "服務越可靠，營運成本越高；應該為每個服務設定可以接受的最低可靠度作為 SLO",
+          "explanation": "正確。這是 Google SRE 文章中的建議。"
+        },
+        {
+          "id": "b",
+          "text": "每個服務都應該追求 100% 的可用性",
+          "explanation": "追求過高的可靠度會大幅增加成本。"
+        },
+        {
+          "id": "c",
+          "text": "不需要設定 SLO",
+          "explanation": "文章建議每個服務都應該有可用性 SLO。"
+        },
+        {
+          "id": "d",
+          "text": "SLO 只和硬體價格有關",
+          "explanation": "SLO 與業務目標和使用者體驗有關。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d6-112",
+      "type": "multiple",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 6
+        }
+      ],
+      "difficulty": 2,
+      "question": "考試指南列出哪些衡量系統效能與可靠度的指標？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "網域名稱的長度",
+          "explanation": "這不是系統效能指標。"
+        },
+        {
+          "id": "b",
+          "text": "延遲（latency）與流量（traffic）",
+          "explanation": "正確。"
+        },
+        {
+          "id": "c",
+          "text": "飽和度（saturation）與錯誤（errors）",
+          "explanation": "正確。"
+        },
+        {
+          "id": "d",
+          "text": "員工人數與辦公室面積",
+          "explanation": "這不是系統效能指標。"
+        }
+      ],
+      "answer": [
+        "b",
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d6-113",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 6
+        }
+      ],
+      "difficulty": 2,
+      "question": "下列哪一項做法最能提升系統的韌性？",
+      "options": [
+        {
+          "id": "a",
+          "text": "不做任何備份",
+          "explanation": "備份是保護資料的重要方式。"
+        },
+        {
+          "id": "b",
+          "text": "關閉所有監控",
+          "explanation": "監控有助於及早發現問題。"
+        },
+        {
+          "id": "c",
+          "text": "透過備援、資料複寫、可擴展的基礎設施與備份，避免單一故障點",
+          "explanation": "正確。這些都是考試指南列出的韌性設計方式。"
+        },
+        {
+          "id": "d",
+          "text": "把所有服務放在同一台伺服器",
+          "explanation": "這會造成單一故障點。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d6-114",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 6
+        }
+      ],
+      "difficulty": 2,
+      "question": "長期穩定的運算用量，可以用什麼方式取得 Google Cloud 的折扣？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Spot VM",
+          "explanation": "Spot 適合可以中斷的工作，不是承諾用量的折扣。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud Armor",
+          "explanation": "這是安全服務。"
+        },
+        {
+          "id": "c",
+          "text": "Error Reporting",
+          "explanation": "這是錯誤彙整工具。"
+        },
+        {
+          "id": "d",
+          "text": "承諾使用折扣（committed use discounts，CUDs）",
+          "explanation": "正確。購買承諾，承諾使用一定程度的資源或花費，以換取折扣價格。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d1-118",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司在決定應用程式要部署在哪一個 Google Cloud 區域時，應該考量什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "只能選擇公司總部所在的國家",
+          "explanation": "可以依需求選擇合適的區域。"
+        },
+        {
+          "id": "b",
+          "text": "依延遲、可用性與耐久性的需求選擇位置，例如靠近主要使用者",
+          "explanation": "正確。Google Cloud 讓你選擇應用程式的位置，以符合延遲、可用性與耐久性的需求。"
+        },
+        {
+          "id": "c",
+          "text": "一律選擇名稱最短的區域",
+          "explanation": "區域名稱與需求無關。"
+        },
+        {
+          "id": "d",
+          "text": "區域的選擇不會影響任何事情",
+          "explanation": "區域會影響延遲、可用性與法規遵循。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d1-119",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 1
+        }
+      ],
+      "difficulty": 1,
+      "question": "依照 Google Cloud 的說明，雲端運算的優點之一是只為使用的部分付費。這對企業有什麼幫助？",
+      "options": [
+        {
+          "id": "a",
+          "text": "費用會固定不變，不論用多少",
+          "explanation": "費用依用量而定。"
+        },
+        {
+          "id": "b",
+          "text": "企業不能再增加資源",
+          "explanation": "雲端可以依需求擴展。"
+        },
+        {
+          "id": "c",
+          "text": "可以更快、更有效率地擴展，不必負擔購買與維護自己的資料中心與伺服器",
+          "explanation": "正確。"
+        },
+        {
+          "id": "d",
+          "text": "企業必須預先購買所有設備",
+          "explanation": "這是內部部署的做法。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d1-120",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "一家公司把銷售資料集中到雲端並即時分析，主管能更快依數據做決策。這最能說明雲端的哪一項好處？",
+      "options": [
+        {
+          "id": "a",
+          "text": "實體安全",
+          "explanation": "題目重點是分析資料、支援決策。"
+        },
+        {
+          "id": "b",
+          "text": "降低網路延遲",
+          "explanation": "題目重點不是網路延遲。"
+        },
+        {
+          "id": "c",
+          "text": "開放原始碼授權",
+          "explanation": "與題目無關。"
+        },
+        {
+          "id": "d",
+          "text": "資料驅動的洞察（data-driven insights）",
+          "explanation": "正確。這是考試指南列出的雲端好處之一。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d2-122",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "difficulty": 1,
+      "question": "JSON 格式的資料，有欄位名稱但每筆資料的欄位可能不同。這屬於哪一種資料？",
+      "options": [
+        {
+          "id": "a",
+          "text": "結構化資料",
+          "explanation": "結構化資料有固定的欄位與型別，例如關聯式資料表。"
+        },
+        {
+          "id": "b",
+          "text": "非結構化資料",
+          "explanation": "非結構化資料例如影片、圖片，沒有欄位結構。"
+        },
+        {
+          "id": "c",
+          "text": "第三方資料",
+          "explanation": "這是資料來源的分類，不是結構的分類。"
+        },
+        {
+          "id": "d",
+          "text": "半結構化資料（semi-structured）",
+          "explanation": "正確。它有一定的結構標記，但不像關聯式資料表那樣固定。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d2-123",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想要相容 PostgreSQL、全代管，並為要求嚴苛的企業交易工作負載提供高效能的資料庫。最適合哪一項產品？",
+      "options": [
+        {
+          "id": "a",
+          "text": "AlloyDB for PostgreSQL",
+          "explanation": "正確。AlloyDB 結合 Google 打造的資料庫引擎與多節點的雲端架構，提供企業級的效能、可靠性與可用性。"
+        },
+        {
+          "id": "b",
+          "text": "Bigtable",
+          "explanation": "Bigtable 是寬欄 NoSQL 資料庫。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud Storage",
+          "explanation": "Cloud Storage 是物件儲存。"
+        },
+        {
+          "id": "d",
+          "text": "Looker",
+          "explanation": "Looker 是商業智慧工具。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d3-119",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "使用 BigQuery ML 建立的模型會存放在哪裡？",
+      "options": [
+        {
+          "id": "a",
+          "text": "BigQuery 資料集中，和資料表、檢視表一樣",
+          "explanation": "正確。"
+        },
+        {
+          "id": "b",
+          "text": "員工的個人電腦",
+          "explanation": "模型存放在 BigQuery 中。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud DNS 區域中",
+          "explanation": "與 DNS 無關。"
+        },
+        {
+          "id": "d",
+          "text": "一定要匯出到實體硬碟",
+          "explanation": "不需要。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d3-120",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "為什麼大型語言模型（LLM）的應用需要特別考慮負責任的 AI？",
+      "options": [
+        {
+          "id": "a",
+          "text": "因為 LLM 一定不會出錯",
+          "explanation": "LLM 可能產生錯誤或不適當的輸出。"
+        },
+        {
+          "id": "b",
+          "text": "因為 LLM 的能力非常多樣，難以完全預測它可能產生哪些非預期的輸出",
+          "explanation": "正確。Google Cloud 的生成式 AI API 依照 Google 的 AI 原則設計，以降低風險。"
+        },
+        {
+          "id": "c",
+          "text": "因為 LLM 只能做加法",
+          "explanation": "LLM 可以翻譯、摘要、生成內容與程式碼等。"
+        },
+        {
+          "id": "d",
+          "text": "因為 LLM 不需要任何資料",
+          "explanation": "LLM 需要大量資料訓練。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d3-121",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 3
+        }
+      ],
+      "difficulty": 3,
+      "question": "公司想快速導入 AI，只需要辨識圖片中的文字，不需要獨特的商業差異化。相較於自行訓練模型，使用預先訓練的 API 有什麼好處？",
+      "options": [
+        {
+          "id": "a",
+          "text": "需要大量的資料科學家",
+          "explanation": "預先訓練的 API 降低了專業需求。"
+        },
+        {
+          "id": "b",
+          "text": "一定要先購買 TPU",
+          "explanation": "使用 API 不需要自己購買硬體。"
+        },
+        {
+          "id": "c",
+          "text": "導入速度快、開發工作量低，也不需要深厚的 ML 專業",
+          "explanation": "正確。若需要獨特的差異化，才考慮用自己的資料訓練客製模型。"
+        },
+        {
+          "id": "d",
+          "text": "一定能提供最高的商業差異化",
+          "explanation": "預先訓練的 API 是通用的，差異化較低。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d4-117",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "Cloud Run 可以執行哪些應用程式？",
+      "options": [
+        {
+          "id": "a",
+          "text": "只能執行資料庫",
+          "explanation": "Cloud Run 執行程式碼、函式或容器。"
+        },
+        {
+          "id": "b",
+          "text": "只能執行 Windows 桌面應用程式",
+          "explanation": "Cloud Run 不是桌面應用程式平台。"
+        },
+        {
+          "id": "c",
+          "text": "任何能打包成容器映像檔的程式語言；部分語言甚至可以直接從原始碼部署",
+          "explanation": "正確。"
+        },
+        {
+          "id": "d",
+          "text": "只能執行 Java",
+          "explanation": "Cloud Run 支援任何能打包成容器的語言。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d4-118",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 4
+        }
+      ],
+      "difficulty": 1,
+      "question": "Kubernetes 是什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "一種資料庫",
+          "explanation": "Kubernetes 是容器協調平台。"
+        },
+        {
+          "id": "b",
+          "text": "一種程式語言",
+          "explanation": "Kubernetes 不是程式語言。"
+        },
+        {
+          "id": "c",
+          "text": "一種防火牆",
+          "explanation": "Kubernetes 不是防火牆。"
+        },
+        {
+          "id": "d",
+          "text": "開源的容器協調平台，最初由 Google 開發；GKE 是它的代管實作",
+          "explanation": "正確。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d5-121",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 5
+        }
+      ],
+      "difficulty": 2,
+      "question": "Google 對存放在儲存層的資料，使用什麼演算法進行預設的靜態加密？",
+      "options": [
+        {
+          "id": "a",
+          "text": "不加密",
+          "explanation": "Google 會預設加密存放的客戶內容。"
+        },
+        {
+          "id": "b",
+          "text": "只用 Base64 編碼",
+          "explanation": "Base64 是編碼，不是加密。"
+        },
+        {
+          "id": "c",
+          "text": "只用密碼保護 ZIP 檔",
+          "explanation": "這不是 Google 的儲存層加密方式。"
+        },
+        {
+          "id": "d",
+          "text": "AES-256",
+          "explanation": "正確。Google 存放的所有資料都在儲存層使用 AES-256 加密。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d5-122",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 5
+        }
+      ],
+      "difficulty": 2,
+      "question": "Security Command Center 可以協助監控對哪些安全基準的合規情形？",
+      "options": [
+        {
+          "id": "a",
+          "text": "NIST、HIPAA、PCI-DSS、CIS 等常見的安全基準",
+          "explanation": "正確。"
+        },
+        {
+          "id": "b",
+          "text": "只能監控網站的載入速度",
+          "explanation": "SCC 是安全風險管理工具。"
+        },
+        {
+          "id": "c",
+          "text": "只能監控員工的出勤",
+          "explanation": "與 SCC 無關。"
+        },
+        {
+          "id": "d",
+          "text": "只能監控網域名稱的到期日",
+          "explanation": "與 SCC 無關。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d6-115",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 6
+        }
+      ],
+      "difficulty": 2,
+      "question": "SLA（服務水準協議）與內部 SLO 的關係，通常是怎樣？",
+      "options": [
+        {
+          "id": "a",
+          "text": "SLA 是對使用者的承諾，未達成時會有相應的後果；SLA 中的可用性目標通常比內部 SLO 寬鬆",
+          "explanation": "正確。這樣內部可以在違反 SLA 之前先發現並處理問題。"
+        },
+        {
+          "id": "b",
+          "text": "SLA 一定比內部 SLO 更嚴格",
+          "explanation": "通常比較寬鬆。"
+        },
+        {
+          "id": "c",
+          "text": "SLA 與可用性無關",
+          "explanation": "SLA 通常包含可用性的承諾。"
+        },
+        {
+          "id": "d",
+          "text": "SLA 只在公司內部使用",
+          "explanation": "SLA 是對服務使用者的承諾。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d6-116",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 6
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊想持續了解正式環境的程式，哪一段耗用最多 CPU 與記憶體，以優化效能與成本。最適合哪一項工具？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Apigee",
+          "explanation": "這是 API 管理平台。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud Profiler",
+          "explanation": "正確。它是統計式、低負擔的分析工具，持續收集正式環境的 CPU 與記憶體配置資訊，並對應到原始碼。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud DNS",
+          "explanation": "與效能分析無關。"
+        },
+        {
+          "id": "d",
+          "text": "Assured Workloads",
+          "explanation": "這用於主權與合規邊界。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-cdl-d6-117",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-cdl",
+          "domain": 6
+        }
+      ],
+      "difficulty": 2,
+      "question": "一批可以中斷、彈性執行的工作，想用較低的價格執行以控制成本。考試指南列出的哪一種方式最適合？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Identity-Aware Proxy",
+          "explanation": "這是存取控制服務。"
+        },
+        {
+          "id": "b",
+          "text": "Certificate Manager",
+          "explanation": "這管理 TLS 憑證。"
+        },
+        {
+          "id": "c",
+          "text": "Spot VM",
+          "explanation": "正確。Spot VM 價格低很多，但可能被搶占，適合可以中斷的工作。"
+        },
+        {
+          "id": "d",
+          "text": "Sensitive Data Protection",
+          "explanation": "這是資料保護服務。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    }
+  ]
+}
