@@ -5,6 +5,7 @@ import { EMPTY_PROGRESS } from "@/lib/progress/progress";
 import { baseKey, createProgressSync, type ProgressSync, type SyncStatus } from "@/lib/progress/sync";
 import { progressStore } from "@/lib/progress/use-progress";
 import { supabaseRemote } from "./remote";
+import { toAccountUser, type AccountUser } from "./profile";
 import { authConfigured, supabase } from "./supabase";
 
 export type OAuthProvider = "google" | "github";
@@ -12,7 +13,7 @@ export type OAuthProvider = "google" | "github";
 export interface AccountState {
   /** False until the saved session has been checked. */
   ready: boolean;
-  user: { id: string; email: string | null } | null;
+  user: AccountUser | null;
   sync: SyncStatus;
 }
 
@@ -64,7 +65,7 @@ function start() {
     return;
   }
   client.auth.onAuthStateChange((_event, session) => {
-    const user = session?.user ? { id: session.user.id, email: session.user.email ?? null } : null;
+    const user = session?.user ? toAccountUser(session.user) : null;
     // Supabase calls this inside its own lock; other auth calls must wait until it returns.
     setTimeout(() => switchUser(user), 0);
   });

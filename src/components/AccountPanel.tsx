@@ -10,6 +10,7 @@ import {
   useAccount,
   type OAuthProvider,
 } from "@/lib/auth/account";
+import { accountInitial, providerLabel, type AccountUser } from "@/lib/auth/profile";
 import type { SyncStatus } from "@/lib/progress/sync";
 
 const card = "rounded-xl border border-border bg-surface p-5";
@@ -100,8 +101,9 @@ function SignInForm() {
   );
 }
 
-function SignedIn({ email, sync }: { email: string | null; sync: SyncStatus }) {
+function SignedIn({ user, sync }: { user: AccountUser; sync: SyncStatus }) {
   const [busy, setBusy] = useState(false);
+  const method = providerLabel(user.provider);
   const run = async (action: () => Promise<void>) => {
     setBusy(true);
     try {
@@ -112,8 +114,20 @@ function SignedIn({ email, sync }: { email: string | null; sync: SyncStatus }) {
   };
   return (
     <div className={card}>
-      <p className="text-sm text-muted">已登入</p>
-      <p className="font-semibold break-all">{email ?? "（沒有 Email 的帳號）"}</p>
+      <p className="text-sm text-muted">目前登入的帳號</p>
+      <div className="mt-2 flex items-center gap-3">
+        <span
+          aria-hidden
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-accent to-accent-2 text-lg font-bold text-bg"
+        >
+          {accountInitial(user)}
+        </span>
+        <div className="min-w-0">
+          {user.name ? <p className="font-semibold break-all">{user.name}</p> : null}
+          <p className={`break-all ${user.name ? "text-sm text-muted" : "font-semibold"}`}>{user.email ?? "（沒有 Email 的帳號）"}</p>
+        </div>
+      </div>
+      {method ? <p className="mt-2 text-sm text-muted">登入方式：{method}</p> : null}
       <p role="status" className={`mt-4 rounded-lg px-3 py-2 text-sm ${sync.state === "error" ? "bg-danger-soft text-danger" : "bg-surface-2"}`}>
         {syncText(sync)}
       </p>
@@ -139,5 +153,5 @@ export function AccountPanel() {
     return <p className={card}>這個網站還沒有設定登入功能。進度仍會保存在這台裝置的瀏覽器裡。</p>;
   }
   if (!account.ready) return <p className={`${card} text-muted`}>載入中…</p>;
-  return account.user ? <SignedIn email={account.user.email} sync={account.sync} /> : <SignInForm />;
+  return account.user ? <SignedIn user={account.user} sync={account.sync} /> : <SignInForm />;
 }
