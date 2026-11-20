@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { LevelSummary } from "./Achievements";
 import { TRACK_DESCRIPTION, TRACK_LABEL } from "@/lib/challenges/tracks";
 import type { ChallengeTrack } from "@/lib/content/schema";
 import { challengeStars, isChallengeUnlocked, type ChallengeRef } from "@/lib/progress/progress";
@@ -31,12 +32,15 @@ export function ChallengeMap({ tracks }: { tracks: { track: ChallengeTrack; leve
 
   return (
     <div>
-      <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-surface px-3 py-1 text-sm ring-1 ring-border">
+      <div className="mt-4 flex flex-wrap gap-2">
+      <LevelSummary />
+      <p className="inline-flex items-center gap-2 rounded-full bg-surface px-3 py-1 text-sm ring-1 ring-border">
         <span aria-hidden className="text-[#fbbf24]">
           ★
         </span>
         已獲得 <strong>{earned}</strong> / {all.length * 3} 顆星
       </p>
+      </div>
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
         {tracks.map(({ track, levels }) => (
           <section key={track} aria-labelledby={`track-${track}`} className="rounded-xl border border-border bg-surface p-5">

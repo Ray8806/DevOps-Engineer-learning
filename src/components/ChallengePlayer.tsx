@@ -5,6 +5,7 @@ import { Fragment, useEffect, useState } from "react";
 import { allFilled, runChallenge, type Answers, type ChallengeRun } from "@/lib/challenges/run";
 import { BLANK_PATTERN, type Challenge } from "@/lib/content/schema";
 import { challengeStars, isChallengeUnlocked, recordChallengeRun, type ChallengeRef } from "@/lib/progress/progress";
+import { XP } from "@/lib/progress/achievements";
 import { useProgress } from "@/lib/progress/use-progress";
 import { Stars } from "./ChallengeMap";
 
@@ -239,6 +240,11 @@ export function ChallengePlayer({
             <h2 id="result" className="flex flex-wrap items-center gap-3 text-xl font-extrabold">
               🎉 過關！ <Stars count={stars} size="text-2xl" />
             </h2>
+            {progress.challenges[challenge.id]?.clearedOnRun === runs ? (
+              <p className="mt-2 inline-block rounded-full bg-surface px-3 py-0.5 text-sm font-bold text-accent">
+                +{XP.challengeCleared + stars * XP.challengeStar} XP
+              </p>
+            ) : null}
             <p className="mt-1 text-sm text-muted">
               {progress.challenges[challenge.id]?.clearedOnRun === 1 ? "第一次執行就成功，太厲害了！" : "繼續保持，第一次就成功可以拿到三顆星。"}
             </p>

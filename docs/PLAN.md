@@ -368,6 +368,7 @@ interface Progress {
   units: Record<string, { read: boolean; quizScore?: number; labsDone: string[] }>;
   questions: Record<string, { attempts: number; lastCorrect: boolean }>;
   challenges: Record<string, { runs: number; clearedOnRun?: number }>;
+  activeDays: string[]; // YYYY-MM-DD（學員當地日期），連續學習天數用
   exams: { certId: string; date: string; score: number; byDomain: Record<string, number> }[];
 }
 ```
@@ -380,6 +381,7 @@ interface Progress {
 - **計分規則**：選項必須與答案完全一致才算對，複選題少選或多選都算錯（`src/lib/quiz/quiz.ts`）。
 - **解鎖是建議性的**：先修單元未完成時，路線圖顯示鎖頭與「建議先完成」，但仍可點進去讀，不硬性擋住。
 - **闖關**：`challenges` 記每一關執行了幾次，以及第一次過關是第幾次執行。星數由此算出：第 1 次就過關 3 顆、第 3 次以內 2 顆、之後 1 顆。同一條路線的上一關過關後，下一關才解鎖（和單元的建議性解鎖不同，這裡會擋住）。合併時取較多的執行次數、較早的過關次數。
+- **成就與等級**：經驗值、等級和徽章都由進度算出（`src/lib/progress/achievements.ts` 的純函式），不另外儲存，所以過去的學習也算數、各裝置一致。經驗值：讀完課文 20、通過測驗 30、完成 Lab 40、通過闖關 20 加每顆星 10、答對一題（最近一次答對）2。學習類的變更（不含設定）會由 `useProgress()` 把當天記進 `activeDays`，用來算連續學習天數；合併時取兩邊的聯集。
 - **主要平台**：在路線圖頁設定，決定路線圖顯示哪些單元。選了 AWS 或 GCP 時，單元頁只顯示那個平台：頁首只列它的服務、課文只有它的分頁（旁邊有「也看看另一個平台怎麼做」可以切換）、另一個平台的 Lab 收在「其他平台的 Lab（選修）」。不分平台的單元在任何篩選下都顯示。
 
 ## 8. 開發階段
@@ -393,7 +395,7 @@ interface Progress {
 | 5 ✅ | 證照練習 | 證照頁、依 domain 抽題練習、服務對照表 | 四張證照頁都可進入並練習 |
 | 6 | 內容擴充 | 依第 3 節補齊所有單元、測驗、Lab 與每張證照題庫 | 每單元至少 5 題、每張證照至少 150 題 |
 | 7 | 會員 | Supabase 登入（Email 登入連結、Google、GitHub）、進度同步與合併 | 兩個裝置登入後進度一致（正式站已用 Email、GitHub、Google 登入並同步成功） |
-| 7.5 | 闖關 | 填空闖關：選出設定與指令缺的值，在 Lab 引擎真的執行，依結果過關；關卡地圖、星數、解鎖 | 每一關用正確答案能過關、任何一個錯誤選項都會失敗（測試涵蓋）；成就與等級在下一批 |
+| 7.5 | 闖關 | 填空闖關：選出設定與指令缺的值，在 Lab 引擎真的執行，依結果過關；關卡地圖、星數、解鎖 | 每一關用正確答案能過關、任何一個錯誤選項都會失敗（測試涵蓋）；成就頁（`/achievements`）有等級、經驗值、連續學習天數與 15 個徽章，升級或獲得徽章時跳出通知 |
 | 8 | 模擬考 | 計時考試、依比重抽題、成績報告、錯題本、弱點分析 | 可完成一場完整模擬考並看到各 domain 得分 |
 | 9 | 進階功能 | 架構圖練習、AI 助教 | — |
 
