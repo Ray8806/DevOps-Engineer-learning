@@ -32,10 +32,14 @@
 在 **Authentication → Providers**（或 Sign In / Providers）：
 
 - **Email**：預設已開啟。內建的寄信服務有每小時的寄送數量限制，正式使用建議在 **SMTP Settings** 設定自己的寄信服務。
-- **Google**：
-  1. 在 Google Cloud 主控台建立 OAuth 用戶端（類型選「網頁應用程式」）。
-  2. 「已授權的重新導向 URI」填 Supabase Google 設定頁上顯示的 Callback URL（`https://<專案代號>.supabase.co/auth/v1/callback`）。
-  3. 把用戶端 ID 和密鑰填回 Supabase 的 Google 設定並開啟。
+- **Google**（在 Google Cloud 主控台的 Google Auth Platform 設定）：
+  1. 第一次進入時依精靈填「應用程式資訊」（應用程式名稱、使用者支援電子郵件）、「目標對象」選**外部**、聯絡資訊。
+  2. 「資料存取權」→「新增或移除範圍」，勾選 `openid`、`.../auth/userinfo.email`、`.../auth/userinfo.profile` 後儲存。不要加其他範圍，敏感範圍可能需要 Google 審查。
+  3. 「用戶端」→「建立用戶端」，類型選「網頁應用程式」：
+     - 「已授權的 JavaScript 來源」填網站網址（例如 `https://dev-ops-engineer-learning.vercel.app`）。
+     - 「已授權的重新導向 URI」填 Supabase Google 設定頁上顯示的 Callback URL（`https://<專案代號>.supabase.co/auth/v1/callback`）。
+  4. 把用戶端 ID 填到 Supabase 的 **Client IDs**、用戶端密鑰填到 **Client Secret (for OAuth)**，開啟並儲存。**Skip nonce checks** 保持關閉（那是給 iOS 用的）。
+  5. Google 的設定可能要幾分鐘才生效。登入時 Google 同意畫面會顯示 `<專案代號>.supabase.co`，要改成自己的網域需要設定 Supabase 自訂網域。
 - **GitHub**：
   1. 在 GitHub 的 Settings → Developer settings → OAuth Apps 建立 OAuth App。
   2. Homepage URL 填網站網址，Authorization callback URL 填同一個 Supabase Callback URL。
