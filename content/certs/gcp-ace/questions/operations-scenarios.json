@@ -1,0 +1,3883 @@
+{
+  "questions": [
+    {
+      "id": "gcp-ace-d1-101",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "員工離職後，他建立的 Google Cloud 專案仍要繼續運作，不能隨著個人帳號消失。依照資源階層的設計，哪一項做法能達到這個目的？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把專案的擁有者設為員工的個人 Gmail 帳號",
+          "explanation": "個人帳號不在公司的控制範圍內。"
+        },
+        {
+          "id": "b",
+          "text": "把專案放在另一個員工的資料夾中",
+          "explanation": "資料夾仍需在組織之下；重點是讓專案屬於組織。"
+        },
+        {
+          "id": "c",
+          "text": "關閉專案的計費功能",
+          "explanation": "這與專案的擁有權無關。"
+        },
+        {
+          "id": "d",
+          "text": "讓專案屬於組織（organization）資源，而不是個人",
+          "explanation": "正確。資源階層把資源的生命週期綁定在直接的上層；專案屬於組織，員工離職後專案仍然存在。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d1-102",
+      "type": "multiple",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於 Google Cloud 的資源階層，哪些敘述正確？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "除了最上層的資源，每個資源都恰好有一個上層（parent）",
+          "explanation": "正確。組織是根節點，資料夾是選用的分組，專案包含實際的服務資源。"
+        },
+        {
+          "id": "b",
+          "text": "在組織或資料夾授予的 IAM 角色，會被底下所有的子資源繼承",
+          "explanation": "正確。存取控制與組織政策會沿著階層往下套用。"
+        },
+        {
+          "id": "c",
+          "text": "一個專案可以同時屬於兩個資料夾",
+          "explanation": "每個資源只有一個上層。"
+        },
+        {
+          "id": "d",
+          "text": "資料夾是必要的，每個專案都一定要放在資料夾中",
+          "explanation": "資料夾是選用的。"
+        }
+      ],
+      "answer": [
+        "a",
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d1-103",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司要禁止所有專案建立帶有外部 IP 位址的 VM，並希望新建立的專案也自動套用。最適合的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "建立預算快訊",
+          "explanation": "預算快訊只追蹤費用。"
+        },
+        {
+          "id": "b",
+          "text": "在組織層級設定組織政策（Organization Policy）限制條件",
+          "explanation": "正確。組織政策附加在某個資源上，底下的子資源都會繼承，可以集中設定使用限制。"
+        },
+        {
+          "id": "c",
+          "text": "在每個專案的 IAM 中移除所有人的權限",
+          "explanation": "這會讓大家無法工作，也不是限制特定設定的方法。"
+        },
+        {
+          "id": "d",
+          "text": "請每位開發人員自己注意",
+          "explanation": "人工約定無法強制執行。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d1-104",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 1
+        }
+      ],
+      "difficulty": 3,
+      "question": "關於組織政策（Organization Policy）與 IAM，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "組織政策只能套用在單一 VM 上",
+          "explanation": "組織政策可以套用在組織、資料夾或專案，並往下繼承。"
+        },
+        {
+          "id": "b",
+          "text": "組織政策會取代所有 IAM 角色",
+          "explanation": "組織政策不授予權限，也不取代 IAM。"
+        },
+        {
+          "id": "c",
+          "text": "組織政策決定「誰」可以做什麼；IAM 決定資源可以怎麼設定",
+          "explanation": "相反。IAM 決定誰有權限；組織政策設定資源可以怎麼被使用的限制。"
+        },
+        {
+          "id": "d",
+          "text": "組織政策為資源設定限制條件（例如允許的位置），作為開發團隊的防護欄；IAM 決定哪些主體可以對資源執行哪些動作",
+          "explanation": "正確。兩者互補，組織政策也會被子資源繼承。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d1-105",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 1
+        }
+      ],
+      "difficulty": 1,
+      "question": "在一個新專案中使用 Compute Engine 之前，通常需要先做哪一件事？",
+      "options": [
+        {
+          "id": "a",
+          "text": "購買承諾使用折扣",
+          "explanation": "承諾使用折扣是選用的計費方式。"
+        },
+        {
+          "id": "b",
+          "text": "建立 Cloud Interconnect",
+          "explanation": "Interconnect 是連接內部部署網路的方式，不是使用 Compute Engine 的前提。"
+        },
+        {
+          "id": "c",
+          "text": "刪除預設的 VPC",
+          "explanation": "不需要。"
+        },
+        {
+          "id": "d",
+          "text": "在專案中啟用 Compute Engine API",
+          "explanation": "正確。使用服務前，需要先在專案中啟用對應的 API。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d1-106",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊要在某個區域大量建立 GPU VM，卻收到資源不足的錯誤。檢查後發現是專案在該區域的 GPU 用量已達上限。應該怎麼處理？",
+      "options": [
+        {
+          "id": "a",
+          "text": "查看專案的配額（quota），並申請提高",
+          "explanation": "正確。配額限制專案可以使用的資源量，用來維持公平並減少用量暴增。"
+        },
+        {
+          "id": "b",
+          "text": "刪除專案再重建",
+          "explanation": "新專案也有配額限制。"
+        },
+        {
+          "id": "c",
+          "text": "關閉計費帳戶",
+          "explanation": "這會讓資源無法使用。"
+        },
+        {
+          "id": "d",
+          "text": "改用更多的 IAM 角色",
+          "explanation": "IAM 角色不會提高配額。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d1-107",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "要在 Google Cloud 專案中使用付費資源，下列哪一項是必要的？",
+      "options": [
+        {
+          "id": "a",
+          "text": "專案中必須有服務帳戶金鑰",
+          "explanation": "這與計費無關，也應盡量避免使用金鑰。"
+        },
+        {
+          "id": "b",
+          "text": "專案已連結到一個有效的 Cloud Billing 帳戶",
+          "explanation": "正確。專案連結到有效的 Cloud Billing 帳戶時，才會啟用計費。"
+        },
+        {
+          "id": "c",
+          "text": "專案必須屬於某個資料夾",
+          "explanation": "資料夾是選用的。"
+        },
+        {
+          "id": "d",
+          "text": "專案必須使用 Shared VPC",
+          "explanation": "Shared VPC 是網路設計的選項。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d1-108",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司有多個部門，財務希望各部門的 Google Cloud 費用由不同的付款資料支付。下列哪一項做法合理？",
+      "options": [
+        {
+          "id": "a",
+          "text": "用 Google Workspace 的帳單帳戶支付 Google Cloud 費用",
+          "explanation": "Cloud Billing 帳戶不支付 Google Workspace；兩者是分開的帳單帳戶。"
+        },
+        {
+          "id": "b",
+          "text": "把所有部門放在同一個專案",
+          "explanation": "這會讓費用難以區分，也不符合權限隔離。"
+        },
+        {
+          "id": "c",
+          "text": "建立多個 Cloud Billing 帳戶，把各部門的專案分別連結到對應的帳戶",
+          "explanation": "正確。一個 Cloud Billing 帳戶可以為多個專案付費，專案可以連結到不同的帳戶。"
+        },
+        {
+          "id": "d",
+          "text": "讓每個專案同時把費用分給多個 Cloud Billing 帳戶",
+          "explanation": "專案的用量會計入它所連結的那個 Cloud Billing 帳戶；要讓不同部門分開付款，應把各自的專案連結到不同的帳戶。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-ace-d1-109",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 1
+        }
+      ],
+      "difficulty": 3,
+      "question": "主管設定了「僅限快訊」的預算（alerts-only budget），金額為每月 1,000 美元。當花費達到 1,000 美元時，會發生什麼事？",
+      "options": [
+        {
+          "id": "a",
+          "text": "依設定的門檻規則寄出快訊通知，但服務仍會繼續執行並計費",
+          "explanation": "正確。要自動處理，可以用 Pub/Sub 的程式化通知觸發動作，例如以程式停用專案的計費。"
+        },
+        {
+          "id": "b",
+          "text": "Google 會自動把專案降級成免費方案",
+          "explanation": "預算不會改變專案的方案。"
+        },
+        {
+          "id": "c",
+          "text": "超過的部分不會收費",
+          "explanation": "預算只是追蹤與通知，超過的用量仍會收費。"
+        },
+        {
+          "id": "d",
+          "text": "所有服務會自動停止",
+          "explanation": "僅限快訊的預算不會自動限制用量或花費。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d1-110",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊想在預算超過門檻時自動執行動作，例如把通知轉送到 Slack，或以程式自動處理成本。應該如何設定預算？",
+      "options": [
+        {
+          "id": "a",
+          "text": "為預算設定 Pub/Sub 的程式化通知",
+          "explanation": "正確。程式化通知可以把預算訊息送到其他管道，或自動化成本管理工作。"
+        },
+        {
+          "id": "b",
+          "text": "只設定電子郵件通知",
+          "explanation": "電子郵件通知需要人看了才會處理。"
+        },
+        {
+          "id": "c",
+          "text": "把預算金額設為 0",
+          "explanation": "這只會讓快訊更早發出，不會自動執行動作。"
+        },
+        {
+          "id": "d",
+          "text": "建立 Cloud Interconnect",
+          "explanation": "與預算無關。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d1-111",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "財務分析師想用 SQL 分析過去的 Google Cloud 帳單資料，依專案、服務與標籤統計費用。應該怎麼做？",
+      "options": [
+        {
+          "id": "a",
+          "text": "使用 Cloud DNS",
+          "explanation": "與帳單無關。"
+        },
+        {
+          "id": "b",
+          "text": "設定 Cloud Billing 匯出到 BigQuery",
+          "explanation": "正確。匯出會在一天中自動把詳細的帳單資料送到 BigQuery 資料集，可以用 SQL 分析。"
+        },
+        {
+          "id": "c",
+          "text": "每個月手動下載 PDF 帳單",
+          "explanation": "PDF 帳單不方便用 SQL 分析。"
+        },
+        {
+          "id": "d",
+          "text": "使用 Cloud Monitoring 的 CPU 指標",
+          "explanation": "這是效能指標，不是帳單資料。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d1-112",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 1
+        }
+      ],
+      "difficulty": 3,
+      "question": "團隊今天才開啟 Cloud Billing 匯出到 BigQuery，資料集位於單一區域（不是 US 或 EU 多區域）。關於匯出的資料，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "只會匯出 PDF 檔",
+          "explanation": "匯出的是 BigQuery 資料集。"
+        },
+        {
+          "id": "b",
+          "text": "匯出的資料每年只更新一次",
+          "explanation": "資料會在一天中自動匯出。"
+        },
+        {
+          "id": "c",
+          "text": "會自動補上過去三年的帳單資料",
+          "explanation": "匯出不會回溯補上這麼久以前的資料。"
+        },
+        {
+          "id": "d",
+          "text": "用量費用資料只包含開啟匯出之後產生的帳單資料",
+          "explanation": "正確。使用單一區域的資料集時，資料從開啟匯出的日期開始；所以應該盡早開啟匯出。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d1-113",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "安全團隊想搜尋整個組織中所有的 Compute Engine 執行個體與它們的中繼資料，並定期匯出做稽核。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud Billing 報表",
+          "explanation": "帳單報表顯示費用，不是資源清單。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud NAT",
+          "explanation": "Cloud NAT 提供網路位址轉譯。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud Profiler",
+          "explanation": "Profiler 分析應用程式的 CPU 與記憶體使用。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud Asset Inventory",
+          "explanation": "正確。它是全域的中繼資料清單服務，可以檢視、搜尋、匯出、監控與分析資產的中繼資料，適合合規追蹤與定期稽核。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d1-114",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司的員工與合作廠商帳號都存放在外部的身分提供者（IdP），希望他們用單一登入（SSO）存取 Google Cloud，而不必把帳號同步到 Cloud Identity。最適合哪一項功能？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Workforce Identity Federation",
+          "explanation": "正確。它讓外部 IdP 驗證員工、合作夥伴與承包商等人員，再透過 SSO 存取 Google Cloud。"
+        },
+        {
+          "id": "b",
+          "text": "Workload Identity Federation",
+          "explanation": "這是給內部部署或其他雲端的工作負載（程式）使用，不是給人員登入。"
+        },
+        {
+          "id": "c",
+          "text": "服務帳戶金鑰",
+          "explanation": "服務帳戶是給應用程式使用，而且應盡量避免使用金鑰。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud NAT",
+          "explanation": "Cloud NAT 與身分無關。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d1-115",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司的開發人員目前用個人 Gmail 帳號存取 Google Cloud，公司無法控管這些帳號。想集中管理使用者與群組，並能與 Active Directory 等身分提供者整合。應該使用哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud DNS",
+          "explanation": "Cloud DNS 是網域名稱服務。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud Identity",
+          "explanation": "正確。Cloud Identity 是身分即服務（IDaaS），集中管理使用者與群組，也能與 Active Directory、Microsoft Entra ID 等聯合身分。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud Asset Inventory",
+          "explanation": "Asset Inventory 是資源的中繼資料清單。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud Billing",
+          "explanation": "Cloud Billing 處理付款。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d1-116",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 1
+        }
+      ],
+      "difficulty": 1,
+      "question": "在 Google Cloud 部署服務前，要確認某項產品或機器類型在特定區域（region）或可用區（zone）是否提供。正確的觀念是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "區域只影響價格，不影響可用的產品",
+          "explanation": "位置會影響可用的產品與機器類型。"
+        },
+        {
+          "id": "b",
+          "text": "只有 Cloud Storage 需要選擇位置",
+          "explanation": "許多資源都需要選擇區域或可用區。"
+        },
+        {
+          "id": "c",
+          "text": "不同的區域與可用區提供的產品和機器類型可能不同，部署前要確認",
+          "explanation": "正確。考試指南把確認產品在各地理位置的可用性列為設定環境的工作之一。"
+        },
+        {
+          "id": "d",
+          "text": "所有產品在所有區域都完全一樣",
+          "explanation": "產品與資源的可用性會依位置而不同。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-ace-d1-117",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 1
+        }
+      ],
+      "difficulty": 2,
+      "question": "管理員想讓同一組人員取得一致的權限，人員異動時不必逐一修改每個專案的 IAM 設定。最佳做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把角色逐一授予每位使用者",
+          "explanation": "人員多或異動頻繁時難以維護。"
+        },
+        {
+          "id": "b",
+          "text": "讓所有人共用一個帳號",
+          "explanation": "無法追蹤個人行為，也違反最佳實務。"
+        },
+        {
+          "id": "c",
+          "text": "授予所有人 Owner 基本角色",
+          "explanation": "這違反最小權限原則。"
+        },
+        {
+          "id": "d",
+          "text": "在 Cloud Identity 中建立群組，把 IAM 角色授予群組",
+          "explanation": "正確。Google 群組可以作為 IAM 的主體；人員加入或離開群組，權限就跟著改變。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-101",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個可以隨時中斷、重新執行的批次工作，希望用最低的價格執行。最適合哪一種 Compute Engine VM？",
+      "options": [
+        {
+          "id": "a",
+          "text": "一般（標準）VM 並購買承諾使用折扣",
+          "explanation": "承諾使用折扣適合長期穩定的用量。"
+        },
+        {
+          "id": "b",
+          "text": "單一租戶節點",
+          "explanation": "單一租戶節點是專屬的實體伺服器，成本較高。"
+        },
+        {
+          "id": "c",
+          "text": "最大規格的預先定義機器類型",
+          "explanation": "規格大不代表便宜。"
+        },
+        {
+          "id": "d",
+          "text": "Spot VM",
+          "explanation": "正確。Spot VM 使用多餘的容量，價格比一般 VM 低很多，但 Compute Engine 可能隨時搶占（停止或刪除）它們。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-102",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "應用程式需要 6 個 vCPU 與 40 GB 記憶體，預先定義的機器類型都不剛好，選大一級又浪費。最適合的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "建立自訂機器類型（custom machine type）",
+          "explanation": "正確。預先定義的機器類型不符合需求時，可以在 N4、N2、E2 等一般用途系列建立自訂的 vCPU 與記憶體組合。"
+        },
+        {
+          "id": "b",
+          "text": "改用 Spot VM",
+          "explanation": "Spot 改變的是佈建模式與價格，不是 vCPU 與記憶體的組合。"
+        },
+        {
+          "id": "c",
+          "text": "改用 Cloud Storage",
+          "explanation": "Cloud Storage 是物件儲存。"
+        },
+        {
+          "id": "d",
+          "text": "改用更多台最小的 VM",
+          "explanation": "應用程式需要的是單台的資源組合。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-103",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司有數百位工程師需要 SSH 到 Linux VM，不想逐一管理每台 VM 上的 SSH 金鑰，希望用 IAM 控制誰可以登入。最適合的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "關閉防火牆的 22 埠",
+          "explanation": "這會讓所有人都無法 SSH。"
+        },
+        {
+          "id": "b",
+          "text": "啟用 OS Login",
+          "explanation": "正確。OS Login 用 IAM 管理 SSH 存取，不必建立與管理個別的 SSH 金鑰，也會在各執行個體維持一致的 Linux 使用者身分。"
+        },
+        {
+          "id": "c",
+          "text": "把所有工程師的公開金鑰加到專案中繼資料",
+          "explanation": "人多時難以管理，也無法用 IAM 集中控制。"
+        },
+        {
+          "id": "d",
+          "text": "讓所有人共用一把私密金鑰",
+          "explanation": "這是很大的安全風險。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-104",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "Google 對 VM 所在的主機進行維護時，大部分的 VM 預設會怎麼處理？",
+      "options": [
+        {
+          "id": "a",
+          "text": "一律停止，需要手動重新啟動",
+          "explanation": "大部分執行個體預設是即時遷移。"
+        },
+        {
+          "id": "b",
+          "text": "改成 Spot VM",
+          "explanation": "維護不會改變佈建模式。"
+        },
+        {
+          "id": "c",
+          "text": "即時遷移（live migrate）到其他主機，VM 繼續執行",
+          "explanation": "正確。你也可以覆寫這個行為，設定為終止並選擇是否自動重新啟動。"
+        },
+        {
+          "id": "d",
+          "text": "一律被刪除",
+          "explanation": "預設不會刪除。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-105",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 3,
+      "question": "資料庫 VM 需要在單一可用區故障時，資料仍能在同一區域的另一個可用區使用。下列哪一種磁碟最適合？",
+      "options": [
+        {
+          "id": "a",
+          "text": "可用區 Persistent Disk",
+          "explanation": "可用區磁碟只在一個可用區中。"
+        },
+        {
+          "id": "b",
+          "text": "Local SSD",
+          "explanation": "Local SSD 是暫時的本機儲存。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud Storage Archive 類別",
+          "explanation": "這是封存用的物件儲存，不是 VM 的磁碟。"
+        },
+        {
+          "id": "d",
+          "text": "區域 Persistent Disk 或 Hyperdisk Balanced High Availability",
+          "explanation": "正確。它們會在同一區域的兩個可用區之間同步複寫資料，可以承受一個可用區故障。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-106",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊要讓一組相同設定的 VM 依負載自動增減，並在應用程式沒有回應時自動重建 VM。應該怎麼做？",
+      "options": [
+        {
+          "id": "a",
+          "text": "用執行個體範本（instance template）建立代管執行個體群組（MIG），並設定自動調度與自動修復",
+          "explanation": "正確。MIG 依執行個體範本維護每個執行個體，提供自動調度、自動修復與多可用區部署。"
+        },
+        {
+          "id": "b",
+          "text": "建立非代管執行個體群組",
+          "explanation": "非代管群組不提供自動調度與自動修復。"
+        },
+        {
+          "id": "c",
+          "text": "手動建立多台 VM 並逐一監控",
+          "explanation": "這不是自動化的做法。"
+        },
+        {
+          "id": "d",
+          "text": "把 VM 改成 Cloud Storage bucket",
+          "explanation": "Cloud Storage 是物件儲存。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-107",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司要為數百台 Windows 與 Linux VM 定期套用作業系統修補程式，並產生修補合規報告。最適合哪一項工具？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud NAT",
+          "explanation": "Cloud NAT 提供網路位址轉譯。"
+        },
+        {
+          "id": "b",
+          "text": "VM Manager（Patch）",
+          "explanation": "正確。VM Manager 是管理大量 VM 作業系統的工具組，其中 Patch 可以隨選或排程套用修補程式並產生合規報告。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud DNS",
+          "explanation": "Cloud DNS 是網域名稱服務。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud Billing 匯出",
+          "explanation": "這是帳單資料。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-108",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊想在 GKE 上執行容器化應用程式，但不想管理節點、調度與安全設定，希望 Google 依 Kubernetes 資訊清單自動佈建運算資源。最適合哪一種模式？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Compute Engine 非代管執行個體群組",
+          "explanation": "這不是 Kubernetes。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud Storage",
+          "explanation": "Cloud Storage 是物件儲存。"
+        },
+        {
+          "id": "c",
+          "text": "GKE Autopilot",
+          "explanation": "正確。Autopilot 由 Google 管理節點、調度、安全與其他預先設定，適合大多數正式環境的工作負載。"
+        },
+        {
+          "id": "d",
+          "text": "GKE Standard，自行管理節點集區",
+          "explanation": "Standard 模式需要自己設定與管理節點集區。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-109",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊希望 GKE 叢集的控制平面在單一可用區故障時仍能運作。應該建立哪一種叢集？",
+      "options": [
+        {
+          "id": "a",
+          "text": "單一可用區的叢集",
+          "explanation": "控制平面只在一個可用區，該可用區故障時會受影響。"
+        },
+        {
+          "id": "b",
+          "text": "在叢集中只建立一個節點",
+          "explanation": "這會降低可用性。"
+        },
+        {
+          "id": "c",
+          "text": "關閉自動升級",
+          "explanation": "這與控制平面的可用性無關。"
+        },
+        {
+          "id": "d",
+          "text": "區域叢集（regional cluster）",
+          "explanation": "正確。區域叢集會把控制平面複寫到同一區域的多個可用區，提高叢集的可用性。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-110",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 3,
+      "question": "團隊要求 GKE 的節點不能有外部 IP 位址，只使用 VPC 中的內部 IP。這屬於哪一種叢集設定？",
+      "options": [
+        {
+          "id": "a",
+          "text": "設定網路隔離，使用私人節點（private nodes）",
+          "explanation": "正確。GKE 可以自訂控制平面與節點的網路存取，讓節點只使用內部 IP 位址，提升叢集的網路安全。"
+        },
+        {
+          "id": "b",
+          "text": "把叢集改成 Autopilot 就一定沒有內部 IP",
+          "explanation": "Autopilot 是管理模式，與節點是否有外部 IP 是不同的設定。"
+        },
+        {
+          "id": "c",
+          "text": "刪除叢集的所有服務帳戶",
+          "explanation": "這會讓節點無法正常運作。"
+        },
+        {
+          "id": "d",
+          "text": "開啟 Cloud CDN",
+          "explanation": "CDN 與節點的 IP 無關。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-111",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "每當有新檔案上傳到 Cloud Storage bucket，就要自動觸發 Cloud Run 服務處理，團隊不想自己維護事件的基礎設施。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud Billing 預算",
+          "explanation": "預算追蹤費用。"
+        },
+        {
+          "id": "b",
+          "text": "Eventarc",
+          "explanation": "正確。Eventarc 讓你建立事件驅動的架構，不必實作、自訂或維護底層的基礎設施。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud DNS",
+          "explanation": "Cloud DNS 是網域名稱服務。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud Interconnect",
+          "explanation": "Interconnect 連接內部部署網路。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-112",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 3,
+      "question": "一個機器學習模型以大量矩陣運算為主，沒有自訂的運算操作，需要訓練好幾週。下列哪一種硬體通常最適合？",
+      "options": [
+        {
+          "id": "a",
+          "text": "GPU 一定比 TPU 適合所有模型",
+          "explanation": "有大量自訂 PyTorch/JAX 操作的模型比較適合 GPU；以矩陣運算為主的模型適合 TPU。"
+        },
+        {
+          "id": "b",
+          "text": "Local SSD",
+          "explanation": "這是儲存，不是加速器。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud TPU",
+          "explanation": "正確。TPU 是 Google 為機器學習設計的 ASIC，適合以矩陣運算為主、訓練數週或數月、批次量大的模型。"
+        },
+        {
+          "id": "d",
+          "text": "只用 CPU",
+          "explanation": "CPU 適合需要最大彈性的快速原型。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-113",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 3,
+      "question": "一個模型包含大量自訂的 PyTorch 操作，有些必須至少部分在 CPU 上執行，而且需要高精度的運算。下列哪一種加速器比較適合？",
+      "options": [
+        {
+          "id": "a",
+          "text": "TPU",
+          "explanation": "TPU 不適合需要高精度運算、或主要訓練迴圈中有自訂操作的工作。"
+        },
+        {
+          "id": "b",
+          "text": "不需要加速器",
+          "explanation": "大型模型訓練通常需要加速器。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud NAT",
+          "explanation": "與運算無關。"
+        },
+        {
+          "id": "d",
+          "text": "GPU",
+          "explanation": "正確。有大量自訂 PyTorch/JAX 操作的模型適合 GPU；TPU 不適合需要高精度運算或在主要訓練迴圈中有自訂操作的工作。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-114",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個全球的金融應用程式需要關聯式資料庫，要求強一致性，並且讀寫都要能水平擴展到多個區域。最適合哪一項資料庫？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Spanner",
+          "explanation": "正確。Spanner 是全球分散式資料庫，提供強一致性與水平的讀寫擴展。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud SQL",
+          "explanation": "Cloud SQL 是代管的 MySQL、PostgreSQL、SQL Server 關聯式資料庫；題目要求的全球分散與水平讀寫擴展是 Spanner 的特點。"
+        },
+        {
+          "id": "c",
+          "text": "Memorystore",
+          "explanation": "Memorystore 是記憶體內快取。"
+        },
+        {
+          "id": "d",
+          "text": "Filestore",
+          "explanation": "Filestore 是檔案伺服器。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-115",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司要儲存數十億列的時間序列資料（例如伺服器的 CPU 用量），需要以單一鍵值低延遲讀寫，資料量達 PB 等級。最適合哪一項資料庫？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Memorystore",
+          "explanation": "Memorystore 是記憶體內快取。"
+        },
+        {
+          "id": "b",
+          "text": "Bigtable",
+          "explanation": "正確。Bigtable 能擴展到數十億列、數千欄，適合以單一鍵值、低延遲存取大量資料，例如時間序列與金融資料。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud SQL",
+          "explanation": "Cloud SQL 是關聯式資料庫，不是為 PB 等級的鍵值資料設計。"
+        },
+        {
+          "id": "d",
+          "text": "Firestore",
+          "explanation": "Firestore 是文件資料庫，適合網頁與行動應用程式。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-116",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊需要相容 PostgreSQL、全代管，而且為要求嚴苛的企業工作負載提供高效能與高可用的資料庫。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Firestore",
+          "explanation": "Firestore 是文件資料庫。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud Storage",
+          "explanation": "Cloud Storage 是物件儲存。"
+        },
+        {
+          "id": "c",
+          "text": "AlloyDB for PostgreSQL",
+          "explanation": "正確。AlloyDB 是全代管、相容 PostgreSQL 的資料庫服務，結合 Google 打造的資料庫引擎與多節點架構。"
+        },
+        {
+          "id": "d",
+          "text": "Bigtable",
+          "explanation": "Bigtable 是寬欄 NoSQL 資料庫，不相容 PostgreSQL。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-117",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個行動應用程式需要無伺服器的文件資料庫，支援即時同步與離線使用。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Bigtable",
+          "explanation": "Bigtable 適合大量的單一鍵值資料，不提供行動裝置的離線同步。"
+        },
+        {
+          "id": "b",
+          "text": "Spanner",
+          "explanation": "Spanner 是全球分散式關聯式資料庫。"
+        },
+        {
+          "id": "c",
+          "text": "Filestore",
+          "explanation": "Filestore 是檔案伺服器。"
+        },
+        {
+          "id": "d",
+          "text": "Firestore",
+          "explanation": "正確。Firestore 是全代管、無伺服器的文件資料庫，內建即時同步，適合離線優先或協作的行動與網頁應用程式。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-118",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "網站要快取常用的查詢結果，需要次毫秒的資料存取，不想自己管理 Redis 伺服器。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Memorystore for Redis",
+          "explanation": "正確。它是全代管的 Redis 服務，用來建立次毫秒存取的應用程式快取。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud Storage Nearline",
+          "explanation": "Nearline 是不常存取的物件儲存。"
+        },
+        {
+          "id": "c",
+          "text": "BigQuery",
+          "explanation": "BigQuery 是資料倉儲。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud DNS",
+          "explanation": "Cloud DNS 是網域名稱服務。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-119",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "多台 Compute Engine VM 與 GKE 叢集需要共用一個以 NFS 掛載的檔案系統。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "可用區 Persistent Disk",
+          "explanation": "Persistent Disk 是區塊儲存，不是 NFS 檔案共用。"
+        },
+        {
+          "id": "b",
+          "text": "Filestore",
+          "explanation": "正確。Filestore 是全代管的檔案伺服器，可以連接 Compute Engine VM、GKE 叢集等用戶端，支援 NFS。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud Storage Archive",
+          "explanation": "Archive 是封存用的物件儲存。"
+        },
+        {
+          "id": "d",
+          "text": "Memorystore",
+          "explanation": "Memorystore 是記憶體內快取。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-120",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司要保存備份資料，平均每季最多讀取一次。依 Cloud Storage 的儲存級別，哪一個通常最合適？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Nearline",
+          "explanation": "Nearline 適合平均每月最多存取一次的資料；每季一次的資料用 Coldline 通常較划算。"
+        },
+        {
+          "id": "b",
+          "text": "Archive 一定是所有備份的唯一選擇",
+          "explanation": "Archive 適合純粹備份與封存、每年存取不到一次的資料；題目的資料每季會讀取。"
+        },
+        {
+          "id": "c",
+          "text": "Coldline",
+          "explanation": "正確。Coldline 適合每季最多讀取或修改一次的資料，最短儲存期間為 90 天。"
+        },
+        {
+          "id": "d",
+          "text": "Standard",
+          "explanation": "Standard 適合經常存取的資料，儲存成本較高。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-121",
+      "type": "multiple",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 3,
+      "question": "關於 Cloud Storage 的儲存級別，哪些敘述正確？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "Nearline、Coldline、Archive 讀取資料時會收取擷取費用",
+          "explanation": "正確。這些級別以較低的儲存費用換取擷取費用。"
+        },
+        {
+          "id": "b",
+          "text": "Archive 級別的資料需要好幾小時才能讀取",
+          "explanation": "Cloud Storage 的各級別都能低延遲存取，沒有離線的資料擷取。"
+        },
+        {
+          "id": "c",
+          "text": "Standard 級別也有 30 天的最短儲存期間",
+          "explanation": "Standard 沒有最短儲存期間。"
+        },
+        {
+          "id": "d",
+          "text": "Nearline、Coldline、Archive 都有最短儲存期間，分別是 30、90、365 天",
+          "explanation": "正確。"
+        }
+      ],
+      "answer": [
+        "a",
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-122",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司要把 Amazon S3 中大量的資料搬到 Cloud Storage，並定期同步。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Storage Transfer Service",
+          "explanation": "正確。它可以在 Amazon S3、Azure Blob Storage、內部部署儲存與 Cloud Storage 之間搬移資料。"
+        },
+        {
+          "id": "b",
+          "text": "在本機下載後再用網頁介面逐一上傳",
+          "explanation": "資料量大時不實際。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud DNS",
+          "explanation": "Cloud DNS 是網域名稱服務。"
+        },
+        {
+          "id": "d",
+          "text": "Memorystore",
+          "explanation": "Memorystore 是記憶體內快取。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-123",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 3,
+      "question": "公司有多個專案，希望各專案的 VM 都使用網路團隊集中管理的同一個 VPC 網路與子網路。最適合哪一項功能？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud CDN",
+          "explanation": "CDN 與 VPC 共用無關。"
+        },
+        {
+          "id": "b",
+          "text": "Shared VPC",
+          "explanation": "正確。指定一個主專案（host project），把其他服務專案附加上去，服務專案的資源就能使用主專案中 Shared VPC 網路的子網路。"
+        },
+        {
+          "id": "c",
+          "text": "在每個專案各自建立 VPC，再用 VPC 網路對等互連連接",
+          "explanation": "對等互連可以連通，但網路不會由一個團隊集中管理；題目要的是共用同一個網路。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud NAT",
+          "explanation": "Cloud NAT 提供對外連線的位址轉譯。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-124",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "VPC 網路 net-a 與 net-b 對等互連，net-a 也與 net-c 對等互連。net-b 的 VM 能透過 net-a 連到 net-c 嗎？",
+      "options": [
+        {
+          "id": "a",
+          "text": "可以，只要開啟 Cloud NAT",
+          "explanation": "Cloud NAT 不會讓對等互連遞移。"
+        },
+        {
+          "id": "b",
+          "text": "可以，只要使用 Premium 級網路",
+          "explanation": "網路服務級別與對等互連的路由無關。"
+        },
+        {
+          "id": "c",
+          "text": "可以，對等互連會自動遞移",
+          "explanation": "VPC 網路對等互連不提供遞移的路由。"
+        },
+        {
+          "id": "d",
+          "text": "不可以，VPC 網路對等互連不提供遞移的路由",
+          "explanation": "正確。若 net-b 需要連到 net-c，要另外建立 net-b 與 net-c 的對等互連，或改用其他網路設計。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-125",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 3,
+      "question": "防火牆規則想依 VM 的身分來指定來源與目標，而且希望只有獲得授權的人才能把這個標記加到 VM 上。應該使用什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "網路標記（network tags）",
+          "explanation": "網路標記是沒有存取控制的字串，無法用 IAM 限制誰可以加上它。"
+        },
+        {
+          "id": "b",
+          "text": "VM 的名稱",
+          "explanation": "防火牆規則不是用 VM 名稱指定目標。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud DNS 記錄",
+          "explanation": "DNS 記錄與防火牆無關。"
+        },
+        {
+          "id": "d",
+          "text": "由 IAM 控管的安全標記（secure tags）",
+          "explanation": "正確。安全標記在 Resource Manager 中建立與管理，可以用來指定 Cloud NGFW 規則的來源與目標；一般的網路標記則是沒有存取控制的字串。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-126",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想把一組防火牆規則一次套用到整個組織或某個資料夾底下的所有 VPC 網路。應該使用什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "階層式防火牆政策（hierarchical firewall policies）",
+          "explanation": "正確。它可以把規則組成政策，套用到一個或多個專案的多個 VPC 網路，並與組織或資料夾建立關聯。"
+        },
+        {
+          "id": "b",
+          "text": "在每個 VPC 逐一建立相同的 VPC 防火牆規則",
+          "explanation": "可以做到，但難以集中維護。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud NAT",
+          "explanation": "Cloud NAT 不是防火牆。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud Billing 預算",
+          "explanation": "預算追蹤費用。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-127",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於 Google Cloud 的 VPC 防火牆規則，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "預設網路沒有任何預先建立的規則",
+          "explanation": "預設網路預先建立了允許傳入連線的規則，可以刪除或修改。"
+        },
+        {
+          "id": "b",
+          "text": "一條規則可以同時套用到傳入與傳出流量",
+          "explanation": "一條規則只能套用到傳入或傳出其中一個方向。"
+        },
+        {
+          "id": "c",
+          "text": "VPC 防火牆規則是有狀態的（stateful）",
+          "explanation": "正確。允許的連線，其回應流量也會被允許。"
+        },
+        {
+          "id": "d",
+          "text": "防火牆規則只能用 IP 位址指定目標",
+          "explanation": "也可以用網路標記、安全標記或服務帳戶指定。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-128",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司要在內部部署網路與 VPC 之間建立加密連線，希望很快建立，並有 99.99% 的服務水準協議（SLA）。最適合哪一個選項？",
+      "options": [
+        {
+          "id": "a",
+          "text": "VPC 網路對等互連",
+          "explanation": "對等互連連接兩個 VPC 網路，不是連接內部部署網路。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud CDN",
+          "explanation": "CDN 與連線內部部署無關。"
+        },
+        {
+          "id": "c",
+          "text": "HA VPN",
+          "explanation": "正確。Cloud VPN 透過 IPsec VPN 連線加密網路之間的流量；HA VPN 在大多數拓撲提供 99.99% 的 SLA。"
+        },
+        {
+          "id": "d",
+          "text": "傳統 VPN（Classic VPN）",
+          "explanation": "Classic VPN 提供 99.9% 的 SLA。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-129",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 3,
+      "question": "公司需要內部部署與 Google 網路之間的專用實體連線，但公司的資料中心無法直接連到 Google 的連線設施。應該選擇哪一種連線？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Dedicated Interconnect",
+          "explanation": "Dedicated Interconnect 需要你的網路與 Google 網路之間有直接的實體連線。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud NAT",
+          "explanation": "Cloud NAT 提供網路位址轉譯。"
+        },
+        {
+          "id": "c",
+          "text": "VPC 網路對等互連",
+          "explanation": "對等互連連接兩個 VPC 網路。"
+        },
+        {
+          "id": "d",
+          "text": "Partner Interconnect",
+          "explanation": "正確。Partner Interconnect 透過支援的服務供應商，提供內部部署與 VPC 網路之間的連線。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-130",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個遊戲服務使用 UDP，需要保留用戶端的來源 IP 位址，而且不想經過代理。應該選擇哪一種負載平衡器？",
+      "options": [
+        {
+          "id": "a",
+          "text": "直通式網路負載平衡器（passthrough Network Load Balancer）",
+          "explanation": "正確。它保留用戶端的來源 IP、不經過代理，並支援 UDP、ESP、ICMP 等協定。"
+        },
+        {
+          "id": "b",
+          "text": "應用程式負載平衡器",
+          "explanation": "應用程式負載平衡器處理 HTTP(S) 流量。"
+        },
+        {
+          "id": "c",
+          "text": "代理式網路負載平衡器",
+          "explanation": "代理式會經過代理，題目要求不經過代理。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud DNS",
+          "explanation": "Cloud DNS 不是負載平衡器。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-131",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "網站使用 HTTP(S)，需要依網址路徑把請求送到不同的後端服務。應該選擇哪一種負載平衡器？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud VPN",
+          "explanation": "Cloud VPN 連接網路。"
+        },
+        {
+          "id": "b",
+          "text": "應用程式負載平衡器（Application Load Balancer）",
+          "explanation": "正確。需要彈性的 HTTP(S) 功能時，選擇應用程式負載平衡器。"
+        },
+        {
+          "id": "c",
+          "text": "直通式網路負載平衡器",
+          "explanation": "直通式在網路層運作，不依網址路徑路由。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud NAT",
+          "explanation": "Cloud NAT 不是負載平衡器。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-132",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 3,
+      "question": "公司想降低網路費用，可以接受流量經由一般的 ISP 網路傳送到使用者，而不是盡量走 Google 的骨幹網路。應該選擇哪一個網路服務級別？",
+      "options": [
+        {
+          "id": "a",
+          "text": "網路服務級別只影響安全性",
+          "explanation": "級別影響的是路由方式與可用功能。"
+        },
+        {
+          "id": "b",
+          "text": "網路服務級別只能用在 Cloud Storage",
+          "explanation": "級別用於網際網路與 Google Cloud 執行個體之間的連線。"
+        },
+        {
+          "id": "c",
+          "text": "Standard 級",
+          "explanation": "正確。Standard 級使用一般 ISP 網路；Premium 級讓流量在 Google 的骨幹網路上傳送，以效能為優先。"
+        },
+        {
+          "id": "d",
+          "text": "Premium 級",
+          "explanation": "Premium 級以效能為優先，流量在 Google 網路中傳送。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-ace-d2-133",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 2
+        }
+      ],
+      "difficulty": 2,
+      "question": "平台團隊想用 Kubernetes 的資訊清單，以 kubectl 管理 Cloud Storage bucket、Cloud SQL 等 Google Cloud 資源。最適合哪一項工具？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud Billing 匯出",
+          "explanation": "這是帳單資料。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud DNS",
+          "explanation": "Cloud DNS 是網域名稱服務。"
+        },
+        {
+          "id": "c",
+          "text": "Memorystore",
+          "explanation": "Memorystore 是記憶體內快取。"
+        },
+        {
+          "id": "d",
+          "text": "Config Connector",
+          "explanation": "正確。Config Connector 是開源的 Kubernetes 附加元件，讓你透過 Kubernetes 管理 Google Cloud 資源。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-101",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司想每天自動備份 VM 的 Persistent Disk，並自動刪除太舊的備份。最適合的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "每天手動在主控台建立快照",
+          "explanation": "人工操作容易遺漏。"
+        },
+        {
+          "id": "b",
+          "text": "把磁碟改成 Local SSD",
+          "explanation": "Local SSD 是暫時儲存，不能取代備份。"
+        },
+        {
+          "id": "c",
+          "text": "關閉 VM",
+          "explanation": "這不是備份。"
+        },
+        {
+          "id": "d",
+          "text": "建立快照排程（snapshot schedule）並附加到磁碟",
+          "explanation": "正確。快照排程可以定期自動備份可用區與區域 Persistent Disk、Hyperdisk，是備份 Compute Engine 工作負載的最佳實務。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-102",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於 Compute Engine 的標準快照（standard snapshots），哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "必須先停止 VM 才能建立快照",
+          "explanation": "可以在磁碟附加在執行中的執行個體時建立快照。"
+        },
+        {
+          "id": "b",
+          "text": "快照預設是全域資源，可以在同一個專案中用來還原成新的磁碟或 VM",
+          "explanation": "正確。"
+        },
+        {
+          "id": "c",
+          "text": "快照只能還原到原本的可用區",
+          "explanation": "快照預設是全域資源。"
+        },
+        {
+          "id": "d",
+          "text": "快照會取代原本的磁碟",
+          "explanation": "快照是備份，不會取代磁碟。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-103",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊把一台 VM 安裝好所需的軟體後，想用它的開機磁碟作為範本，快速建立多台設定相同的新 VM。應該建立什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "VPC 對等互連",
+          "explanation": "對等互連連接網路。"
+        },
+        {
+          "id": "b",
+          "text": "自訂映像檔（custom image）",
+          "explanation": "正確。從現有執行個體的開機磁碟建立自訂映像檔，再用它建立預先設定好的新開機磁碟。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud DNS 區域",
+          "explanation": "與 VM 範本無關。"
+        },
+        {
+          "id": "d",
+          "text": "預算快訊",
+          "explanation": "預算追蹤費用。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-104",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "GKE Standard 叢集需要新增一組使用 GPU 的節點，其他節點維持原本的設定。最適合的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "修改每個 Pod 的映像檔",
+          "explanation": "映像檔不會改變節點的硬體。"
+        },
+        {
+          "id": "b",
+          "text": "改用 Cloud Storage",
+          "explanation": "Cloud Storage 是物件儲存。"
+        },
+        {
+          "id": "c",
+          "text": "新增一個節點集區（node pool）",
+          "explanation": "正確。節點集區是同一個 Standard 叢集中設定相同的一組節點，可以為不同需求建立不同的節點集區。"
+        },
+        {
+          "id": "d",
+          "text": "刪除叢集後重建",
+          "explanation": "不需要重建整個叢集。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-105",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個 GKE 上的網頁服務在流量增加時，需要自動增加 Pod 的數量。應該設定什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "垂直 Pod 自動調度器",
+          "explanation": "VPA 調整的是每個 Pod 的資源要求，不是 Pod 數量。"
+        },
+        {
+          "id": "b",
+          "text": "快照排程",
+          "explanation": "快照用於備份。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud NAT",
+          "explanation": "Cloud NAT 提供網路位址轉譯。"
+        },
+        {
+          "id": "d",
+          "text": "水平 Pod 自動調度器（HorizontalPodAutoscaler）",
+          "explanation": "正確。它依工作負載的 CPU、記憶體或自訂指標，自動增減 Pod 的數量。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-106",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 3,
+      "question": "團隊想依工作負載過去的實際用量，調整每個 Pod 的 CPU 與記憶體要求。關於垂直 Pod 自動調度（VPA），哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "VPA 會增減 Pod 的數量",
+          "explanation": "增減 Pod 數量的是 HPA。"
+        },
+        {
+          "id": "b",
+          "text": "除非使用搭配 VPA 的 HPA 調整大小功能，否則不要讓 HPA 與標準 VPA 同時依 CPU 或記憶體調整",
+          "explanation": "正確。兩者同時依相同指標調整可能互相衝突；VPA 在 Autopilot 叢集中預設已啟用。"
+        },
+        {
+          "id": "c",
+          "text": "VPA 只能在 Standard 叢集使用，Autopilot 不支援",
+          "explanation": "VPA 在 Autopilot 叢集中預設已啟用。"
+        },
+        {
+          "id": "d",
+          "text": "VPA 用來備份 Pod 的資料",
+          "explanation": "VPA 調整的是資源要求。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-107",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "在 GKE Autopilot 中部署工作負載時，沒有設定 CPU 與記憶體的資源要求。會發生什麼事？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Pod 會被排程到 Cloud Run",
+          "explanation": "Autopilot 的 Pod 在 GKE 中執行。"
+        },
+        {
+          "id": "b",
+          "text": "部署會失敗",
+          "explanation": "Autopilot 會套用預設值。"
+        },
+        {
+          "id": "c",
+          "text": "Autopilot 會自動套用預先設定的預設值，並在工作負載層級調整資源要求",
+          "explanation": "正確。Autopilot 也會依運算類別或硬體強制最小與最大的資源要求。"
+        },
+        {
+          "id": "d",
+          "text": "Pod 會使用整個節點的所有資源",
+          "explanation": "Autopilot 依資源要求配置節點。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-108",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊要部署 Cloud Run 服務的新版本，但希望先不要讓任何正式流量進入新修訂版本，測試沒問題後再逐步導入流量。部署時應該怎麼做？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把服務改成 Compute Engine VM",
+          "explanation": "不需要。"
+        },
+        {
+          "id": "b",
+          "text": "關閉自動調度",
+          "explanation": "這與流量分配無關。"
+        },
+        {
+          "id": "c",
+          "text": "部署時使用 --no-traffic，再逐步調整各修訂版本的流量百分比",
+          "explanation": "正確。Cloud Run 可以指定哪些修訂版本接收流量與百分比，用來逐步部署、回復或分流。"
+        },
+        {
+          "id": "d",
+          "text": "刪除舊的修訂版本再部署",
+          "explanation": "這樣就無法回復。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-109",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 3,
+      "question": "Cloud Run 服務曾經把流量分配給多個修訂版本。之後團隊再部署新版本時，流量會怎麼分配？",
+      "options": [
+        {
+          "id": "a",
+          "text": "之後的部署會沿用原本的流量分配方式，要改回只用最新版本需要另外設定",
+          "explanation": "正確。調整流量也不是立即生效，處理中的請求會完成，不會被中斷。"
+        },
+        {
+          "id": "b",
+          "text": "所有流量會被丟棄",
+          "explanation": "流量不會被丟棄。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud Run 不支援多個修訂版本",
+          "explanation": "Cloud Run 支援在多個修訂版本之間分配流量。"
+        },
+        {
+          "id": "d",
+          "text": "新版本自動接收 100% 的流量",
+          "explanation": "曾經設定流量分配後，之後的部署會沿用該分配方式。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-110",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個 Cloud Run 服務在 CPU 會在請求處理之外使用（例如背景工作），而且不希望發生冷啟動。關於自動調度設定，哪一項最合適？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把最少執行個體數設為至少 1",
+          "explanation": "正確。如果服務會在處理請求之外使用 CPU，文件建議把最少執行個體數設為至少 1。"
+        },
+        {
+          "id": "b",
+          "text": "把最多執行個體數設為 0",
+          "explanation": "這會讓服務無法處理請求。"
+        },
+        {
+          "id": "c",
+          "text": "關閉並行處理",
+          "explanation": "這與題目需求無關。"
+        },
+        {
+          "id": "d",
+          "text": "改用 Cloud Storage",
+          "explanation": "Cloud Storage 是物件儲存。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-111",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "GKE 叢集要從同一個專案的 Artifact Registry 拉取映像檔，節點使用 Compute Engine 預設服務帳戶，且專案已停用自動授予 Editor 角色。應該授予什麼角色？",
+      "options": [
+        {
+          "id": "a",
+          "text": "不需要任何角色",
+          "explanation": "已停用自動授予 Editor 時，需要另外授予讀取角色。"
+        },
+        {
+          "id": "b",
+          "text": "把 Artifact Registry Reader（roles/artifactregistry.reader）授予節點的服務帳戶",
+          "explanation": "正確。授予後，GKE 就能從同一個專案的 Artifact Registry 存放區拉取映像檔。"
+        },
+        {
+          "id": "c",
+          "text": "把 Owner 角色授予所有使用者",
+          "explanation": "權限過大，也不是給節點使用。"
+        },
+        {
+          "id": "d",
+          "text": "把 Billing Admin 授予節點",
+          "explanation": "與拉取映像檔無關。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-112",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "新進的開發人員要花好幾天在自己的電腦安裝開發工具。公司希望提供代管、安全、預先設定好的開發環境，讓開發人員不必在自己的電腦安裝與設定。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud DNS",
+          "explanation": "Cloud DNS 是網域名稱服務。"
+        },
+        {
+          "id": "b",
+          "text": "Bigtable",
+          "explanation": "Bigtable 是 NoSQL 資料庫。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud Workstations",
+          "explanation": "正確。它在 Google Cloud 上提供內建安全與預先設定、可自訂的代管開發環境。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud NAT",
+          "explanation": "Cloud NAT 提供網路位址轉譯。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-113",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊剛修改 Cloud Storage bucket 的生命週期規則，把刪除條件從 10 天改成 20 天。關於這個變更，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "變更最多可能需要 24 小時才生效，這段期間仍可能依舊設定刪除物件",
+          "explanation": "正確。例如 11 天的物件，仍可能在 24 小時內依舊設定被刪除。"
+        },
+        {
+          "id": "b",
+          "text": "生命週期規則只能把物件移到其他級別，不能刪除",
+          "explanation": "生命週期可以設定物件的存留時間（TTL）並刪除物件。"
+        },
+        {
+          "id": "c",
+          "text": "修改生命週期規則會刪除所有物件",
+          "explanation": "不會。"
+        },
+        {
+          "id": "d",
+          "text": "變更立即生效，11 天的物件一定不會被刪除",
+          "explanation": "生命週期設定的變更最多可能需要 24 小時才生效。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-114",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "法規要求公司自己掌控用來加密 Cloud Storage 與 BigQuery 靜態資料的金鑰。應該使用什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "透過 Cloud KMS 使用客戶管理的加密金鑰（CMEK）",
+          "explanation": "正確。CMEK 讓你擁有並控制保護 Google Cloud 靜態資料的金鑰。"
+        },
+        {
+          "id": "b",
+          "text": "Google 擁有與管理的預設加密金鑰",
+          "explanation": "預設金鑰由 Google 管理，客戶無法控制。"
+        },
+        {
+          "id": "c",
+          "text": "把金鑰寫在程式碼中",
+          "explanation": "這不安全，也不是靜態加密的做法。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud DNS",
+          "explanation": "與加密無關。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-115",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於 Cloud SQL 的備份，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "刪除執行個體後，一定無法保留任何備份",
+          "explanation": "可以設定在刪除執行個體後保留備份。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud SQL 只能手動備份",
+          "explanation": "Cloud SQL 可以隨選備份，也可以依排程自動備份。"
+        },
+        {
+          "id": "c",
+          "text": "可以隨選備份或依排程自動備份，並設定備份的保留方式",
+          "explanation": "正確。保留設定依 Cloud SQL 的版本與備份選項而不同。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud SQL 的備份每次都是完整備份",
+          "explanation": "Cloud SQL 的備份是增量的。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-116",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 3,
+      "question": "一個子網路的 IP 位址快用完了。關於擴充子網路的主要 IPv4 範圍，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "必須刪除子網路再重建",
+          "explanation": "可以直接修改子網路遮罩來擴充。"
+        },
+        {
+          "id": "b",
+          "text": "把前綴長度改成較大的數字就能擴充",
+          "explanation": "前綴長度越大，範圍越小；擴充要改成較小的數字。"
+        },
+        {
+          "id": "c",
+          "text": "可以把前綴長度改成較小的數字來擴充，但擴充後無法復原或縮小",
+          "explanation": "正確。擴充子網路的主要 IPv4 範圍無法復原，也不能縮小。"
+        },
+        {
+          "id": "d",
+          "text": "可以隨時擴充或縮小",
+          "explanation": "無法縮小子網路的主要 IPv4 範圍。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-117",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "一台 VM 需要一個固定不變的外部 IP 位址，讓合作夥伴設定白名單。目前它使用臨時（ephemeral）外部 IP。應該怎麼做？",
+      "options": [
+        {
+          "id": "a",
+          "text": "每次重新啟動後通知合作夥伴新的 IP",
+          "explanation": "這不是固定 IP 的做法。"
+        },
+        {
+          "id": "b",
+          "text": "改用 Cloud DNS 私人區域",
+          "explanation": "私人區域只在 VPC 內可見，合作夥伴無法使用。"
+        },
+        {
+          "id": "c",
+          "text": "關閉 VM 的網路介面",
+          "explanation": "這會讓 VM 無法連線。"
+        },
+        {
+          "id": "d",
+          "text": "保留一個靜態外部 IP，或把目前的臨時外部 IP 升級為靜態",
+          "explanation": "正確。需要不會改變的外部 IP 時，可以保留新的靜態外部 IP，或升級既有的臨時外部 IP。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-118",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "私有 VM 沒有外部 IP，但需要連到網際網路下載更新，且不能接受來自網際網路的主動連線。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud NAT",
+          "explanation": "正確。Cloud NAT 為對外流量提供位址轉譯，只允許已建立連線的回應封包，不允許未經請求的傳入連線。"
+        },
+        {
+          "id": "b",
+          "text": "為每台 VM 加上外部 IP",
+          "explanation": "這會讓 VM 可以被網際網路直接連線。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud DNS",
+          "explanation": "Cloud DNS 是網域名稱服務。"
+        },
+        {
+          "id": "d",
+          "text": "VPC 網路對等互連",
+          "explanation": "對等互連連接兩個 VPC 網路。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-119",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 3,
+      "question": "關於 Cloud NAT，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud NAT 用來註冊網域",
+          "explanation": "註冊網域與 Cloud NAT 無關。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud NAT 是一台需要自己修補的代理 VM",
+          "explanation": "Cloud NAT 是分散式、軟體定義的代管服務，不依賴代理 VM 或設備。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud NAT 的閘道設定在 Cloud Router 上，由 Cloud Router 提供控制平面",
+          "explanation": "正確。它不依賴專案中的任何 VM 或單一實體閘道。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud NAT 允許網際網路主動連線到私有 VM",
+          "explanation": "Cloud NAT 不允許未經請求的傳入連線。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-120",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司希望 VPC 中的 VM 可以用內部的網域名稱互相找到，而這些名稱不能被網際網路查詢到。最適合的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把名稱寫在每台 VM 的 hosts 檔案",
+          "explanation": "難以維護。"
+        },
+        {
+          "id": "b",
+          "text": "使用 Cloud NAT",
+          "explanation": "Cloud NAT 不提供名稱解析。"
+        },
+        {
+          "id": "c",
+          "text": "建立 Cloud DNS 私人區域，並指定可以使用的 VPC 網路",
+          "explanation": "正確。私人區域只在指定的 VPC 網路中可見；公開區域則對網際網路可見。"
+        },
+        {
+          "id": "d",
+          "text": "建立 Cloud DNS 公開區域",
+          "explanation": "公開區域對網際網路可見。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-121",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊想在 VPC 中新增一條路由，把送往內部部署某個網段的流量送到特定的下一個躍點（next hop）。應該設定什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "防火牆規則",
+          "explanation": "防火牆規則允許或拒絕流量，不決定流量送往哪裡。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud DNS 記錄",
+          "explanation": "DNS 解析名稱，不決定路由。"
+        },
+        {
+          "id": "c",
+          "text": "預算快訊",
+          "explanation": "預算追蹤費用。"
+        },
+        {
+          "id": "d",
+          "text": "自訂靜態路由（custom static route）",
+          "explanation": "正確。VPC 中的路由由一個 CIDR 格式的目的地前綴與一個下一個躍點組成。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-122",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊想在 VM 的 CPU 使用率超過 80% 持續 5 分鐘時收到通知。應該在 Cloud Monitoring 中建立什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "快訊政策（alerting policy）",
+          "explanation": "正確。快訊政策評估指標、日誌或 SQL 查詢的結果，條件符合時建立快訊並發送通知。"
+        },
+        {
+          "id": "b",
+          "text": "日誌接收器（log sink）",
+          "explanation": "接收器用來轉送日誌。"
+        },
+        {
+          "id": "c",
+          "text": "快照排程",
+          "explanation": "快照用於備份。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud DNS 區域",
+          "explanation": "與監控無關。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-123",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "應用程式想追蹤「目前背景佇列中待處理的工作數」，這是內建的 Google Cloud 指標沒有收集的資料。應該怎麼做？",
+      "options": [
+        {
+          "id": "a",
+          "text": "建立快照",
+          "explanation": "快照用於備份。"
+        },
+        {
+          "id": "b",
+          "text": "建立使用者定義指標（自訂指標）並從應用程式寫入",
+          "explanation": "正確。使用者定義指標用來記錄內建指標沒有收集的應用程式資料。"
+        },
+        {
+          "id": "c",
+          "text": "只看 VM 的 CPU 使用率",
+          "explanation": "CPU 使用率無法反映佇列中的工作數。"
+        },
+        {
+          "id": "d",
+          "text": "建立防火牆規則",
+          "explanation": "防火牆與指標無關。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-124",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊想從大量的日誌中，計算每分鐘出現多少筆含有「payment failed」的錯誤，並對這個數字設定快訊。最適合的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "建立 Cloud DNS 記錄",
+          "explanation": "與日誌無關。"
+        },
+        {
+          "id": "b",
+          "text": "使用 Cloud NAT",
+          "explanation": "與日誌無關。"
+        },
+        {
+          "id": "c",
+          "text": "建立以日誌為基礎的指標（log-based metric）",
+          "explanation": "正確。日誌型指標能從大量日誌中觀察趨勢與模式，也能用來設定快訊。"
+        },
+        {
+          "id": "d",
+          "text": "每天手動搜尋日誌並計數",
+          "explanation": "這不是自動化的做法。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-125",
+      "type": "multiple",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 3,
+      "question": "關於 Cloud Audit Logs，哪些敘述正確？（選兩個）",
+      "options": [
+        {
+          "id": "a",
+          "text": "除了 BigQuery 之外，資料存取稽核日誌（Data Access）預設是停用的，需要明確啟用",
+          "explanation": "正確。因為資料存取日誌可能產生大量資料。"
+        },
+        {
+          "id": "b",
+          "text": "資料存取稽核日誌預設對所有服務啟用",
+          "explanation": "除了 BigQuery，預設是停用的。"
+        },
+        {
+          "id": "c",
+          "text": "只有 Logs Viewer 角色就能檢視 _Default bucket 中的資料存取稽核日誌",
+          "explanation": "需要 Private Logs Viewer 角色才能檢視 _Default bucket 中的資料存取稽核日誌。"
+        },
+        {
+          "id": "d",
+          "text": "管理活動稽核日誌（Admin Activity）一定會寫入，無法設定、排除或停用",
+          "explanation": "正確。即使停用 Cloud Logging API，仍會產生。"
+        }
+      ],
+      "answer": [
+        "a",
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-126",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "網路團隊想分析 VPC 中 VM 之間的流量，以排查網路問題與檢視安全性。應該開啟什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "VPC Flow Logs",
+          "explanation": "正確。VPC Flow Logs 取樣 VPC 網路中的封包，依 IP 連線（五元組）彙總產生流量日誌。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud Billing 匯出",
+          "explanation": "這是帳單資料。"
+        },
+        {
+          "id": "c",
+          "text": "快照排程",
+          "explanation": "快照用於備份。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud Workstations",
+          "explanation": "這是開發環境。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-127",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "公司要把所有專案的日誌匯出到第三方的 SIEM 工具。最適合的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "建立 Cloud DNS 私人區域",
+          "explanation": "與日誌匯出無關。"
+        },
+        {
+          "id": "b",
+          "text": "建立日誌接收器（log sink），把日誌轉送到 Pub/Sub，再由第三方工具讀取",
+          "explanation": "正確。Cloud Logging 用日誌接收器把日誌轉送到目的地；轉送到 Pub/Sub 後可以匯出給第三方工具。"
+        },
+        {
+          "id": "c",
+          "text": "每天手動在主控台複製日誌",
+          "explanation": "這不是自動化的做法。"
+        },
+        {
+          "id": "d",
+          "text": "把日誌存在 VM 的本機磁碟",
+          "explanation": "這無法集中管理，也容易遺失。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-128",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 3,
+      "question": "團隊想用 SQL 查詢日誌資料，並與追蹤資料進行聯結分析。在 Cloud Logging 中應該怎麼做？",
+      "options": [
+        {
+          "id": "a",
+          "text": "建立快照排程",
+          "explanation": "與日誌無關。"
+        },
+        {
+          "id": "b",
+          "text": "開啟 Cloud NAT",
+          "explanation": "與日誌無關。"
+        },
+        {
+          "id": "c",
+          "text": "把日誌 bucket 升級為使用 Observability Analytics",
+          "explanation": "正確。升級後可以用 SQL 介面查詢日誌並與追蹤資料聯結；升級後無法改回或移除這個功能。"
+        },
+        {
+          "id": "d",
+          "text": "把日誌匯出成 PDF",
+          "explanation": "PDF 無法用 SQL 查詢。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-129",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "使用者反映某個 API 偶爾很慢，團隊想找出請求在哪一個下游服務花了最多時間。最適合哪一項工具？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud Billing",
+          "explanation": "與延遲無關。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud DNS",
+          "explanation": "Cloud DNS 是網域名稱服務。"
+        },
+        {
+          "id": "c",
+          "text": "Storage Transfer Service",
+          "explanation": "這是資料搬移服務。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud Trace",
+          "explanation": "正確。Cloud Trace 是分散式追蹤系統，追蹤請求延遲並找出造成延遲的下游相依服務。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-130",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊想持續了解正式環境的應用程式中，哪一段程式碼耗用最多 CPU 與記憶體，而且不能對效能造成明顯影響。最適合哪一項工具？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud Profiler",
+          "explanation": "正確。Cloud Profiler 是統計式、低負擔的分析工具，持續收集正式環境應用程式的 CPU 使用與記憶體配置資訊，並對應到原始碼。"
+        },
+        {
+          "id": "b",
+          "text": "Cloud Trace",
+          "explanation": "Trace 追蹤請求延遲，不分析程式碼的 CPU 與記憶體使用。"
+        },
+        {
+          "id": "c",
+          "text": "VPC Flow Logs",
+          "explanation": "Flow Logs 記錄網路流量。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud Asset Inventory",
+          "explanation": "這是資源的中繼資料清單。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-131",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊想知道目前 Google Cloud 發生的服務事件中，哪些會影響到自己的專案。應該查看哪裡？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud DNS",
+          "explanation": "Cloud DNS 是網域名稱服務。"
+        },
+        {
+          "id": "b",
+          "text": "Personalized Service Health",
+          "explanation": "正確。它協助找出與你的專案相關的 Google Cloud 服務事件，以便管理與回應。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud Billing 報表",
+          "explanation": "帳單報表顯示費用。"
+        },
+        {
+          "id": "d",
+          "text": "VPC Flow Logs",
+          "explanation": "Flow Logs 記錄網路流量。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-132",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊想從 Compute Engine VM 收集作業系統與應用程式的日誌、指標與追蹤資料。應該在 VM 上安裝什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Config Connector",
+          "explanation": "Config Connector 透過 Kubernetes 管理 Google Cloud 資源。"
+        },
+        {
+          "id": "b",
+          "text": "Storage Transfer Service",
+          "explanation": "這是資料搬移服務。"
+        },
+        {
+          "id": "c",
+          "text": "Ops Agent",
+          "explanation": "正確。Ops Agent 是從 Compute Engine 執行個體收集遙測資料的主要代理程式，把日誌、指標與追蹤的收集整合在單一程序中。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud NAT",
+          "explanation": "Cloud NAT 提供網路位址轉譯。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-133",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊已經在 GKE 上使用 Prometheus 與 Grafana 儀表板，想改用全代管的服務，並繼續用 PromQL 查詢與設定快訊。最適合哪一項服務？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cloud DNS",
+          "explanation": "Cloud DNS 是網域名稱服務。"
+        },
+        {
+          "id": "b",
+          "text": "Memorystore",
+          "explanation": "Memorystore 是記憶體內快取。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud Billing 匯出",
+          "explanation": "這是帳單資料。"
+        },
+        {
+          "id": "d",
+          "text": "Google Cloud Managed Service for Prometheus",
+          "explanation": "正確。它是全代管、跨專案的 Prometheus 指標解決方案，可以用 PromQL 查詢，沿用既有的 Grafana 儀表板與快訊。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d3-134",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 3
+        }
+      ],
+      "difficulty": 2,
+      "question": "團隊想取得 Google Cloud 自動產生的建議，例如找出閒置的資源或調整規格以降低成本。應該使用什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Active Assist 的建議（recommenders）",
+          "explanation": "正確。Active Assist 是 Google Cloud 產生建議與洞察的工具組合，協助最佳化專案。"
+        },
+        {
+          "id": "b",
+          "text": "VPC Flow Logs",
+          "explanation": "Flow Logs 記錄網路流量。"
+        },
+        {
+          "id": "c",
+          "text": "Cloud DNS",
+          "explanation": "Cloud DNS 是網域名稱服務。"
+        },
+        {
+          "id": "d",
+          "text": "快照排程",
+          "explanation": "快照用於備份。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d4-101",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "IAM 的角色有哪三種類型？",
+      "options": [
+        {
+          "id": "a",
+          "text": "基本角色、預先定義角色、自訂角色",
+          "explanation": "正確。基本角色提供廣泛的存取；預先定義角色由 Google Cloud 管理，提供特定服務的細部存取；自訂角色依你指定的權限清單提供細部存取。"
+        },
+        {
+          "id": "b",
+          "text": "讀取角色、寫入角色、刪除角色",
+          "explanation": "這不是 IAM 的角色分類。"
+        },
+        {
+          "id": "c",
+          "text": "使用者角色、群組角色、專案角色",
+          "explanation": "這不是 IAM 的角色分類。"
+        },
+        {
+          "id": "d",
+          "text": "全域角色、區域角色、可用區角色",
+          "explanation": "這不是 IAM 的角色分類。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d4-102",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "在正式環境中，為什麼應該避免授予 Owner、Editor 等基本角色？",
+      "options": [
+        {
+          "id": "a",
+          "text": "基本角色會產生額外費用",
+          "explanation": "權限本身不收費；問題在於權限過大。"
+        },
+        {
+          "id": "b",
+          "text": "基本角色包含所有 Google Cloud 服務的數千個權限，範圍過大",
+          "explanation": "正確。應該授予符合需求、範圍最小的預先定義角色或自訂角色。"
+        },
+        {
+          "id": "c",
+          "text": "基本角色已經停止支援，無法使用",
+          "explanation": "基本角色仍持續維護並可使用。"
+        },
+        {
+          "id": "d",
+          "text": "基本角色只能授予服務帳戶",
+          "explanation": "基本角色也能授予使用者。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d4-103",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 4
+        }
+      ],
+      "difficulty": 3,
+      "question": "某位使用者在專案層級被授予 Viewer 角色，在專案上層的資料夾被授予 Editor 角色。他在這個專案中的有效權限是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "完全沒有權限，因為兩者衝突",
+          "explanation": "允許政策不會互相抵銷。"
+        },
+        {
+          "id": "b",
+          "text": "只有 Editor，因為資料夾在上層所以只看上層",
+          "explanation": "有效政策是兩者的聯集。"
+        },
+        {
+          "id": "c",
+          "text": "只有 Viewer，因為專案層級的設定會覆蓋上層",
+          "explanation": "允許政策是聯集，不會被較低層級覆蓋。"
+        },
+        {
+          "id": "d",
+          "text": "Viewer 與 Editor 的聯集",
+          "explanation": "正確。資源的有效允許政策，是該資源本身的允許政策與從上層繼承的允許政策的聯集。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d4-104",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "要列出所有能存取某個 Cloud Storage bucket 的主體，應該檢查什麼？",
+      "options": [
+        {
+          "id": "a",
+          "text": "只看 bucket 的允許政策",
+          "explanation": "會漏掉從上層繼承的權限。"
+        },
+        {
+          "id": "b",
+          "text": "只看組織的允許政策",
+          "explanation": "會漏掉 bucket 與專案層級的權限。"
+        },
+        {
+          "id": "c",
+          "text": "看 VPC Flow Logs",
+          "explanation": "Flow Logs 記錄網路流量，不是權限。"
+        },
+        {
+          "id": "d",
+          "text": "這個 bucket 本身的允許政策，以及它所有上層資源（專案、資料夾、組織）的允許政策",
+          "explanation": "正確。上層的允許政策會往下繼承，所以要一起檢視。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d4-105",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 4
+        }
+      ],
+      "difficulty": 3,
+      "question": "公司想定義一個自訂角色，並在某個資料夾底下的多個專案使用。應該在哪一個層級建立這個自訂角色？",
+      "options": [
+        {
+          "id": "a",
+          "text": "資料夾層級",
+          "explanation": "無法在資料夾層級定義自訂角色。"
+        },
+        {
+          "id": "b",
+          "text": "組織層級",
+          "explanation": "正確。需要在資料夾中使用自訂角色時，應該在組織層級定義。"
+        },
+        {
+          "id": "c",
+          "text": "每個 VM 上",
+          "explanation": "自訂角色不是在 VM 上建立。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud DNS 區域中",
+          "explanation": "與 IAM 無關。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d4-106",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "安全團隊想暫時停用一個自訂角色，但保留它的定義以便日後使用。可以怎麼做？",
+      "options": [
+        {
+          "id": "a",
+          "text": "移除專案的計費帳戶",
+          "explanation": "這與角色無關。"
+        },
+        {
+          "id": "b",
+          "text": "把自訂角色的發布階段設為 DISABLED",
+          "explanation": "正確。大多數發布階段只是參考資訊，但 DISABLED 會停用這個自訂角色。"
+        },
+        {
+          "id": "c",
+          "text": "刪除組織",
+          "explanation": "這會影響所有資源。"
+        },
+        {
+          "id": "d",
+          "text": "把角色改名",
+          "explanation": "改名不會停用角色。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d4-107",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於服務帳戶，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "每個專案只能有一個服務帳戶",
+          "explanation": "可以為不同的應用程式建立不同的服務帳戶。"
+        },
+        {
+          "id": "b",
+          "text": "服務帳戶不能被授予 IAM 角色",
+          "explanation": "服務帳戶可以被授予角色。"
+        },
+        {
+          "id": "c",
+          "text": "服務帳戶是給人登入主控台用的",
+          "explanation": "服務帳戶通常由應用程式或運算工作負載使用，而不是人。"
+        },
+        {
+          "id": "d",
+          "text": "服務帳戶通常給應用程式或運算工作負載使用，以電子郵件地址識別",
+          "explanation": "正確。應用程式可以用服務帳戶的身分進行授權的 API 呼叫。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d4-108",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "關於 Google 管理的服務代理（service agent），哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "某些 Google Cloud 服務會使用服務代理來存取你的資源，通常在啟用並使用 API 後才會建立",
+          "explanation": "正確。如果用宣告式框架管理政策，也可以先找出需要的服務代理並授予角色。"
+        },
+        {
+          "id": "b",
+          "text": "服務代理就是你的個人帳號",
+          "explanation": "服務代理代表的是服務。"
+        },
+        {
+          "id": "c",
+          "text": "服務代理不能被授予任何角色",
+          "explanation": "服務代理需要角色才能存取你的資源。"
+        },
+        {
+          "id": "d",
+          "text": "你必須手動建立所有服務代理",
+          "explanation": "服務代理是在你啟用並使用需要它的 API 後，由 Google Cloud 建立。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d4-109",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "依照服務帳戶的最佳實務，在 Compute Engine 上部署多個應用程式時，應該如何設定服務帳戶？",
+      "options": [
+        {
+          "id": "a",
+          "text": "為每個應用程式建立專用的服務帳戶，避免使用預設的服務帳戶",
+          "explanation": "正確。部分預設服務帳戶可能自動被授予 Editor 角色，權限過大。"
+        },
+        {
+          "id": "b",
+          "text": "所有應用程式共用 Compute Engine 預設服務帳戶",
+          "explanation": "預設服務帳戶可能有 Editor 角色，違反最小權限。"
+        },
+        {
+          "id": "c",
+          "text": "為每個應用程式下載服務帳戶金鑰放在程式碼中",
+          "explanation": "應盡量避免使用服務帳戶金鑰。"
+        },
+        {
+          "id": "d",
+          "text": "把 Owner 角色授予所有服務帳戶",
+          "explanation": "這違反最小權限原則。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d4-110",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "開發人員要建立一台 VM 並把某個使用者管理的服務帳戶附加到這台 VM。開發人員需要對這個服務帳戶具備哪一個角色？",
+      "options": [
+        {
+          "id": "a",
+          "text": "不需要任何權限",
+          "explanation": "需要權限才能附加服務帳戶。"
+        },
+        {
+          "id": "b",
+          "text": "Service Account User（roles/iam.serviceAccountUser）",
+          "explanation": "正確。附加服務帳戶到資源，需要對該服務帳戶具備 Service Account User 角色。"
+        },
+        {
+          "id": "c",
+          "text": "Billing Account Viewer",
+          "explanation": "與附加服務帳戶無關。"
+        },
+        {
+          "id": "d",
+          "text": "Logs Viewer",
+          "explanation": "與附加服務帳戶無關。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d4-111",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "工程師想暫時用某個服務帳戶的權限測試一組操作，而不修改自己的 IAM 權限。這種做法稱為什麼？需要什麼權限？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把服務帳戶加到 Cloud Identity 群組",
+          "explanation": "這不是模擬。"
+        },
+        {
+          "id": "b",
+          "text": "授予工程師 Owner 角色",
+          "explanation": "這會永久提高權限，違反最小權限。"
+        },
+        {
+          "id": "c",
+          "text": "模擬服務帳戶（impersonation），需要 iam.serviceAccounts.getAccessToken 權限，例如 Service Account Token Creator 角色",
+          "explanation": "正確。模擬讓已驗證的主體取得服務帳戶的權限，類似 AWS STS 的 AssumeRole。"
+        },
+        {
+          "id": "d",
+          "text": "建立服務帳戶金鑰並下載到本機",
+          "explanation": "應盡量避免使用金鑰，模擬是更安全的做法。"
+        }
+      ],
+      "answer": [
+        "c"
+      ]
+    },
+    {
+      "id": "gcp-ace-d4-112",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個 CI 工具需要短時間存取 Google Cloud，安全團隊不希望建立長期有效的服務帳戶金鑰。下列哪一項做法最合適？",
+      "options": [
+        {
+          "id": "a",
+          "text": "建立永久有效的服務帳戶金鑰並寫在 CI 設定中",
+          "explanation": "長期金鑰外洩的風險較高。"
+        },
+        {
+          "id": "b",
+          "text": "讓 CI 工具使用管理員的個人帳號密碼",
+          "explanation": "這違反最佳實務。"
+        },
+        {
+          "id": "c",
+          "text": "授予 CI 工具 Owner 角色",
+          "explanation": "權限過大。"
+        },
+        {
+          "id": "d",
+          "text": "為服務帳戶建立短期憑證（例如 OAuth 2.0 存取權杖）",
+          "explanation": "正確。短期憑證可以用來模擬服務帳戶，避免長期金鑰外洩的風險。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d4-113",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "一個在 AWS 上執行的應用程式需要存取 Google Cloud 資源，團隊不想使用服務帳戶金鑰。最適合哪一項功能？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Workload Identity Federation",
+          "explanation": "正確。它讓內部部署或其他雲端的工作負載用聯合身分存取 Google Cloud 資源，而不是使用服務帳戶金鑰。"
+        },
+        {
+          "id": "b",
+          "text": "Workforce Identity Federation",
+          "explanation": "這是給人員透過 SSO 登入，不是給工作負載。"
+        },
+        {
+          "id": "c",
+          "text": "下載服務帳戶金鑰並放到 AWS",
+          "explanation": "題目希望避免金鑰。"
+        },
+        {
+          "id": "d",
+          "text": "Cloud NAT",
+          "explanation": "與身分無關。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d4-114",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "GKE 上的應用程式需要讀取 Cloud Storage。在大多數情況下，建議的做法是？",
+      "options": [
+        {
+          "id": "a",
+          "text": "把 bucket 設為公開",
+          "explanation": "這會讓任何人都能讀取資料。"
+        },
+        {
+          "id": "b",
+          "text": "使用 Workload Identity Federation for GKE，把權限授予對應應用程式身分的主體",
+          "explanation": "正確。這是在大多數情況下，建議用來保護並管理 GKE 工作負載存取 Google Cloud 服務的方式。"
+        },
+        {
+          "id": "c",
+          "text": "把服務帳戶金鑰存成 Kubernetes Secret",
+          "explanation": "應盡量避免使用金鑰。"
+        },
+        {
+          "id": "d",
+          "text": "讓所有 Pod 使用節點的 Compute Engine 預設服務帳戶並授予 Editor",
+          "explanation": "權限過大，也無法區分各應用程式。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    },
+    {
+      "id": "gcp-ace-d4-115",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 4
+        }
+      ],
+      "difficulty": 3,
+      "question": "關於 Workforce Identity Federation 與 Workload Identity Federation，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Workforce 只能給服務帳戶使用",
+          "explanation": "Workforce 是給人員使用。"
+        },
+        {
+          "id": "b",
+          "text": "Workload 需要為每個工作負載下載服務帳戶金鑰",
+          "explanation": "Workload Identity Federation 的目的正是避免使用金鑰。"
+        },
+        {
+          "id": "c",
+          "text": "兩者完全相同",
+          "explanation": "對象不同。"
+        },
+        {
+          "id": "d",
+          "text": "Workforce 是讓外部 IdP 中的人員（員工、合作夥伴、承包商）透過 SSO 存取；Workload 是讓內部部署或其他雲端的工作負載不用金鑰存取",
+          "explanation": "正確。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d4-116",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "依照服務帳戶的最佳實務，關於服務帳戶金鑰，哪一項敘述正確？",
+      "options": [
+        {
+          "id": "a",
+          "text": "每個應用程式都應該下載一把金鑰",
+          "explanation": "這會增加金鑰外洩的風險。"
+        },
+        {
+          "id": "b",
+          "text": "金鑰比短期憑證更安全",
+          "explanation": "長期金鑰外洩的風險較高。"
+        },
+        {
+          "id": "c",
+          "text": "金鑰應該放在公開的程式碼存放區",
+          "explanation": "絕對不行。"
+        },
+        {
+          "id": "d",
+          "text": "應盡可能避免使用服務帳戶金鑰，改用更安全的驗證方式",
+          "explanation": "正確。許多情境可以用比金鑰更安全的方法驗證，例如附加服務帳戶、Workload Identity Federation 或模擬。"
+        }
+      ],
+      "answer": [
+        "d"
+      ]
+    },
+    {
+      "id": "gcp-ace-d4-117",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "安全稽核人員只需要讀取管理活動稽核日誌，不需要讀取資料存取稽核日誌。應該授予哪一個角色？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Logs Viewer（roles/logging.viewer）",
+          "explanation": "正確。Logs Viewer 可以唯讀存取管理活動、政策拒絕與系統事件稽核日誌，但不能檢視 _Default bucket 中的資料存取稽核日誌。"
+        },
+        {
+          "id": "b",
+          "text": "Private Logs Viewer（roles/logging.privateLogViewer）",
+          "explanation": "這個角色還包含讀取資料存取稽核日誌的權限，超過需求。"
+        },
+        {
+          "id": "c",
+          "text": "Owner",
+          "explanation": "權限過大。"
+        },
+        {
+          "id": "d",
+          "text": "Billing Account Administrator",
+          "explanation": "與日誌無關。"
+        }
+      ],
+      "answer": [
+        "a"
+      ]
+    },
+    {
+      "id": "gcp-ace-d4-118",
+      "type": "single",
+      "provider": "gcp",
+      "certs": [
+        {
+          "id": "gcp-ace",
+          "domain": 4
+        }
+      ],
+      "difficulty": 2,
+      "question": "工程師需要建立、升級與連結日誌 bucket。依照最小權限原則，應該授予哪一個角色？",
+      "options": [
+        {
+          "id": "a",
+          "text": "Service Account User",
+          "explanation": "這是附加服務帳戶用的角色。"
+        },
+        {
+          "id": "b",
+          "text": "Logs Configuration Writer（roles/logging.configWriter）",
+          "explanation": "正確。建立、升級與連結日誌 bucket 需要這個角色。"
+        },
+        {
+          "id": "c",
+          "text": "Owner",
+          "explanation": "權限過大。"
+        },
+        {
+          "id": "d",
+          "text": "Logs Viewer",
+          "explanation": "Logs Viewer 只能讀取，不能設定 bucket。"
+        }
+      ],
+      "answer": [
+        "b"
+      ]
+    }
+  ]
+}
