@@ -381,7 +381,7 @@ interface Progress {
 | 4 ✅ | Lab 引擎 | 終端機、虛擬檔案系統、基本 Linux 指令、`aws s3` 與 `gcloud storage` 子集、3 個範例 Lab | Lab 可從頭做到完成；引擎有單元測試 |
 | 5 ✅ | 證照練習 | 證照頁、依 domain 抽題練習、服務對照表 | 四張證照頁都可進入並練習 |
 | 6 | 內容擴充 | 依第 3 節補齊所有單元、測驗、Lab 與每張證照題庫 | 每單元至少 5 題、每張證照至少 150 題 |
-| 7 | 會員 | Supabase 登入（Email 登入連結、Google、GitHub）、進度同步與合併 | 兩個裝置登入後進度一致（正式站已用 Email 登入並同步成功；Google、GitHub 登入待設定） |
+| 7 | 會員 | Supabase 登入（Email 登入連結、Google、GitHub）、進度同步與合併 | 兩個裝置登入後進度一致（正式站已用 Email、GitHub、Google 登入並同步成功） |
 | 8 | 模擬考 | 計時考試、依比重抽題、成績報告、錯題本、弱點分析 | 可完成一場完整模擬考並看到各 domain 得分 |
 | 9 | 進階功能 | 架構圖練習、AI 助教 | — |
 
