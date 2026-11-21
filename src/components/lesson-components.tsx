@@ -1,7 +1,8 @@
 import type { ComponentProps, ReactNode } from "react";
-import type { Flow as FlowData, Provider as ProviderId, UnitMeta } from "@/lib/content/schema";
+import type { Flow as FlowData, Provider as ProviderId, Sim as SimData, UnitMeta } from "@/lib/content/schema";
 import { PROVIDERS } from "@/lib/content/schema";
 import { Flow } from "./Flow";
+import { Sim } from "./Sim";
 import { ProviderTabs } from "./ProviderTabs";
 
 function ProviderSection({ name, children }: { name: ProviderId; children: ReactNode }) {
@@ -60,7 +61,7 @@ function CompareTable({ rows }: { rows: UnitMeta["compare"] }) {
 }
 
 /** Components available inside lesson.mdx, bound to the unit being rendered. */
-export function lessonComponents(meta: UnitMeta, flows: FlowData[] = []) {
+export function lessonComponents(meta: UnitMeta, flows: FlowData[] = [], sims: SimData[] = []) {
   const providers = PROVIDERS.filter((p) => meta.providers[p]);
   return {
     ProviderTabs: ({ children }: { children: ReactNode }) => (
@@ -72,6 +73,8 @@ export function lessonComponents(meta: UnitMeta, flows: FlowData[] = []) {
     Compare: () => <CompareTable rows={meta.compare} />,
     // The loader checks every <Flow id> has a flows/<id>.json.
     Flow: ({ id }: { id: string }) => <Flow flow={flows.find((f) => f.id === id)!} />,
+    // Likewise every <Sim id> has a sims/<id>.json.
+    Sim: ({ id }: { id: string }) => <Sim sim={sims.find((s) => s.id === id)!} />,
     table: (props: ComponentProps<"table">) => (
       <div className="table-scroll">
         <table {...props} />
