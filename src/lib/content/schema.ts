@@ -387,3 +387,70 @@ export const ChallengeSchema = z
   });
 export type Challenge = z.infer<typeof ChallengeSchema>;
 export type ChallengeGoal = z.infer<typeof ChallengeGoalSchema>;
+
+// ------------------------------------------- units/<id>/sims/<sim-id>.json
+
+/**
+ * A live traffic simulation shown in a lesson with <Sim id="…" />. Each step
+ * is one setup (algorithm, servers, health checks) run by src/lib/sim/engine;
+ * `expect` states what the step teaches, and tests check the engine agrees.
+ */
+export const SimSchema = z
+  .strictObject({
+    id: slug,
+    title: z.string().min(1),
+    /** Exactly two kinds: the first is drawn blue, the second amber. */
+    kinds: z
+      .array(z.strictObject({ id: slug, label: z.string().min(1).max(8), workMs: z.number().int().positive() }))
+      .length(2),
+    /** Kinds of successive requests, repeated in order. */
+    sequence: z.array(slug).min(1),
+    requestsPerSecond: z.number().positive().max(40),
+    steps: z
+      .array(
+        z.strictObject({
+          title: z.string().min(1).max(20),
+          caption: z.string().min(1),
+          algorithm: z.enum(["none", "round_robin", "least_outstanding"]),
+          servers: z
+            .array(
+              z.strictObject({
+                capacity: z.number().int().positive(),
+                queueLimit: z.number().int().min(0),
+                failsAtMs: z.number().int().positive().optional(),
+              }),
+            )
+            .min(1)
+            .max(4),
+          healthCheck: z
+            .strictObject({ intervalMs: z.number().int().positive(), unhealthyThreshold: z.number().int().positive() })
+            .optional(),
+          /** The setting that produces this step, per platform. */
+          config: z.strictObject({ aws: z.string().min(1).optional(), gcp: z.string().min(1).optional() }).optional(),
+          /** What the step shows, checked by tests after `afterMs` of simulated time. */
+          expect: z
+            .strictObject({
+              afterMs: z.number().int().positive(),
+              p95MaxMs: z.number().positive().optional(),
+              p95MinMs: z.number().positive().optional(),
+              errorsMin: z.number().int().min(0).optional(),
+              errorsMax: z.number().int().min(0).optional(),
+            })
+            .refine((e) => Object.keys(e).length > 1, "state at least one expectation besides afterMs"),
+        }),
+      )
+      .min(1)
+      .max(6),
+  })
+  .superRefine((sim, ctx) => {
+    const ids = new Set(sim.kinds.map((k) => k.id));
+    sim.sequence.forEach((k, i) => {
+      if (!ids.has(k)) ctx.addIssue({ code: "custom", path: ["sequence", i], message: `unknown kind "${k}"` });
+    });
+    sim.steps.forEach((step, i) => {
+      if (step.algorithm === "none" && step.servers.length > 1) {
+        ctx.addIssue({ code: "custom", path: ["steps", i, "servers"], message: 'with algorithm "none" there is one server' });
+      }
+    });
+  });
+export type Sim = z.infer<typeof SimSchema>;

@@ -1,0 +1,130 @@
+{
+  "id": "lb-algorithms",
+  "title": "負載平衡器怎麼分配請求",
+  "kinds": [
+    {
+      "id": "page",
+      "label": "瀏覽",
+      "workMs": 80
+    },
+    {
+      "id": "checkout",
+      "label": "結帳",
+      "workMs": 700
+    }
+  ],
+  "sequence": [
+    "page",
+    "page",
+    "checkout"
+  ],
+  "requestsPerSecond": 12,
+  "steps": [
+    {
+      "title": "只有一台伺服器",
+      "algorithm": "none",
+      "servers": [
+        {
+          "capacity": 2,
+          "queueLimit": 6
+        }
+      ],
+      "caption": "每秒 12 個請求，每 3 個有 1 個是結帳。瀏覽只要 0.08 秒，結帳要 0.7 秒。這台伺服器一次只能同時處理 2 個請求，最多讓 6 個排隊，排滿就回應 503。它的工作量超過能力，排隊越來越長，回應時間變慢，還開始拒絕請求。",
+      "expect": {
+        "afterMs": 10000,
+        "p95MinMs": 1200,
+        "errorsMin": 10
+      }
+    },
+    {
+      "title": "加上負載平衡器：輪流分配",
+      "algorithm": "round_robin",
+      "servers": [
+        {
+          "capacity": 2,
+          "queueLimit": 6
+        },
+        {
+          "capacity": 2,
+          "queueLimit": 6
+        },
+        {
+          "capacity": 2,
+          "queueLimit": 6
+        }
+      ],
+      "caption": "加了兩台伺服器，前面放負載平衡器。AWS ALB 和 Google Cloud 預設都是輪流分配（round robin）：依序把請求平均分給健康的伺服器。但請求剛好是「瀏覽、瀏覽、結帳」循環，每個結帳都落在第 3 台。請求的數量平均了，工作量卻沒有平均，第 3 台照樣塞車。",
+      "config": {
+        "aws": "aws elbv2 modify-target-group-attributes --target-group-arn $TG_ARN \\\n  --attributes Key=load_balancing.algorithm.type,Value=round_robin",
+        "gcp": "gcloud compute backend-services update web-backend --global \\\n  --locality-lb-policy=ROUND_ROBIN"
+      },
+      "expect": {
+        "afterMs": 10000,
+        "p95MinMs": 2000,
+        "errorsMin": 1
+      }
+    },
+    {
+      "title": "改成最少進行中請求",
+      "algorithm": "least_outstanding",
+      "servers": [
+        {
+          "capacity": 2,
+          "queueLimit": 6
+        },
+        {
+          "capacity": 2,
+          "queueLimit": 6
+        },
+        {
+          "capacity": 2,
+          "queueLimit": 6
+        }
+      ],
+      "caption": "改成把請求送給手上「進行中請求最少」的伺服器（AWS 稱為 least outstanding requests）。結帳被分散開來，三台的負擔接近，回應時間降下來，也沒有錯誤。請求的處理時間差異很大時，這種演算法比輪流分配適合。Google Cloud 的 LEAST_REQUEST 做法略有不同：隨機挑兩台健康的後端，再選進行中請求較少的那台。",
+      "config": {
+        "aws": "aws elbv2 modify-target-group-attributes --target-group-arn $TG_ARN \\\n  --attributes Key=load_balancing.algorithm.type,Value=least_outstanding_requests",
+        "gcp": "gcloud compute backend-services update web-backend --global \\\n  --locality-lb-policy=LEAST_REQUEST"
+      },
+      "expect": {
+        "afterMs": 10000,
+        "p95MaxMs": 1000,
+        "errorsMax": 0
+      }
+    },
+    {
+      "title": "一台伺服器故障",
+      "algorithm": "least_outstanding",
+      "servers": [
+        {
+          "capacity": 2,
+          "queueLimit": 6
+        },
+        {
+          "capacity": 2,
+          "queueLimit": 6,
+          "failsAtMs": 4000
+        },
+        {
+          "capacity": 2,
+          "queueLimit": 6
+        }
+      ],
+      "healthCheck": {
+        "intervalMs": 1000,
+        "unhealthyThreshold": 2
+      },
+      "caption": "第 4 秒，第 2 台伺服器當機。健康檢查每 1 秒檢查一次，連續失敗 2 次才標記為不健康；在那之前送過去的請求都會失敗（502）。標記之後，流量只送到另外兩台，服務恢復正常。真實環境的間隔比較長（ALB 預設每 30 秒檢查、連續失敗 2 次），這裡縮短時間方便觀察。",
+      "config": {
+        "aws": "aws elbv2 modify-target-group --target-group-arn $TG_ARN \\\n  --health-check-path /health \\\n  --health-check-interval-seconds 30 \\\n  --unhealthy-threshold-count 2",
+        "gcp": "gcloud compute health-checks create http web-hc --port=80 \\\n  --request-path=/health \\\n  --check-interval=5s \\\n  --unhealthy-threshold=2"
+      },
+      "expect": {
+        "afterMs": 15000,
+        "p95MaxMs": 1200,
+        "errorsMin": 1,
+        "errorsMax": 20
+      }
+    }
+  ]
+}

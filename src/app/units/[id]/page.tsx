@@ -65,7 +65,7 @@ export default async function UnitPage({ params }: PageProps<"/units/[id]">) {
       <div className="lesson mt-2">
         <MDXRemote
           source={unit.lesson}
-          components={lessonComponents(meta, unit.flows)}
+          components={lessonComponents(meta, unit.flows, unit.sims)}
           options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
         />
       </div>

@@ -213,6 +213,15 @@ src/
 - 載入時會檢查：步驟引用的方塊存在、檔名和 `id` 一致、每個 flow 都有在課文用到、課文的 `<Flow id>` 都有對應的檔案。
 - 系統設定「減少動態效果」時不播放移動的動畫，只切換高亮。
 
+### sims/<sim-id>.json（即時運轉模擬）
+
+課文裡用 `<Sim id="…" />` 放一個會即時運轉的流量模擬：使用者送出兩種請求（一輕一重，依 `sequence` 循環），經過負載平衡器（或直接）送到伺服器；每台伺服器一次處理 `capacity` 個請求、最多讓 `queueLimit` 個排隊，排滿回 503，當機回 502；可以設定健康檢查的間隔與連續失敗次數。畫面顯示移動的請求、每台伺服器的處理數、p95 回應時間、錯誤數、健康的伺服器數與 p95 走勢，並附上每一步對應的 AWS／Google Cloud 設定。
+
+- 每一步是一組設定（`algorithm`：`none`、`round_robin`、`least_outstanding`），切換步驟就重新開始模擬。
+- `expect` 寫出這一步要教的結果（跑了 `afterMs` 之後的 p95 上下限、錯誤數上下限），`src/lib/sim/engine.test.ts` 會用同一個引擎驗證，說明文字和模擬的結果才不會不一致。
+- 引擎是 `src/lib/sim/engine.ts` 的純函式，固定時間步進、結果固定；設定「減少動態效果」時直接顯示跑完的結果。
+- 演算法與健康檢查的行為依官方文件：ALB 的 round robin 與 least outstanding requests、Google Cloud 的 ROUND_ROBIN 與 LEAST_REQUEST、兩者都只把流量送給健康的後端。
+
 ### 題目（單元測驗與證照題庫共用）
 
 ```json

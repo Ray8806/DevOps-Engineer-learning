@@ -5,6 +5,7 @@ import {
   CertSchema,
   ChallengeSchema,
   FlowSchema,
+  SimSchema,
   LabSchema,
   QuizFileSchema,
   StagesFileSchema,
@@ -13,6 +14,7 @@ import {
   type Cert,
   type Challenge,
   type Flow,
+  type Sim,
   type Lab,
   type Question,
   type Stage,
@@ -29,6 +31,8 @@ export interface Unit {
   labs: Lab[];
   /** Animated diagrams from flows/*.json, used in the lesson with <Flow id="…" />. */
   flows: Flow[];
+  /** Live traffic simulations from sims/*.json, used in the lesson with <Sim id="…" />. */
+  sims: Sim[];
 }
 
 export interface Content {
@@ -254,7 +258,24 @@ export function loadContent(contentDir: string = CONTENT_DIR): Content {
       checkCertDomain(`${rel(metaFile)}: certDomains "${ref}"`, certId, Number(domain));
     }
 
-    units.set(meta.id, { meta, lesson, quiz, labs, flows });
+    // sims/*.json
+    const sims: Sim[] = [];
+    const simsDir = path.join(unitDir, "sims");
+    const simFiles = fs.existsSync(simsDir) ? fs.readdirSync(simsDir).filter((f) => f.endsWith(".json")).sort() : [];
+    for (const f of simFiles) {
+      const simFile = path.join(simsDir, f);
+      const sim = readJson(simFile, SimSchema);
+      if (!sim) continue;
+      const where = rel(simFile);
+      if (`${sim.id}.json` !== f) problems.push(`${where}: id "${sim.id}" must match file name`);
+      if (!new RegExp(`<Sim\\s+id="${sim.id}"`).test(lesson)) problems.push(`${where}: sim "${sim.id}" is not used in lesson.mdx`);
+      sims.push(sim);
+    }
+    for (const m of lesson.matchAll(/<Sim\s+id="([^"]*)"/g)) {
+      if (!sims.some((s) => s.id === m[1])) problems.push(`${rel(lessonFile)}: <Sim id="${m[1]}"> has no sims/${m[1]}.json`);
+    }
+
+    units.set(meta.id, { meta, lesson, quiz, labs, flows, sims });
   }
 
   /** Domain numbers can only be checked once that cert's cert.json exists. */
