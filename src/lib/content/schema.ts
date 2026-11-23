@@ -391,66 +391,141 @@ export type ChallengeGoal = z.infer<typeof ChallengeGoalSchema>;
 // ------------------------------------------- units/<id>/sims/<sim-id>.json
 
 /**
- * A live traffic simulation shown in a lesson with <Sim id="…" />. Each step
- * is one setup (algorithm, servers, health checks) run by src/lib/sim/engine;
+ * A live simulation shown in a lesson with <Sim id="…" />. `kind` picks the
+ * system: "lb" (clients, a load balancer and servers, optionally with
+ * autoscaling), "queue" (producers, a queue and consumers) or "cache" (a CDN
+ * in front of an origin). Each step is one setup run by src/lib/sim; its
  * `expect` states what the step teaches, and tests check the engine agrees.
  */
-export const SimSchema = z
-  .strictObject({
-    id: slug,
-    title: z.string().min(1),
-    /** Exactly two kinds: the first is drawn blue, the second amber. */
-    kinds: z
-      .array(z.strictObject({ id: slug, label: z.string().min(1).max(8), workMs: z.number().int().positive() }))
-      .length(2),
-    /** Kinds of successive requests, repeated in order. */
-    sequence: z.array(slug).min(1),
-    requestsPerSecond: z.number().positive().max(40),
-    steps: z
-      .array(
-        z.strictObject({
-          title: z.string().min(1).max(20),
-          caption: z.string().min(1),
-          algorithm: z.enum(["none", "round_robin", "least_outstanding"]),
-          servers: z
-            .array(
-              z.strictObject({
-                capacity: z.number().int().positive(),
-                queueLimit: z.number().int().min(0),
-                failsAtMs: z.number().int().positive().optional(),
-              }),
-            )
-            .min(1)
-            .max(4),
-          healthCheck: z
-            .strictObject({ intervalMs: z.number().int().positive(), unhealthyThreshold: z.number().int().positive() })
-            .optional(),
-          /** The setting that produces this step, per platform. */
-          config: z.strictObject({ aws: z.string().min(1).optional(), gcp: z.string().min(1).optional() }).optional(),
-          /** What the step shows, checked by tests after `afterMs` of simulated time. */
-          expect: z
-            .strictObject({
-              afterMs: z.number().int().positive(),
-              p95MaxMs: z.number().positive().optional(),
-              p95MinMs: z.number().positive().optional(),
-              errorsMin: z.number().int().min(0).optional(),
-              errorsMax: z.number().int().min(0).optional(),
-            })
-            .refine((e) => Object.keys(e).length > 1, "state at least one expectation besides afterMs"),
-        }),
-      )
-      .min(1)
-      .max(6),
-  })
-  .superRefine((sim, ctx) => {
+export const SIM_METRICS = {
+  lb: ["p95", "errors", "servers", "healthy"],
+  queue: ["backlog", "oldestAgeMs", "dlq", "redeliveries", "processed"],
+  cache: ["hitRate", "originPerSecond", "p95", "errors"],
+} as const;
+
+const simStepBase = {
+  title: z.string().min(1).max(20),
+  caption: z.string().min(1),
+  /** The setting that produces this step, per platform. */
+  config: z.strictObject({ aws: z.string().min(1).optional(), gcp: z.string().min(1).optional() }).optional(),
+  /** What the step shows, checked by tests after `afterMs` of simulated time. */
+  expect: z.strictObject({
+    afterMs: z.number().int().positive(),
+    checks: z
+      .array(z.strictObject({ metric: z.string().min(1), min: z.number().optional(), max: z.number().optional() }))
+      .min(1),
+  }),
+};
+
+const simServer = z.strictObject({
+  capacity: z.number().int().positive(),
+  queueLimit: z.number().int().min(0),
+  failsAtMs: z.number().int().positive().optional(),
+});
+
+const LbSimSchema = z.strictObject({
+  id: slug,
+  kind: z.literal("lb"),
+  title: z.string().min(1),
+  /** Exactly two kinds: the first is drawn blue, the second amber. */
+  kinds: z.array(z.strictObject({ id: slug, label: z.string().min(1).max(8), workMs: z.number().int().positive() })).length(2),
+  /** Kinds of successive requests, repeated in order. */
+  sequence: z.array(slug).min(1),
+  requestsPerSecond: z.number().positive().max(40),
+  steps: z
+    .array(
+      z.strictObject({
+        ...simStepBase,
+        algorithm: z.enum(["none", "round_robin", "least_outstanding"]),
+        /** With autoscaling, give one server: the template for all of them. */
+        servers: z.array(simServer).min(1).max(4),
+        healthCheck: z.strictObject({ intervalMs: z.number().int().positive(), unhealthyThreshold: z.number().int().positive() }).optional(),
+        rateChanges: z.array(z.strictObject({ atMs: z.number().int().min(0), requestsPerSecond: z.number().positive().max(40) })).optional(),
+        autoscaling: z
+          .strictObject({
+            min: z.number().int().positive(),
+            max: z.number().int().positive().max(6),
+            targetCpu: z.number().gt(0).lt(1),
+            evaluationMs: z.number().int().positive(),
+            warmupMs: z.number().int().min(0),
+            scaleInCooldownMs: z.number().int().min(0),
+          })
+          .optional(),
+      }),
+    )
+    .min(1)
+    .max(6),
+});
+
+const QueueSimSchema = z.strictObject({
+  id: slug,
+  kind: z.literal("queue"),
+  title: z.string().min(1),
+  publishPerSecond: z.number().positive().max(20),
+  workMs: z.number().int().positive(),
+  steps: z
+    .array(
+      z.strictObject({
+        ...simStepBase,
+        consumers: z.number().int().positive().max(6),
+        poisonEvery: z.number().int().min(2).optional(),
+        visibilityTimeoutMs: z.number().int().positive(),
+        maxReceiveCount: z.number().int().positive().optional(),
+      }),
+    )
+    .min(1)
+    .max(6),
+});
+
+const CacheSimSchema = z.strictObject({
+  id: slug,
+  kind: z.literal("cache"),
+  title: z.string().min(1),
+  requestsPerSecond: z.number().positive().max(40),
+  files: z.number().int().positive(),
+  origin: z.strictObject({ capacity: z.number().int().positive(), queueLimit: z.number().int().min(0), workMs: z.number().int().positive() }),
+  steps: z
+    .array(
+      z.strictObject({
+        ...simStepBase,
+        cdn: z.boolean(),
+        ttlMs: z.number().int().min(0),
+        invalidateAtMs: z.number().int().positive().optional(),
+      }),
+    )
+    .min(1)
+    .max(6),
+});
+
+export const SimSchema = z.discriminatedUnion("kind", [LbSimSchema, QueueSimSchema, CacheSimSchema]).superRefine((sim, ctx) => {
+  const metrics: readonly string[] = SIM_METRICS[sim.kind];
+  sim.steps.forEach((step, i) => {
+    step.expect.checks.forEach((c, j) => {
+      if (!metrics.includes(c.metric)) {
+        ctx.addIssue({ code: "custom", path: ["steps", i, "expect", "checks", j, "metric"], message: `metric must be one of ${metrics.join(", ")}` });
+      }
+      if (c.min === undefined && c.max === undefined) {
+        ctx.addIssue({ code: "custom", path: ["steps", i, "expect", "checks", j], message: "set min or max" });
+      }
+    });
+  });
+  if (sim.kind === "lb") {
     const ids = new Set(sim.kinds.map((k) => k.id));
     sim.sequence.forEach((k, i) => {
       if (!ids.has(k)) ctx.addIssue({ code: "custom", path: ["sequence", i], message: `unknown kind "${k}"` });
     });
     sim.steps.forEach((step, i) => {
-      if (step.algorithm === "none" && step.servers.length > 1) {
+      if (step.algorithm === "none" && (step.servers.length > 1 || step.autoscaling)) {
         ctx.addIssue({ code: "custom", path: ["steps", i, "servers"], message: 'with algorithm "none" there is one server' });
       }
+      if (step.autoscaling && step.servers.length !== 1) {
+        ctx.addIssue({ code: "custom", path: ["steps", i, "servers"], message: "with autoscaling, give one server as the template" });
+      }
+      if (step.autoscaling && step.autoscaling.min > step.autoscaling.max) {
+        ctx.addIssue({ code: "custom", path: ["steps", i, "autoscaling"], message: "min must not exceed max" });
+      }
     });
-  });
+  }
+});
 export type Sim = z.infer<typeof SimSchema>;
+export type SimKind = Sim["kind"];

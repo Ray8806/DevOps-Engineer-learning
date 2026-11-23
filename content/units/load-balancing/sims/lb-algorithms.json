@@ -1,5 +1,6 @@
 {
   "id": "lb-algorithms",
+  "kind": "lb",
   "title": "負載平衡器怎麼分配請求",
   "kinds": [
     {
@@ -32,8 +33,16 @@
       "caption": "每秒 12 個請求，每 3 個有 1 個是結帳。瀏覽只要 0.08 秒，結帳要 0.7 秒。這台伺服器一次只能同時處理 2 個請求，最多讓 6 個排隊，排滿就回應 503。它的工作量超過能力，排隊越來越長，回應時間變慢，還開始拒絕請求。",
       "expect": {
         "afterMs": 10000,
-        "p95MinMs": 1200,
-        "errorsMin": 10
+        "checks": [
+          {
+            "metric": "p95",
+            "min": 1200
+          },
+          {
+            "metric": "errors",
+            "min": 10
+          }
+        ]
       }
     },
     {
@@ -60,8 +69,16 @@
       },
       "expect": {
         "afterMs": 10000,
-        "p95MinMs": 2000,
-        "errorsMin": 1
+        "checks": [
+          {
+            "metric": "p95",
+            "min": 2000
+          },
+          {
+            "metric": "errors",
+            "min": 1
+          }
+        ]
       }
     },
     {
@@ -88,8 +105,16 @@
       },
       "expect": {
         "afterMs": 10000,
-        "p95MaxMs": 1000,
-        "errorsMax": 0
+        "checks": [
+          {
+            "metric": "p95",
+            "max": 1000
+          },
+          {
+            "metric": "errors",
+            "max": 0
+          }
+        ]
       }
     },
     {
@@ -121,9 +146,17 @@
       },
       "expect": {
         "afterMs": 15000,
-        "p95MaxMs": 1200,
-        "errorsMin": 1,
-        "errorsMax": 20
+        "checks": [
+          {
+            "metric": "p95",
+            "max": 1200
+          },
+          {
+            "metric": "errors",
+            "min": 1,
+            "max": 20
+          }
+        ]
       }
     }
   ]

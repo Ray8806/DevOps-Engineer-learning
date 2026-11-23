@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { loadContent } from "@/lib/content/loader";
-import { advance, healthyCount, initialState, outstanding, p95, percentile95, TRAVEL_MS, type SimConfig } from "./engine";
-import { stepConfig } from "./config";
+import { advance, healthyCount, initialState, outstanding, percentile95, TRAVEL_MS, type SimConfig } from "./engine";
+import { advanceSim, initialSimState, simMetric } from "./config";
+import { advanceQueue, backlog, initialQueueState, PUBLISH_MS, type QueueConfig } from "./queue";
+import { advanceCache, HOP_MS, hitRate, initialCacheState, type CacheConfig } from "./cache";
 
 const kinds = [
   { id: "light", label: "輕", workMs: 100 },
@@ -86,6 +88,99 @@ describe("engine", () => {
   });
 });
 
+describe("autoscaling", () => {
+  const cfg: SimConfig = {
+    ...base,
+    algorithm: "least_outstanding",
+    sequence: ["heavy"],
+    requestsPerSecond: 4,
+    servers: [{ capacity: 1, queueLimit: 10 }],
+    autoscaling: { min: 1, max: 4, targetCpu: 0.5, evaluationMs: 1000, warmupMs: 2000, scaleInCooldownMs: 1000 },
+  };
+
+  it("adds servers that take traffic only after warming up", () => {
+    let s = advance(cfg, initialState(cfg), 2000);
+    expect(s.servers.length).toBeGreaterThan(1);
+    const added = s.servers.length - 1;
+    expect(s.servers.slice(1).every((x) => x.readyAt > s.t)).toBe(true);
+    expect(s.travelling.every((r) => r.server === 0)).toBe(true);
+    s = advance(cfg, s, 2500);
+    expect(s.servers.slice(1, 1 + added).every((x) => x.readyAt <= s.t)).toBe(true);
+  });
+
+  it("never goes above max or below min", () => {
+    let s = initialState(cfg);
+    for (let i = 0; i < 30; i++) {
+      s = advance(cfg, s, 1000);
+      const pool = s.servers.filter((x) => !x.removed && !x.draining).length;
+      expect(pool).toBeGreaterThanOrEqual(1);
+      expect(pool).toBeLessThanOrEqual(4);
+    }
+  });
+});
+
+describe("queue", () => {
+  const q: QueueConfig = { publishPerSecond: 2, workMs: 200, consumers: 1, visibilityTimeoutMs: 1000 };
+
+  it("does not change the state it is given", () => {
+    const s0 = advanceQueue(q, initialQueueState(q), 1000);
+    const copy = JSON.stringify(s0);
+    advanceQueue(q, s0, 2000);
+    expect(JSON.stringify(s0)).toBe(copy);
+  });
+
+  it("deletes messages that were handled", () => {
+    const s = advanceQueue(q, initialQueueState(q), 5000);
+    expect(s.processed).toBeGreaterThanOrEqual(8);
+    expect(backlog(s)).toBeLessThanOrEqual(2);
+  });
+
+  it("delivers a failed message again after the visibility timeout", () => {
+    const cfg = { ...q, poisonEvery: 1 };
+    // The first message arrives at PUBLISH_MS, fails, and is visible again a second later.
+    let s = advanceQueue(cfg, initialQueueState(cfg), PUBLISH_MS + 500);
+    expect(s.redeliveries).toBe(0);
+    s = advanceQueue(cfg, s, 600);
+    expect(s.redeliveries).toBeGreaterThan(0);
+    expect(s.processed).toBe(0);
+  });
+
+  it("moves a message to the dead-letter queue after maxReceiveCount receives", () => {
+    const cfg = { ...q, publishPerSecond: 0.1, poisonEvery: 1, maxReceiveCount: 3 };
+    // Received at PUBLISH_MS and after each of three timeouts; the fourth receive moves it.
+    let s = advanceQueue(cfg, initialQueueState(cfg), PUBLISH_MS + 2 * cfg.visibilityTimeoutMs + 100);
+    expect(s.dlq).toBe(0);
+    s = advanceQueue(cfg, s, cfg.visibilityTimeoutMs);
+    expect(s.dlq).toBe(1);
+    expect(backlog(s)).toBe(0);
+  });
+});
+
+describe("cache", () => {
+  const c: CacheConfig = { requestsPerSecond: 10, files: 1, cdn: true, ttlMs: 2000, origin: { capacity: 5, queueLimit: 5, workMs: 100 } };
+
+  it("does not change the state it is given", () => {
+    const s0 = advanceCache(c, initialCacheState(), 1000);
+    const copy = JSON.stringify(s0);
+    advanceCache(c, s0, 2000);
+    expect(JSON.stringify(s0)).toBe(copy);
+  });
+
+  it("answers from the cache until the copy expires", () => {
+    // One file: after the first miss is answered, requests hit.
+    const s = advanceCache(c, initialCacheState(), 2 * HOP_MS + 1500);
+    expect(hitRate(s)).toBeGreaterThan(0.5);
+    const noTtl = advanceCache({ ...c, ttlMs: 0 }, initialCacheState(), 2 * HOP_MS + 1500);
+    expect(hitRate(noTtl)).toBe(0);
+  });
+
+  it("sends everything to the origin without a CDN", () => {
+    const s = advanceCache({ ...c, cdn: false }, initialCacheState(), 3000);
+    expect(s.hits.length).toBe(0);
+    expect(s.originArrivals.length).toBeGreaterThan(20);
+  });
+});
+
 describe("every lesson simulation", () => {
   const { units } = loadContent();
   const sims = [...units.values()].flatMap((u) => u.sims.map((sim) => ({ unit: u.meta.id, sim })));
@@ -98,15 +193,12 @@ describe("every lesson simulation", () => {
   for (const { unit, sim } of sims) {
     sim.steps.forEach((step, i) => {
       it(`${unit}/${sim.id} step ${i + 1}: ${step.title}`, () => {
-        const cfg = stepConfig(sim, i);
-        const s = advance(cfg, initialState(cfg), step.expect.afterMs);
-        const latency = p95(s) ?? 0;
-        const errors = s.errors[502] + s.errors[503];
-        const e = step.expect;
-        if (e.p95MaxMs !== undefined) expect(latency).toBeLessThanOrEqual(e.p95MaxMs);
-        if (e.p95MinMs !== undefined) expect(latency).toBeGreaterThanOrEqual(e.p95MinMs);
-        if (e.errorsMax !== undefined) expect(errors).toBeLessThanOrEqual(e.errorsMax);
-        if (e.errorsMin !== undefined) expect(errors).toBeGreaterThanOrEqual(e.errorsMin);
+        const state = advanceSim(sim, i, initialSimState(sim, i), step.expect.afterMs);
+        for (const check of step.expect.checks) {
+          const value = simMetric(sim, state, check.metric) ?? 0;
+          if (check.min !== undefined) expect(value, check.metric).toBeGreaterThanOrEqual(check.min);
+          if (check.max !== undefined) expect(value, check.metric).toBeLessThanOrEqual(check.max);
+        }
       });
     });
   }
