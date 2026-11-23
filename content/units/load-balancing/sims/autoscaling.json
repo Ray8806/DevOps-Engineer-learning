@@ -1,0 +1,152 @@
+{
+  "id": "autoscaling",
+  "kind": "lb",
+  "title": "自動擴展怎麼應付流量尖峰",
+  "kinds": [
+    {
+      "id": "page",
+      "label": "瀏覽",
+      "workMs": 200
+    },
+    {
+      "id": "checkout",
+      "label": "結帳",
+      "workMs": 600
+    }
+  ],
+  "sequence": [
+    "page",
+    "page",
+    "page",
+    "checkout"
+  ],
+  "requestsPerSecond": 6,
+  "steps": [
+    {
+      "title": "固定兩台遇上尖峰",
+      "algorithm": "least_outstanding",
+      "servers": [
+        {
+          "capacity": 2,
+          "queueLimit": 6
+        },
+        {
+          "capacity": 2,
+          "queueLimit": 6
+        }
+      ],
+      "rateChanges": [
+        {
+          "atMs": 3000,
+          "requestsPerSecond": 20
+        }
+      ],
+      "caption": "一開始每秒 6 個請求，第 3 秒起湧進每秒 20 個。每台伺服器同時能處理 2 個請求，兩台加起來只有 4 個位置，尖峰卻需要大約 6 個。排隊排滿就回應 503，錯誤一直增加，回應時間也變慢。",
+      "expect": {
+        "afterMs": 20000,
+        "checks": [
+          {
+            "metric": "errors",
+            "min": 50
+          },
+          {
+            "metric": "p95",
+            "min": 1200
+          }
+        ]
+      }
+    },
+    {
+      "title": "目標追蹤自動擴展",
+      "algorithm": "least_outstanding",
+      "servers": [
+        {
+          "capacity": 2,
+          "queueLimit": 6
+        }
+      ],
+      "rateChanges": [
+        {
+          "atMs": 3000,
+          "requestsPerSecond": 20
+        }
+      ],
+      "autoscaling": {
+        "min": 2,
+        "max": 6,
+        "targetCpu": 0.5,
+        "evaluationMs": 1000,
+        "warmupMs": 3000,
+        "scaleInCooldownMs": 3000
+      },
+      "caption": "改成自動擴展：最少 2 台、最多 6 台，讓平均 CPU 維持在 50%。自動擴展每秒看一次平均 CPU，超過目標就照比例加開伺服器。新伺服器要先啟動（這裡縮短成 3 秒，實際上通常要幾分鐘），啟動中的不接流量，所以一開始仍有一些 503；全部上線後回應時間恢復，CPU 穩定在 50% 左右。",
+      "config": {
+        "aws": "# config.json：讓群組的平均 CPU 維持在 50%\n{\n  \"TargetValue\": 50.0,\n  \"PredefinedMetricSpecification\": {\n    \"PredefinedMetricType\": \"ASGAverageCPUUtilization\"\n  }\n}\n\naws autoscaling put-scaling-policy --policy-name cpu50-target-tracking-scaling-policy \\\n  --auto-scaling-group-name my-asg --policy-type TargetTrackingScaling \\\n  --target-tracking-configuration file://config.json",
+        "gcp": "# --cool-down-period：新 VM 啟動、初始化需要的秒數\ngcloud compute instance-groups managed set-autoscaling my-mig \\\n  --min-num-replicas 2 \\\n  --max-num-replicas 6 \\\n  --target-cpu-utilization 0.50 \\\n  --cool-down-period 90"
+      },
+      "expect": {
+        "afterMs": 20000,
+        "checks": [
+          {
+            "metric": "servers",
+            "min": 6
+          },
+          {
+            "metric": "p95",
+            "max": 700
+          },
+          {
+            "metric": "errors",
+            "max": 30
+          }
+        ]
+      }
+    },
+    {
+      "title": "尖峰過後自動縮減",
+      "algorithm": "least_outstanding",
+      "servers": [
+        {
+          "capacity": 2,
+          "queueLimit": 6
+        }
+      ],
+      "rateChanges": [
+        {
+          "atMs": 2000,
+          "requestsPerSecond": 20
+        },
+        {
+          "atMs": 11000,
+          "requestsPerSecond": 6
+        }
+      ],
+      "autoscaling": {
+        "min": 2,
+        "max": 6,
+        "targetCpu": 0.5,
+        "evaluationMs": 1000,
+        "warmupMs": 3000,
+        "scaleInCooldownMs": 3000
+      },
+      "caption": "尖峰在第 11 秒結束，回到每秒 6 個。平均 CPU 掉到目標以下，自動擴展一台一台移除伺服器：先不再送新請求給它（移除中），手上的請求做完才關掉。縮減比擴充慢，是為了避免流量又回來時來不及。最後回到最少的 2 台，不必為閒置的機器付錢。",
+      "config": {
+        "gcp": "# --stabilization-period：縮減前先觀察負載多久（秒）\ngcloud compute instance-groups managed set-autoscaling my-mig \\\n  --min-num-replicas 2 \\\n  --max-num-replicas 6 \\\n  --target-cpu-utilization 0.50 \\\n  --stabilization-period 240"
+      },
+      "expect": {
+        "afterMs": 26000,
+        "checks": [
+          {
+            "metric": "servers",
+            "min": 2,
+            "max": 2
+          },
+          {
+            "metric": "p95",
+            "max": 700
+          }
+        ]
+      }
+    }
+  ]
+}

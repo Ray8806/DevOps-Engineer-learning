@@ -1,0 +1,107 @@
+{
+  "id": "cdn-cache",
+  "kind": "cache",
+  "title": "CDN 快取怎麼替來源伺服器擋流量",
+  "requestsPerSecond": 25,
+  "files": 40,
+  "origin": {
+    "capacity": 3,
+    "queueLimit": 6,
+    "workMs": 250
+  },
+  "steps": [
+    {
+      "title": "沒有 CDN",
+      "cdn": false,
+      "ttlMs": 0,
+      "caption": "每秒 25 個請求，各自要 40 個檔案中的一個，熱門的檔案被要得特別多。沒有 CDN，所有請求都打到來源伺服器；它同時只能處理 3 個、每個 0.25 秒，每秒最多約 12 個，於是排隊排滿，一直回應 503。",
+      "expect": {
+        "afterMs": 10000,
+        "checks": [
+          {
+            "metric": "originPerSecond",
+            "min": 20
+          },
+          {
+            "metric": "errors",
+            "min": 50
+          }
+        ]
+      }
+    },
+    {
+      "title": "TTL 太短（1 秒）",
+      "cdn": true,
+      "ttlMs": 1000,
+      "caption": "在前面放 CDN。邊緣節點有檔案的副本就直接回答（命中），沒有才去來源伺服器拿，拿到後保存 TTL 這麼久。TTL 只有 1 秒，副本很快就過期，命中率不到一半，來源伺服器還是超過負荷。",
+      "config": {
+        "aws": "# 來源伺服器在回應加上標頭，CloudFront 依此決定保存多久（秒）\nCache-Control: max-age=1",
+        "gcp": "# 回應沒有指定 TTL 時，Cloud CDN 保存的秒數（預設 3600）\ngcloud compute backend-services update web-backend \\\n    --default-ttl=1"
+      },
+      "expect": {
+        "afterMs": 16000,
+        "checks": [
+          {
+            "metric": "hitRate",
+            "max": 0.6
+          },
+          {
+            "metric": "originPerSecond",
+            "min": 10
+          }
+        ]
+      }
+    },
+    {
+      "title": "TTL 60 秒",
+      "cdn": true,
+      "ttlMs": 60000,
+      "caption": "TTL 改成 60 秒。熱門檔案拿過一次就留在邊緣節點，幾乎所有請求都由快取回答：命中率接近 100%，來源伺服器每秒只剩零星幾個請求，回應時間也變短。剛開始快取是空的，還是有幾個請求失敗，這叫冷啟動。",
+      "config": {
+        "aws": "Cache-Control: max-age=60",
+        "gcp": "gcloud compute backend-services update web-backend \\\n    --default-ttl=60"
+      },
+      "expect": {
+        "afterMs": 16000,
+        "checks": [
+          {
+            "metric": "hitRate",
+            "min": 0.95
+          },
+          {
+            "metric": "originPerSecond",
+            "max": 2
+          },
+          {
+            "metric": "p95",
+            "max": 800
+          }
+        ]
+      }
+    },
+    {
+      "title": "清除整個快取",
+      "cdn": true,
+      "ttlMs": 60000,
+      "invalidateAtMs": 8000,
+      "caption": "第 8 秒發布新版，清除了整個快取（invalidation）。接下來的請求全部沒命中，一下子湧向來源伺服器，命中率掉下來；熱門檔案重新放回快取後，幾秒內又恢復。所以清除快取時，盡量只清需要更新的路徑。",
+      "config": {
+        "aws": "# 要用萬用字元時，路徑加上引號\naws cloudfront create-invalidation \\\n    --distribution-id EDFDVBD6EXAMPLE \\\n    --paths \"/*\"",
+        "gcp": "gcloud compute url-maps invalidate-cdn-cache web-map \\\n    --path=\"/*\""
+      },
+      "expect": {
+        "afterMs": 10000,
+        "checks": [
+          {
+            "metric": "hitRate",
+            "max": 0.7
+          },
+          {
+            "metric": "originPerSecond",
+            "min": 6
+          }
+        ]
+      }
+    }
+  ]
+}

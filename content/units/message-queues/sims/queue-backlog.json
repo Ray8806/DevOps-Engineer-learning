@@ -1,0 +1,108 @@
+{
+  "id": "queue-backlog",
+  "kind": "queue",
+  "title": "佇列的積壓、重試與 dead-letter",
+  "publishPerSecond": 6,
+  "workMs": 500,
+  "steps": [
+    {
+      "title": "消費者不夠",
+      "consumers": 2,
+      "visibilityTimeoutMs": 1500,
+      "caption": "生產者每秒送進 6 則訊息，每則要處理 0.5 秒。2 個消費者每秒只能處理 4 則，每秒多出 2 則，積壓一直增加，最舊的訊息等得越來越久。訊息不會遺失，只是越來越晚才被處理。",
+      "config": {
+        "aws": "# 等待中的訊息，以及已被取走、還沒刪除的訊息\naws sqs get-queue-attributes \\\n    --queue-url https://sqs.ap-northeast-1.amazonaws.com/123456789012/orders \\\n    --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible",
+        "gcp": "# Cloud Monitoring 裡看訂閱的積壓：最舊一則還沒確認的訊息等了多久\nsubscription/oldest_unacked_message_age"
+      },
+      "expect": {
+        "afterMs": 18000,
+        "checks": [
+          {
+            "metric": "backlog",
+            "min": 30
+          },
+          {
+            "metric": "oldestAgeMs",
+            "min": 5000
+          }
+        ]
+      }
+    },
+    {
+      "title": "增加消費者",
+      "consumers": 4,
+      "visibilityTimeoutMs": 1500,
+      "caption": "增加到 4 個消費者，每秒能處理 8 則，比送進來的快，積壓維持在幾則，訊息一進來很快就被處理。實務上常用積壓數或最舊訊息的年齡當指標，自動增減消費者。",
+      "expect": {
+        "afterMs": 18000,
+        "checks": [
+          {
+            "metric": "backlog",
+            "max": 6
+          },
+          {
+            "metric": "oldestAgeMs",
+            "max": 2000
+          }
+        ]
+      }
+    },
+    {
+      "title": "有毒訊息、沒有 DLQ",
+      "consumers": 4,
+      "poisonEvery": 10,
+      "visibilityTimeoutMs": 1500,
+      "caption": "每 10 則有 1 則是有毒訊息（例如格式錯誤），處理一定失敗。消費者沒有刪除它，過了可見性逾時（這裡縮短成 1.5 秒）它又出現在佇列裡，再被取走、再失敗，永遠循環。重新投遞次數一直增加，最舊訊息的年齡也一路上升。",
+      "config": {
+        "aws": "# set-queue-attributes.json：可見性逾時（秒），預設 30\n{\n    \"VisibilityTimeout\": \"60\"\n}\n\naws sqs set-queue-attributes \\\n    --queue-url https://sqs.ap-northeast-1.amazonaws.com/123456789012/orders \\\n    --attributes file://set-queue-attributes.json",
+        "gcp": "# --ack-deadline：確認期限（秒），逾時就重新投遞\ngcloud pubsub subscriptions create orders-sub \\\n    --topic=orders \\\n    --ack-deadline=60"
+      },
+      "expect": {
+        "afterMs": 24000,
+        "checks": [
+          {
+            "metric": "oldestAgeMs",
+            "min": 15000
+          },
+          {
+            "metric": "redeliveries",
+            "min": 50
+          },
+          {
+            "metric": "dlq",
+            "max": 0
+          }
+        ]
+      }
+    },
+    {
+      "title": "設定 dead-letter 佇列",
+      "consumers": 4,
+      "poisonEvery": 10,
+      "maxReceiveCount": 5,
+      "visibilityTimeoutMs": 1500,
+      "caption": "設定 dead-letter 佇列（DLQ），最多收 5 次：同一則訊息被取走超過 5 次，就移到 dead-letter 佇列，不再卡在原本的佇列裡。正常的訊息照常處理，最舊訊息的年齡不再一路上升。之後再檢查 dead-letter 佇列裡的訊息，修好問題再送回去。",
+      "config": {
+        "aws": "# set-queue-attributes.json\n{\n    \"RedrivePolicy\": \"{\\\"deadLetterTargetArn\\\":\\\"arn:aws:sqs:ap-northeast-1:123456789012:orders-dlq\\\",\\\"maxReceiveCount\\\":\\\"5\\\"}\"\n}\n\naws sqs set-queue-attributes \\\n    --queue-url https://sqs.ap-northeast-1.amazonaws.com/123456789012/orders \\\n    --attributes file://set-queue-attributes.json",
+        "gcp": "# --max-delivery-attempts 介於 5 到 100\ngcloud pubsub subscriptions create orders-sub \\\n    --topic=orders \\\n    --dead-letter-topic=orders-dead-letter \\\n    --max-delivery-attempts=5"
+      },
+      "expect": {
+        "afterMs": 24000,
+        "checks": [
+          {
+            "metric": "dlq",
+            "min": 5
+          },
+          {
+            "metric": "oldestAgeMs",
+            "max": 10000
+          },
+          {
+            "metric": "backlog",
+            "max": 10
+          }
+        ]
+      }
+    }
+  ]
+}

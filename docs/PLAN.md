@@ -215,12 +215,18 @@ src/
 
 ### sims/<sim-id>.json（即時運轉模擬）
 
-課文裡用 `<Sim id="…" />` 放一個會即時運轉的流量模擬：使用者送出兩種請求（一輕一重，依 `sequence` 循環），經過負載平衡器（或直接）送到伺服器；每台伺服器一次處理 `capacity` 個請求、最多讓 `queueLimit` 個排隊，排滿回 503，當機回 502；可以設定健康檢查的間隔與連續失敗次數。畫面顯示移動的請求、每台伺服器的處理數、p95 回應時間、錯誤數、健康的伺服器數與 p95 走勢，並附上每一步對應的 AWS／Google Cloud 設定。
+課文裡用 `<Sim id="…" />` 放一個會即時運轉的模擬，畫面顯示移動的請求或訊息、幾個即時指標、一條走勢圖，並附上每一步對應的 AWS／Google Cloud 設定。`kind` 決定模擬的種類：
 
-- 每一步是一組設定（`algorithm`：`none`、`round_robin`、`least_outstanding`），切換步驟就重新開始模擬。
-- `expect` 寫出這一步要教的結果（跑了 `afterMs` 之後的 p95 上下限、錯誤數上下限），`src/lib/sim/engine.test.ts` 會用同一個引擎驗證，說明文字和模擬的結果才不會不一致。
-- 引擎是 `src/lib/sim/engine.ts` 的純函式，固定時間步進、結果固定；設定「減少動態效果」時直接顯示跑完的結果。
-- 演算法與健康檢查的行為依官方文件：ALB 的 round robin 與 least outstanding requests、Google Cloud 的 ROUND_ROBIN 與 LEAST_REQUEST、兩者都只把流量送給健康的後端。
+| kind | 模擬什麼 | 引擎 | `expect` 可以檢查的指標 |
+|---|---|---|---|
+| `lb` | 使用者送出兩種請求（一輕一重，依 `sequence` 循環），經過負載平衡器（或直接）送到伺服器；每台伺服器一次處理 `capacity` 個、最多讓 `queueLimit` 個排隊，排滿回 503，當機回 502；可設定健康檢查、流量變化（`rateChanges`）與自動擴展（`autoscaling`：最少／最多台數、目標 CPU、多久評估一次、啟動時間、縮減的冷卻時間；這時 `servers` 只給一台當範本） | `src/lib/sim/engine.ts` | `p95`、`errors`、`servers`（接流量的台數）、`healthy` |
+| `queue` | 生產者送訊息進佇列，消費者一次處理一則；有毒訊息（`poisonEvery`）一定失敗，過了可見性逾時再出現；設定 `maxReceiveCount` 時，收到超過這個次數就移到 dead-letter 佇列 | `src/lib/sim/queue.ts` | `backlog`、`oldestAgeMs`、`dlq`、`redeliveries`、`processed` |
+| `cache` | 使用者要 `files` 個檔案之一（熱門程度依 Zipf 分布），有 CDN 時邊緣節點命中就直接回答、未命中才到來源伺服器，拿到後保存 `ttlMs`；`invalidateAtMs` 時清除整個快取 | `src/lib/sim/cache.ts` | `hitRate`、`originPerSecond`、`p95`、`errors` |
+
+- 每一步是一組設定，切換步驟就重新開始模擬。`src/lib/sim/config.ts` 把內容轉成引擎設定，並依 `kind` 取指標。
+- `expect` 寫出這一步要教的結果（跑了 `afterMs` 之後，每個指標的上下限），`src/lib/sim/engine.test.ts` 會用同一個引擎驗證，說明文字和模擬的結果才不會不一致。
+- 引擎都是純函式，固定時間步進、結果固定（快取模擬用固定種子的亂數）；設定「減少動態效果」時直接顯示跑完的結果。畫面是 `src/components/Sim.tsx` 加上 `src/components/sim/` 裡每種 `kind` 的圖。
+- 行為依官方文件：ALB 的 round robin 與 least outstanding requests、Google Cloud 的 ROUND_ROBIN 與 LEAST_REQUEST、兩者都只把流量送給健康的後端；目標追蹤依平均 CPU 照比例擴充、縮減較慢，新機器啟動完成前不計入；SQS 的可見性逾時與 redrive policy 的 `maxReceiveCount`、Pub/Sub 的確認期限與最多傳送次數；CloudFront 與 Cloud CDN 的 TTL 與清除快取。為了在幾十秒內看到結果，時間都縮短了（例如啟動時間 3 秒、可見性逾時 1.5 秒），說明文字會講明。
 
 ### 題目（單元測驗與證照題庫共用）
 
